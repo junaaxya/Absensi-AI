@@ -1,8 +1,11 @@
 import cv2
+import os
 from ultralytics import YOLO
 
 # Load model YOLO face
-model = YOLO("models/yolo-face.pt")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(BASE_DIR, "yolov8n.pt")
+model = YOLO(MODEL_PATH)
 
 # Buka webcam laptop
 cap = cv2.VideoCapture(0)

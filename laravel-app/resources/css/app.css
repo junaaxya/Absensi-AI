@@ -1,22 +1,31 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Animation delay utilities for blob effect */
+.animation-delay-2000 {
+    animation-delay: 2s;
+}
+.animation-delay-4000 {
+    animation-delay: 4s;
+}
+
 /* =============================
-   PROFILE SYSTEM UI (FINAL)
+   PROFILE SYSTEM UI
+   (Keep until profile page is refactored)
 ============================= */
 
 .profile-container {
-    background: #e0e0e0;
+    background: #FAF8F5;
     padding: 20px;
     min-height: 100vh;
 }
 
 /* Header Profil */
 .profile-box {
-    background: #f5f5f5;
-    border: 2px solid #999;
+    background: #F5F3F0;
+    border: 1px solid #E8E4DF;
+    border-radius: 1rem;
     padding: 20px;
     margin-bottom: 15px;
 }
@@ -24,24 +33,28 @@
 .profile-box h2 {
     font-size: 26px;
     font-weight: bold;
+    color: #2D3436;
 }
 
 .profile-box p {
     margin-top: 5px;
+    color: #636E72;
 }
 
 /* Informasi Akun */
 .info-box {
-    background: white;
-    border: 1px solid #999;
+    background: #F5F3F0;
+    border: 1px solid #E8E4DF;
+    border-radius: 1rem;
     padding: 15px;
     margin-bottom: 15px;
 }
 
 .info-box h3 {
-    border-bottom: 1px solid #999;
+    border-bottom: 1px solid #E8E4DF;
     padding-bottom: 5px;
     font-weight: bold;
+    color: #2D3436;
 }
 
 .info-content {
@@ -58,13 +71,15 @@
 .photo-preview {
     width: 120px;
     height: 120px;
-    background: #ddd;
-    border: 1px solid #999;
+    background: #E8E4DF;
+    border: 1px solid #E8E4DF;
+    border-radius: 0.75rem;
     margin: 0 auto 6px auto;
 }
 
 .info-data p {
     margin: 6px 0;
+    color: #636E72;
 }
 
 /* Bagian bawah */
@@ -76,15 +91,17 @@
 
 .notif-box {
     flex: 2;
-    background: white;
-    border: 1px solid #999;
+    background: #F5F3F0;
+    border: 1px solid #E8E4DF;
+    border-radius: 1rem;
     padding: 15px;
 }
 
 .login-box {
     flex: 1;
-    background: white;
-    border: 1px solid #999;
+    background: #F5F3F0;
+    border: 1px solid #E8E4DF;
+    border-radius: 1rem;
     padding: 15px;
 }
 
@@ -97,125 +114,16 @@
 
 .btn {
     padding: 10px 18px;
-    border: 1px solid #999;
-    background: white;
+    border: 1px solid #E8E4DF;
+    background: #C8D5B9;
+    border-radius: 0.75rem;
     text-decoration: none;
-    color: black;
+    color: #2D3436;
     cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
 }
 
-/* ================= RIWAYAT ABSENSI TABLE ================= */
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-table th,
-table td {
-    border: 1px solid #ccc;
-    padding: 10px 8px;
-    text-align: center;   /* 🔥 rata tengah horizontal */
-    vertical-align: middle; /* 🔥 rata tengah vertical */
-    font-size: 14px;
-}
-
-/* Badge kecil TERLAMBAT */
-.badge-terlambat {
-    display: inline-block;
-    margin-top: 4px;
-    padding: 2px 8px;
-    font-size: 11px;
-    border-radius: 10px;
-    background-color: #f8d7da;
-    color: #842029;
-    font-weight: 600;
-}
-
-/* Badge status HADIR / BELUM HADIR */
-.badge-hadir {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.badge-hadir.success {
-    background-color: #d1e7dd;
-    color: #0f5132;
-}
-
-.badge-hadir.secondary {
-    background-color: #e2e3e5;
-    color: #41464b;
-}
-
-.badge-hadir.danger {
-    background-color: #f8d7da;
-    color: #842029;
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    font-size: 12px;
-    border-radius: 999px;
-    background: #dc3545;
-    color: #fff;
-    font-weight: 600;
-    line-height: 1.2;
-}
-.badge-lembur {
-    display: inline-block;
-    margin-top: 4px;
-    padding: 4px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 12px;
-    background-color: #facc15;   /* kuning */
-    color: #1f2933;              /* teks gelap */
-}
-/* Badge kecil di samping Absensi */
-.badge {
-    min-width: 42px;          /* ⬅ kunci lebar minimum */
-    height: 28px;             /* ⬅ kunci tinggi */
-    padding: 0 10px;
-    font-size: 13px;
-    line-height: 28px;        /* ⬅ biar teks center vertikal */
-    text-align: center;
-    border-radius: 6px;
-    background: #e5e5e5;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-}
-
-.status-box {
-    min-height: 44px;   /* ⬅ kunci tinggi */
-    display: flex;
-    align-items: center;
-}
-
-/* ===============================
-   KUNCI GRID UTAMA
-================================ */
-.grid {
-    display: grid;
-    grid-template-columns: 1fr 420px; /* kiri fleksibel, kanan tetap */
-    align-items: start;               /* ⬅ PENTING */
-    gap: 20px;
-}
-
-.timeline-row {
-    min-height: 96px;      /* ⬅ samakan dengan desain awal */
-    align-items: flex-start;
-}
-
-.status-box {
-    min-height: 44px;      /* ⬅ FIXED height */
-    display: flex;
-    align-items: center;
-    padding: 10px 14px;
+.btn:hover {
+    background: #A8C094;
 }

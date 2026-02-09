@@ -51,6 +51,18 @@ services:
       - SESSION_DRIVER=file
       - CACHE_STORE=file
       - QUEUE_CONNECTION=sync
+    volumes:
+      # Source code mounts for development
+      - ./laravel-app/app:/var/www/html/app
+      - ./laravel-app/routes:/var/www/html/routes
+      - ./laravel-app/config:/var/www/html/config
+      - ./laravel-app/resources:/var/www/html/resources
+      - ./laravel-app/public:/var/www/html/public
+      - ./laravel-app/database:/var/www/html/database
+      # Config files
+      - ./laravel-app/package.json:/var/www/html/package.json
+      - ./laravel-app/vite.config.js:/var/www/html/vite.config.js
+      - ./laravel-app/tailwind.config.js:/var/www/html/tailwind.config.js
     depends_on:
       mysql:
         condition: service_healthy

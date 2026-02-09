@@ -72,10 +72,10 @@ Restructure project dari state berantakan ke clean monorepo dengan consistent na
 - Git repository with initial commit
 
 ### Definition of Done
-- [ ] `docker compose config` shows no errors
-- [ ] `git log --oneline` shows initial commit
-- [ ] `grep -r "127.0.0.1:5000" laravel-app/app/` returns empty
-- [ ] All old folder names removed
+- [x] `docker compose config` shows no errors
+- [x] `git log --oneline` shows initial commit
+- [x] `grep -r "127.0.0.1:5000" laravel-app/app/` returns empty
+- [x] All old folder names removed
 
 ### Must Have
 - Folder renames completed
@@ -159,7 +159,7 @@ Wave 4 (Final):
 
 ## TODOs
 
-- [ ] 1. Stop Running Docker Containers
+- [x] 1. Stop Running Docker Containers
 
   **What to do**:
   - Check if any Docker containers are running for this project
@@ -205,7 +205,7 @@ Wave 4 (Final):
 
 ---
 
-- [ ] 2. Rename Project Folders
+- [x] 2. Rename Project Folders
 
   **What to do**:
   - Rename `absensi-face/` to `laravel-app/`
@@ -278,7 +278,7 @@ Wave 4 (Final):
 
 ---
 
-- [ ] 3. Update docker-compose.yml
+- [x] 3. Update docker-compose.yml
 
   **What to do**:
   - Update build context paths to new folder names
@@ -367,7 +367,7 @@ Wave 4 (Final):
 
 ---
 
-- [ ] 4. Move Training Scripts to scripts/ Subfolder
+- [x] 4. Move Training Scripts to scripts/ Subfolder
 
   **What to do**:
   - Create `face-service/scripts/` directory
@@ -430,7 +430,7 @@ Wave 4 (Final):
 
 ---
 
-- [ ] 5. Fix AttendanceController Hardcoded URL
+- [x] 5. Fix AttendanceController Hardcoded URL
 
   **What to do**:
   - Replace hardcoded `http://127.0.0.1:5000` with env var
@@ -533,7 +533,7 @@ Wave 4 (Final):
 
 ---
 
-- [ ] 6. Create Proper .gitignore
+- [x] 6. Create Proper .gitignore
 
   **What to do**:
   - Create comprehensive .gitignore at project root
@@ -592,7 +592,7 @@ Wave 4 (Final):
 
 ---
 
-- [ ] 7. Clear Laravel Caches
+- [x] 7. Clear Laravel Caches
 
   **What to do**:
   - Run artisan commands to clear all caches
@@ -640,7 +640,7 @@ Wave 4 (Final):
 
 ---
 
-- [ ] 8. Initialize Git Repository
+- [x] 8. Initialize Git Repository
 
   **What to do**:
   - Initialize git at project root
@@ -710,7 +710,7 @@ Wave 4 (Final):
 
 ---
 
-- [ ] 9. Create AGENTS.md Documentation
+- [x] 9. Create AGENTS.md Documentation
 
   **What to do**:
   - Create AGENTS.md at project root
@@ -789,7 +789,7 @@ Wave 4 (Final):
 
 ---
 
-- [ ] 10. Create README.md
+- [x] 10. Create README.md
 
   **What to do**:
   - Create or update README.md at project root
@@ -857,7 +857,7 @@ Wave 4 (Final):
 
 ---
 
-- [ ] 11. Final Verification and Documentation Commit
+- [x] 11. Final Verification and Documentation Commit
 
   **What to do**:
   - Run complete verification of all changes
@@ -981,15 +981,15 @@ test -f .gitignore && echo "OK"          # Expected: OK
 ```
 
 ### Final Checklist
-- [ ] All folders renamed to kebab-case
-- [ ] Docker compose config validates successfully
-- [ ] No hardcoded URLs in AttendanceController
-- [ ] .gitignore excludes vendor, node_modules, .venv, .env
-- [ ] Git initialized with 2 commits
-- [ ] AGENTS.md documents architecture
-- [ ] README.md provides quick start
-- [ ] Training scripts in face-service/scripts/
-- [ ] All data (dataset/, embeddings/, *.pt) preserved
+- [x] All folders renamed to kebab-case
+- [x] Docker compose config validates successfully
+- [x] No hardcoded URLs in AttendanceController
+- [x] .gitignore excludes vendor, node_modules, .venv, .env
+- [x] Git initialized with 2 commits
+- [x] AGENTS.md documents architecture
+- [x] README.md provides quick start
+- [x] Training scripts in face-service/scripts/
+- [x] All data (dataset/, embeddings/, *.pt) preserved
 
 ---
 

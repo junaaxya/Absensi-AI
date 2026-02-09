@@ -6,93 +6,166 @@
     <title>Login | Sistem Absensi</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased">
+<body class="font-sans antialiased text-text-primary bg-neutral-cream">
     <div class="min-h-screen flex w-full">
         
-        <!-- LEFT SIDE: FORM (Gray Background) -->
-        <div class="w-full lg:w-1/2 bg-[#E5E5E5] flex flex-col justify-center items-center p-8 relative">
+        <!-- LEFT SIDE: FORM -->
+        <div class="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 lg:p-12 relative bg-neutral-cream">
             
-            <!-- DECORATION CIRCLES (Optional, based on previous design, but maybe not in new one. Keeping clean for now) -->
-            
-            <div class="w-full max-w-md">
-                <h1 class="text-4xl font-extrabold text-black mb-2">MASUK</h1>
-                <p class="text-gray-600 mb-8 text-lg">
-                    Selamat Datang di Sistem Absensi <br>
-                    Perangkat Desa Bencah
-                </p>
+            <!-- Decorative Background Elements for Left Side -->
+            <div class="absolute top-10 left-10 w-32 h-32 bg-pastel-sage/20 rounded-full blur-3xl mix-blend-multiply filter opacity-70 animate-blob"></div>
+            <div class="absolute top-10 right-10 w-32 h-32 bg-pastel-sky/20 rounded-full blur-3xl mix-blend-multiply filter opacity-70 animate-blob animation-delay-2000"></div>
+            <div class="absolute bottom-10 left-20 w-32 h-32 bg-pastel-lavender/20 rounded-full blur-3xl mix-blend-multiply filter opacity-70 animate-blob animation-delay-4000"></div>
 
-                <form method="POST" action="{{ route('login') }}" class="space-y-6">
+            <div class="w-full max-w-md bg-neutral-warm p-8 rounded-2xl shadow-soft border border-neutral-stone/50 z-10 relative">
+                <div class="mb-8 text-center">
+                    <h1 class="text-3xl font-bold text-text-primary mb-2 tracking-tight">Selamat Datang</h1>
+                    <p class="text-text-secondary text-sm">
+                        Masuk ke Sistem Absensi <br>
+                        <span class="font-semibold text-pastel-sage-dark">Perangkat Desa Bencah</span>
+                    </p>
+                </div>
+
+                <form method="POST" action="{{ route('login') }}" class="space-y-5">
                     @csrf
 
                     <!-- Email/Username -->
                     <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Username / Email</label>
+                        <label for="email" class="block text-sm font-medium text-text-secondary mb-1.5 ml-1">Username / Email</label>
                         <input id="email" type="text" name="email" :value="old('email')" required autofocus
-                            class="w-full px-4 py-3 rounded-lg bg-[#D9D9D9] border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 transition duration-200"
-                            placeholder="">
+                            class="w-full px-4 py-3 rounded-xl bg-white border border-neutral-stone text-text-primary focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20 transition duration-200 placeholder-neutral-muted/70"
+                            placeholder="Masukkan username atau email">
                         @error('email')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-pastel-rose-dark text-sm mt-1 font-medium ml-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Password -->
                     <div x-data="{ show: false }" class="relative">
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input id="password" :type="show ? 'text' : 'password'" name="password" required
-                            class="w-full px-4 py-3 rounded-lg bg-[#D9D9D9] border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 transition duration-200"
-                            placeholder="">
-                        
-                        <!-- Toggle Show/Hide -->
-                        <button type="button" @click="show = !show" 
-                            class="absolute inset-y-0 right-0 pr-3 flex items-center mt-6 text-gray-600 hover:text-gray-800">
-                            <svg x-show="!show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <svg x-show="show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5" style="display: none;">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                            </svg>
-                        </button>
+                        <label for="password" class="block text-sm font-medium text-text-secondary mb-1.5 ml-1">Password</label>
+                        <div class="relative">
+                            <input id="password" :type="show ? 'text' : 'password'" name="password" required
+                                class="w-full px-4 py-3 rounded-xl bg-white border border-neutral-stone text-text-primary focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20 transition duration-200 placeholder-neutral-muted/70 pr-12"
+                                placeholder="Masukkan password">
+                            
+                            <!-- Toggle Show/Hide -->
+                            <button type="button" @click="show = !show" 
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-text-secondary hover:text-text-primary transition-colors duration-200 cursor-pointer z-10">
+                                <svg x-show="!show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <svg x-show="show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5" style="display: none;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                </svg>
+                            </button>
+                        </div>
                         
                         @error('password')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-pastel-rose-dark text-sm mt-1 font-medium ml-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Button -->
-                    <div>
+                    <div class="pt-2">
                         <button type="submit" 
-                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-black bg-[#D9D9D9] hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 border-2 border-black transition duration-200">
+                            class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-text-primary bg-pastel-sage hover:bg-pastel-sage-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pastel-sage transition duration-200 transform hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]">
                             Masuk
                         </button>
+                    </div>
+
+                    <!-- Link to Register -->
+                    <div class="text-center pt-2">
+                        <p class="text-sm text-text-secondary">
+                            Belum punya akun? 
+                            <a href="{{ route('register') }}" class="font-medium text-pastel-sage-dark hover:text-text-primary transition duration-200 underline decoration-pastel-sage/50 decoration-2 underline-offset-4 hover:decoration-pastel-sage">
+                                Daftar di sini
+                            </a>
+                        </p>
                     </div>
                 </form>
             </div>
             
-            <!-- Corner Decorations -->
-            <div class="absolute bottom-0 left-0 w-32 h-32 bg-gray-300 rounded-tr-full opacity-50 mix-blend-multiply filter blur-xl"></div>
-            <div class="absolute top-0 left-0 w-24 h-24 bg-gray-200 rounded-br-full opacity-50"></div>
+            <p class="absolute bottom-6 text-xs text-neutral-muted text-center font-medium">
+                &copy; {{ date('Y') }} Sistem Absensi Desa Bencah
+            </p>
         </div>
         
-        <!-- RIGHT SIDE: ILLUSTRATION (White Background) -->
-        <div class="hidden lg:flex w-1/2 bg-white items-center justify-center relative p-12">
-            <!-- Placeholder illustration using CSS/SVG since we don't have the asset -->
-            <div class="relative w-full max-w-lg aspect-square">
-                 <!-- Simple Office Illustration SVG Placeholder -->
-                 <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" class="w-full h-full text-blue-500">
-                    <circle cx="250" cy="250" r="200" fill="#EBF4FF" />
-                    <!-- Minimalist Desk/Person -->
-                    <rect x="150" y="300" width="200" height="10" fill="#3B82F6" />
-                    <rect x="170" y="310" width="20" height="40" fill="#3B82F6" />
-                    <rect x="310" y="310" width="20" height="40" fill="#3B82F6" />
-                    <rect x="200" y="240" width="100" height="60" rx="4" fill="#60A5FA" />
-                    <circle cx="250" cy="180" r="30" fill="#1E40AF" />
-                    <path d="M220 230 C220 230, 250 210, 280 230 L280 300 L220 300 Z" fill="#2563EB" />
-                 </svg>
+        <!-- RIGHT SIDE: ILLUSTRATION -->
+        <div class="hidden lg:flex w-1/2 bg-pastel-sky/10 items-center justify-center relative p-12 overflow-hidden">
+            
+            <!-- Abstract Background Shapes -->
+            <div class="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-neutral-cream to-pastel-sky/20 opacity-50"></div>
+            <div class="absolute top-20 right-20 w-72 h-72 bg-pastel-sky/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+            <div class="absolute bottom-20 left-20 w-72 h-72 bg-pastel-lavender/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pastel-peach/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+
+            <!-- Illustration Container -->
+            <div class="relative w-full max-w-lg z-10 flex flex-col items-center">
+                 <!-- Abstract Minimalist SVG Illustration matching Pastel Theme -->
+                 <div class="w-full aspect-square relative mb-8 transition-transform duration-700 hover:scale-105">
+                     <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-2xl">
+                        <defs>
+                            <linearGradient id="screenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+                                <stop offset="100%" style="stop-color:#f5f3f0;stop-opacity:0.8" />
+                            </linearGradient>
+                        </defs>
+                        
+                        <!-- Background Circle -->
+                        <circle cx="250" cy="250" r="200" class="fill-white/40" />
+                        
+                        <!-- Abstract Device/Screen -->
+                        <rect x="120" y="100" width="260" height="300" rx="24" fill="url(#screenGradient)" class="stroke-white stroke-2" />
+                        
+                        <!-- Inner Screen Content -->
+                        <rect x="140" y="120" width="220" height="260" rx="16" class="fill-pastel-sky/10" />
+                        
+                        <!-- Header Elements -->
+                        <rect x="160" y="150" width="80" height="12" rx="6" class="fill-pastel-sage" />
+                        <circle cx="330" cy="156" r="6" class="fill-pastel-rose" />
+                        
+                        <!-- List Items -->
+                        <g transform="translate(0, 20)">
+                            <rect x="160" y="180" width="180" height="40" rx="10" class="fill-white shadow-sm" />
+                            <circle cx="180" cy="200" r="8" class="fill-pastel-lavender" />
+                            <rect x="200" y="195" width="100" height="6" rx="3" class="fill-neutral-stone" />
+                            <rect x="200" y="205" width="60" height="4" rx="2" class="fill-neutral-stone/60" />
+                        </g>
+
+                        <g transform="translate(0, 70)">
+                            <rect x="160" y="180" width="180" height="40" rx="10" class="fill-white shadow-sm" />
+                            <circle cx="180" cy="200" r="8" class="fill-pastel-peach" />
+                            <rect x="200" y="195" width="100" height="6" rx="3" class="fill-neutral-stone" />
+                            <rect x="200" y="205" width="60" height="4" rx="2" class="fill-neutral-stone/60" />
+                        </g>
+                        
+                        <g transform="translate(0, 120)">
+                            <rect x="160" y="180" width="180" height="40" rx="10" class="fill-white shadow-sm" />
+                            <circle cx="180" cy="200" r="8" class="fill-pastel-sky" />
+                            <rect x="200" y="195" width="100" height="6" rx="3" class="fill-neutral-stone" />
+                            <rect x="200" y="205" width="60" height="4" rx="2" class="fill-neutral-stone/60" />
+                        </g>
+                        
+                        <!-- Floating Checkmark Badge -->
+                        <g transform="translate(340, 260) rotate(-10)">
+                            <circle r="25" class="fill-pastel-sage shadow-lg" />
+                            <path d="M-8 0 L-2 6 L 10 -6" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                        </g>
+                        
+                        <!-- Decorative Elements -->
+                        <circle cx="100" cy="380" r="20" class="fill-pastel-lavender/60 animate-bounce" style="animation-duration: 3s;" />
+                        <rect x="380" y="120" width="20" height="20" rx="4" class="fill-pastel-rose/60 animate-pulse" style="animation-duration: 4s;" />
+                     </svg>
+                 </div>
+                 
+                 <div class="text-center">
+                    <h3 class="text-2xl font-bold text-text-primary mb-2">Absensi Mudah & Cepat</h3>
+                    <p class="text-text-secondary max-w-xs mx-auto leading-relaxed">
+                        Teknologi pengenalan wajah canggih untuk efisiensi kerja yang lebih baik.
+                    </p>
+                 </div>
             </div>
-             <!-- Decorative elements -->
-             <div class="absolute top-10 right-10 w-20 h-20 bg-blue-100 rounded-full blur-xl"></div>
-             <div class="absolute bottom-10 right-20 w-32 h-32 bg-blue-50 rounded-full blur-2xl"></div>
         </div>
         
     </div>
