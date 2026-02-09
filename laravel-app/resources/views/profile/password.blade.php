@@ -1,40 +1,43 @@
-@extends('layouts.app')
+@extends('layouts.absensi')
 
 @section('content')
-<div class="profile-wrapper">
-
-    <div class="profile-header">
-        <h2>Ubah Password</h2>
-        <p>Ubah Password Akun Karyawan</p>
-    </div>
-
-    <div class="profile-section">
-        <form method="POST" action="{{ route('password.update') }}">
+<div class="max-w-2xl mx-auto py-6">
+    <x-pastel-card header="Ubah Password">
+        <div class="mb-4 text-sm text-text-secondary">
+            Pastikan password Anda aman dan tidak mudah ditebak.
+        </div>
+        
+        <form method="POST" action="{{ route('password.update') }}" class="space-y-6">
             @csrf
             @method('PATCH')
 
-            <p>
-                <label>Password Lama</label><br>
-                <input type="password" name="current_password" required>
-                @error('current_password') <small style="color:red">{{ $message }}</small> @enderror
-            </p>
+            <div>
+                <x-input-label for="current_password" value="Password Lama" />
+                <x-text-input id="current_password" name="current_password" type="password" class="mt-1 block w-full" required autofocus />
+                <x-input-error class="mt-2" :messages="$errors->get('current_password')" />
+            </div>
 
-            <p>
-                <label>Password Baru</label><br>
-                <input type="password" name="password" required>
-            </p>
+            <div>
+                <x-input-label for="password" value="Password Baru" />
+                <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" required />
+                <x-input-error class="mt-2" :messages="$errors->get('password')" />
+            </div>
 
-            <p>
-                <label>Konfirmasi Password Baru</label><br>
-                <input type="password" name="password_confirmation" required>
-            </p>
+            <div>
+                <x-input-label for="password_confirmation" value="Konfirmasi Password Baru" />
+                <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" required />
+                <x-input-error class="mt-2" :messages="$errors->get('password_confirmation')" />
+            </div>
 
-            <div class="profile-footer">
-                <button type="submit" class="btn-primary">🔒 Ubah Password</button>
-                <a href="{{ route('profile.edit') }}" class="btn-secondary">✖ Batal</a>
+            <div class="flex items-center justify-end gap-4 mt-6 pt-4 border-t border-neutral-stone/30">
+                <a href="{{ route('profile.edit') }}" class="text-sm text-text-secondary hover:text-text-primary underline">
+                    Batal
+                </a>
+                <x-primary-button>
+                    {{ __('Simpan Password') }}
+                </x-primary-button>
             </div>
         </form>
-    </div>
-
+    </x-pastel-card>
 </div>
 @endsection
