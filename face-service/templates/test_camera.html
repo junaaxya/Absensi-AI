@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Face Capture</title>
+  
+
+  <style>
+  #camera-wrapper {
+    position: relative;
+    width: 480px;
+    height: 360px;
+  }
+
+  #video, #canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 480px;
+    height: 360px;
+  }
+
+  #video {
+    z-index: 1;
+    border: 1px solid #333;
+  }
+
+  #canvas {
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* =========================
+       PANEL HASIL ABSENSI
+    ========================= */
+
+    .result-panel {
+      display: none;
+      margin-top: 20px;
+      padding: 16px 18px;
+      border: 2px solid #333;
+      background: #f9f9f9;
+      width: 480px;
+      border-radius: 6px;
+    }
+
+    .result-panel h3 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 18px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 6px;
+    }
+
+    .rp-row {
+      margin-bottom: 8px;
+      font-size: 14.5px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      background: #ececec;
+    }
+
+    .rp-row.success {
+      background: #d4edda;
+      color: #1e7e34;
+      font-weight: 600;
+    }
+
+    .rp-row.warning {
+      background: #fff3cd;
+      color: #856404;
+      font-weight: 600;
+    }
+
+    .rp-row.error {
+      background: #f8d7da;
+      color: #721c24;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+</style>
+</head>
+<body>
+
+<h2>Test Kamera → Layanan Wajah Flask</h2>
+
+<p id="mode"></p>
+
+<div id="camera-wrapper">
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" width="480" height="360"></canvas>
+</div>
+
+<!-- =========================
+     PANEL HASIL ABSENSI
+========================= -->
+<div id="resultPanel" class="result-panel">
+  <h3>Hasil Absensi</h3>
+
+  <div class="rp-row success" id="rp-status"></div>
+  <div class="rp-row" id="rp-name"></div>
+  <div class="rp-row" id="rp-date"></div>
+  <div class="rp-row" id="rp-location"></div>
+  <div class="rp-row" id="rp-type"></div>
+  <div class="rp-row" id="rp-workstatus"></div>
+  <div class="rp-row success" id="rp-save"></div>
+</div>
+
+<br>
+<button onclick="startAttendance()">Mulai Absensi</button>
+
+<p id="status"></p>
+
+<script>
+/* ==========================
+   MODE DARI URL (?type=masuk | pulang)
+========================== */
+const urlParams = new URLSearchParams(window.location.search);
+const ATTENDANCE_TYPE = urlParams.get("type") || "masuk";
+
+/* ==========================
+   MODE DEMO GPS
+========================== */
+const DEMO_MODE = true;
+
+/* ==========================
+   KONFIGURASI LOKASI KANTOR
+========================== */
+const OFFICE_LAT = -2.131944;
+const OFFICE_LNG = 106.113889;
+const OFFICE_RADIUS = 100;
+
+/* ==========================
+   ELEMENTS & STATE
+========================== */
+let video = document.getElementById("video");
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
+
+let statusText = document.getElementById("status");
+let modeText   = document.getElementById("mode");
+
+let stream = null;
+let LOCATION_STATUS = "Di luar kantor";
+
+/* ==========================
+   HELPER FORMAT STATUS
+========================== */
+function formatStatusLabel(status) {
+  if (status === "tepat_waktu") return "Tepat Waktu";
+  if (status === "terlambat")   return "Terlambat";
+  if (status === "lembur")      return "Lembur";
+  return status;
+}
+
+/* ==========================
+   SHOW MODE
+========================== */
+modeText.innerText =
+  "🕒 Mode Absensi: " +
+  (ATTENDANCE_TYPE === "pulang" ? "Absen Keluar" : "Absen Masuk");
+
+modeText.style.color = ATTENDANCE_TYPE === "pulang" ? "blue" : "green";
+
+if (DEMO_MODE) {
+  modeText.innerText += " | 🧪 DEMO MODE (GPS dilewati)";
+  modeText.style.color = "orange";
+}
+
+/* ==========================
+   MAIN BUTTON
+========================== */
+async function startAttendance() {
+  statusText.innerText = "📍 Mengecek lokasi kamu...";
+
+  if (DEMO_MODE) {
+    LOCATION_STATUS = "Di area kantor (DEMO)";
+    statusText.innerText = "🧪 DEMO MODE: GPS dilewati";
+    openCamera();
+    return;
+  }
+
+  if (!navigator.geolocation) {
+    statusText.innerText = "❌ Browser tidak mendukung GPS";
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const userLat = position.coords.latitude;
+      const userLng = position.coords.longitude;
+
+      const distance = getDistanceMeters(
+        userLat, userLng,
+        OFFICE_LAT, OFFICE_LNG
+      );
+
+      if (distance <= OFFICE_RADIUS) {
+        LOCATION_STATUS = "Di area kantor";
+        openCamera();
+      } else {
+        LOCATION_STATUS = "Di luar kantor";
+        statusText.innerText =
+          "❌ Kamu di luar area kantor (" +
+          Math.round(distance) + " m)";
+      }
+    },
+    () => {
+      statusText.innerText = "❌ Gagal mengambil lokasi GPS";
+    }
+  );
+}
+
+/* ==========================
+   OPEN CAMERA
+========================== */
+async function openCamera() {
+  statusText.innerText = "📷 Membuka kamera...";
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 480, height: 360 }
+    });
+
+    video.srcObject = stream;
+
+    video.onloadedmetadata = () => {
+      video.play();
+      setTimeout(captureAndSend, 1500);
+    };
+
+  } catch (err) {
+    statusText.innerText = "❌ Gagal membuka kamera";
+    console.error(err);
+  }
+}
+
+/* ==========================
+   CAPTURE FRAME
+========================== */
+function captureAndSend() {
+  statusText.innerText = "📸 Mengambil gambar...";
+
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  canvas.toBlob(sendToServer, "image/jpeg");
+}
+
+/* ==========================
+   SEND TO FLASK + LARAVEL
+========================== */
+async function sendToServer(blob) {
+  statusText.innerText = "⬆️ Mengirim ke server wajah...";
+
+  let formData = new FormData();
+  formData.append("frame", blob, "frame.jpg");
+
+  try {
+    // 1️⃣ Flask
+    let response = await fetch("/recognize_frame", {
+      method: "POST",
+      body: formData
+    });
+
+    let data = await response.json();
+    drawBoundingBox(data.bbox, data.name);
+
+    if (data.status !== "accepted") {
+      statusText.innerText = "❌ Wajah tidak dikenali";
+      stopCamera();
+      return;
+    }
+
+    statusText.innerText = "✅ Wajah dikenali, menyimpan absensi...";
+
+    // 2️⃣ Laravel
+    let laravelResponse = await fetch(
+      window.location.origin + "/api/attendance/auto",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          score: data.score,
+          type: ATTENDANCE_TYPE
+        })
+      }
+    );
+
+    // 🔎 DEBUG: cek status HTTP dulu
+console.log("📡 Laravel HTTP status:", laravelResponse.status);
+
+let text = await laravelResponse.text();   // ⬅️ ambil RAW dulu
+console.log("📦 Laravel raw response:", text);
+
+// baru parse JSON kalau memang JSON
+let res;
+try {
+  res = JSON.parse(text);
+} catch (e) {
+  throw new Error("Laravel tidak mengembalikan JSON");
+}
+
+    console.log("📤 Laravel response:", res);
+
+    // 3️⃣ Tampilkan panel hasil
+    const panel = document.getElementById("resultPanel");
+panel.style.display = "block";
+
+// baris 1 — status wajah
+const rpStatus = document.getElementById("rp-status");
+rpStatus.className = "rp-row success";
+rpStatus.innerText = "✅ Wajah dikenali";
+
+// baris 2 — nama
+document.getElementById("rp-name").innerText =
+  "👤 Nama        : " + res.data.user_name;
+
+// baris 3 — tanggal
+document.getElementById("rp-date").innerText =
+  "📅 Tanggal     : " + res.data.tanggal;
+
+// baris 4 — lokasi
+document.getElementById("rp-location").innerText =
+  "📍 Lokasi      : " + LOCATION_STATUS;
+
+// baris 5 — jenis
+document.getElementById("rp-type").innerText =
+  "🕒 Jenis       : " +
+  (ATTENDANCE_TYPE === "masuk" ? "Absen Masuk" : "Absen Keluar");
+
+// baris 6 — status kerja
+const rpWork = document.getElementById("rp-workstatus");
+rpWork.innerText =
+  "📌 Status      : " + formatStatusLabel(res.data.status_label);
+
+rpWork.className =
+  "rp-row " +
+  (res.data.status_label === "terlambat" ? "warning" :
+   res.data.status_label === "lembur"    ? "warning" :
+                                           "success");
+
+// baris 7 — simpan
+const rpSave = document.getElementById("rp-save");
+rpSave.className = "rp-row success";
+rpSave.innerText = "💾 Simpan      : Berhasil";
+
+
+    stopCamera();
+
+    // 4️⃣ Redirect ke dashboard
+    setTimeout(() => {
+      window.location.href = window.location.origin + "/dashboard";
+    }, 2500);
+
+  } catch (err) {
+    statusText.innerText = "❌ Gagal kirim ke server";
+    console.error(err);
+    stopCamera();
+  }
+}
+
+/* ==========================
+   STOP CAMERA
+========================== */
+function stopCamera() {
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    video.srcObject = null;
+    stream = null;
+  }
+}
+
+/* ==========================
+   DRAW BOUNDING BOX
+========================== */
+function drawBoundingBox(bbox, name) {
+  if (!bbox || bbox.length !== 4) return;
+
+  const [x1, y1, x2, y2] = bbox;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const scaleX = canvas.width / video.videoWidth;
+  const scaleY = canvas.height / video.videoHeight;
+
+  const rx1 = x1 * scaleX;
+  const ry1 = y1 * scaleY;
+  const rw  = (x2 - x1) * scaleX;
+  const rh  = (y2 - y1) * scaleY;
+
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "lime";
+  ctx.strokeRect(rx1, ry1, rw, rh);
+
+  ctx.fillStyle = "lime";
+  ctx.font = "18px Arial";
+  ctx.fillText(name, rx1, ry1 - 8);
+}
+
+/* ==========================
+   HAVERSINE DISTANCE
+========================== */
+function getDistanceMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const toRad = deg => deg * Math.PI / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) *
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) ** 2;
+
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+</script>
+
+</body>
+</html>

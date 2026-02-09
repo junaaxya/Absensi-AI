@@ -1,0 +1,7 @@
+# .dockerignore untuk Flask
+.venv
+__pycache__
+*.pyc
+.git
+dataset
+*.pt.1

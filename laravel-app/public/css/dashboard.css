@@ -1,0 +1,623 @@
+/* ======================================================
+   GLOBAL
+====================================================== */
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+}
+
+.container {
+    padding: 20px;
+}
+
+/* ======================================================
+   TOPBAR
+====================================================== */
+
+.topbar {
+    background: #ffffff;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+/* ======================================================
+   CARD (BASE)
+====================================================== */
+
+.card {
+    background: #ffffff;
+    border: 1px solid #ccc;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* ======================================================
+   HEADER CARD
+====================================================== */
+
+.header-card {
+    border: 1px solid #ccc;
+    padding: 20px;
+    background: #ffffff;
+}
+
+.header-card h1 {
+    margin-bottom: 6px;
+}
+
+.header-card p {
+    margin-top: 0;
+    font-size: 14px;
+    color: #555;
+}
+
+/* ======================================================
+   GRID LAYOUT
+====================================================== */
+
+.grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+/* ======================================================
+   JAM KERJA
+====================================================== */
+
+.jam-wrapper {
+    margin-bottom: 24px;
+}
+
+.jam-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.jam-card {
+    flex: 1;
+    min-height: 120px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.jam-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.jam-time {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* ======================================================
+   TIMELINE
+====================================================== */
+
+.timeline {
+    position: relative;
+    margin-top: 20px;
+}
+
+.timeline::before {
+    content: "";
+    position: absolute;
+    left: 20px;
+    top: 7px;
+    bottom: 0;
+    width: 2px;
+    background: #bdbdbd;
+}
+
+.timeline-row {
+    display: flex;
+    margin-bottom: 30px;
+}
+
+.timeline-left {
+    width: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.timeline-left .dot {
+    width: 14px;
+    height: 14px;
+    background: #d9d9d9;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.timeline-row.done .dot {
+    background: #2ecc71;
+}
+
+.timeline-right {
+    flex: 1;
+    padding-left: 10px;
+}
+
+.title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.status-box {
+    min-width: 260px;
+    padding: 12px 16px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.status-box.warning {
+    background: #dcdcdc;
+}
+
+.status-box.success {
+    background: #c8f0d2;
+    color: #1e7e34;
+}
+
+/* ======================================================
+   ACTION (ABSENSI & PENGAJUAN)
+====================================================== */
+
+.action-wrapper {
+    padding: 20px;
+}
+
+.action-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.action-row-full {
+    display: flex;
+}
+
+.action-box {
+    flex: 1;
+    padding: 16px;
+    border: 1px solid #777;
+    background: #f3f3f3;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.action-box:hover {
+    background: #eaeaea;
+}
+
+/* ======================================================
+   TABLE
+====================================================== */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th,
+table td {
+    border: 1px solid #333;
+    padding: 8px;
+}
+
+.empty {
+    text-align: center;
+}
+
+/* ======================================================
+   FORM & BUTTON
+====================================================== */
+
+.kegiatan textarea {
+    width: 100%;
+    height: 80px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    cursor: pointer;
+}
+
+/* ======================================================
+   LOGO & USER INFO
+====================================================== */
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo-img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
+
+.logo-text {
+    margin-left: 8px;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.2;
+}
+
+.user-name {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.profile-link {
+    font-size: 13px;
+    color: #0d6efd;
+    text-decoration: none;
+}
+
+.profile-link:hover {
+    text-decoration: underline;
+}
+
+/* ======================================================
+   FILTER RIWAYAT ABSENSI (CALENDAR)
+====================================================== */
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.filter-date {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-date input[type="date"] {
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.filter-date button {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    background: #f3f3f3;
+    cursor: pointer;
+}
+
+.filter-date button:hover {
+    background: #eaeaea;
+}
+
+/* ======================================================
+   MODAL PENGAJUAN KETIDAKHADIRAN
+====================================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-box {
+    background: #e6e6e6;
+    border: 1px solid #333;
+    width: 560px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.modal-box.large {
+    width: 600px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #333;
+    background: #ddd;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.modal-close {
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.modal-body {
+    padding: 16px;
+}
+
+.modal-field {
+    margin-bottom: 14px;
+}
+
+.modal-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.modal-field input,
+.modal-field select,
+.modal-field textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #999;
+    background: #fff;
+}
+
+.modal-row {
+    display: flex;
+    gap: 12px;
+}
+
+.upload-box {
+    border: 2px dashed #999;
+    padding: 16px;
+    text-align: center;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: #666;
+    margin-top: 6px;
+}
+
+.upload-note {
+    font-size: 12px;
+    color: #444;
+    margin-top: 6px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.modal-actions.center {
+    justify-content: center;
+}
+
+/* ================================
+   MODAL DATE ROW (TANGGAL MULAI - SELESAI)
+================================ */
+
+.modal-date-row .modal-field {
+    flex: 3;               /* lebar seimbang kiri-kanan */
+}
+
+.modal-date-row input[type="date"] {
+    width: 100%;
+}
+
+.modal-date-row {
+    margin-bottom: 5px;
+}
+
+/* ================================
+   FIX LEBAR INPUT TANGGAL MODAL IZIN
+================================ */
+
+.modal-date-row {
+    display: flex;
+    gap: 50px;
+}
+
+.modal-date-row .modal-field {
+    flex: 1;
+    max-width: 44%;
+}
+
+/* ================================
+   FIX LEBAR KOLOM ALASAN MODAL IZIN
+================================ */
+
+.modal-box .modal-field {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-box .modal-field textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* ================================
+   FIX UPLOAD DOKUMEN MODAL IZIN
+================================ */
+
+.modal-field .upload-box {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-field input[type="file"] {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-field .upload-box {
+    padding: 12px;
+}
+
+/* =========================================
+   FIX LAYOUT TOMBOL ABSENSI (FORM + BUTTON)
+========================================= */
+
+/* bikin form ikut lebar kolom */
+.action-row form {
+  flex: 1;                 /* 🔥 bagi rata kiri–kanan */
+  display: flex;
+}
+
+/* pastikan tombol isi penuh form */
+.action-row form .action-box {
+  width: 100%;
+}
+
+/* hilangkan gap aneh default */
+.action-row {
+  gap: 16px;               /* sesuaikan dengan UI lamamu */
+}
+
+.action-box {
+  height: 48px;            /* atau sesuai UI lamamu */
+  display: flex;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ================= RIWAYAT ABSENSI TABLE ================= */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th,
+table td {
+    border: 1px solid #ccc;
+    padding: 10px 8px;
+    text-align: center !important;
+    vertical-align: middle !important;
+    font-size: 14px;
+}
+
+/* isi kolom jam masuk ke tengah */
+table td div {
+    text-align: center;
+}
+
+/* badge kecil TERLAMBAT */
+.badge-terlambat {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 3px 10px;
+    font-size: 11px;
+    border-radius: 12px;
+    background-color: #dc3545; /* merah */
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* badge status HADIR / BELUM HADIR / TIDAK HADIR */
+.badge-hadir {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.badge-hadir.success {
+    background-color: #198754;
+    color: #ffffff;
+}
+
+.badge-hadir.secondary {
+    background-color: #adb5bd;
+    color: #212529;
+}
+
+.badge-hadir.danger {
+    background-color: #dc3545;
+    color: #ffffff;
+}
+
+.badge-lembur {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 12px;
+    background-color: #facc15;  /* kuning */
+    color: #1f2933;             /* teks gelap */
+    line-height: 1;
+}
+/* Badge default (ikon -) */
+.badge {
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 6px;
+    background: #e0e0e0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Badge khusus jam (22:13, 08:01, dst) */
+.badge-time {
+    min-width: 48px;        /* cukup untuk HH:MM */
+    padding: 0 10px;
+    font-size: 13px;
+}
+

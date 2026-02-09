@@ -1,0 +1,90 @@
+services:
+  # ================================
+  # MySQL Database
+  # ================================
+  mysql:
+    image: mysql:8.0
+    container_name: absensi_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: absensi_face
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - absensi_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-psecret"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ================================
+  # Laravel Application
+  # ================================
+  laravel:
+    build:
+      context: ./laravel-app
+      dockerfile: Dockerfile
+    container_name: absensi_laravel
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    environment:
+      - APP_NAME=AbsensiFace
+      - APP_ENV=local
+      - APP_KEY=base64:Gzdeo3A9nJu2lEsfCdKVdPimce2gBzt19GxfOQhg/aY=
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=absensi_face
+      - DB_USERNAME=laravel
+      - DB_PASSWORD=secret
+      - FLASK_SERVICE_URL=http://face-service:5000
+      - SESSION_DRIVER=file
+      - CACHE_STORE=file
+      - QUEUE_CONNECTION=sync
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - absensi_network
+
+  # ================================
+  # Flask Face Recognition Service
+  # ================================
+  face-service:
+    build:
+      context: ./face-service
+      dockerfile: Dockerfile
+    container_name: absensi_face_service
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./face-service/embeddings:/app/embeddings
+      - ./face-service/yolov8n.pt:/app/yolov8n.pt
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - absensi_network
+
+# ================================
+# Networks
+# ================================
+networks:
+  absensi_network:
+    driver: bridge
+
+# ================================
+# Volumes
+# ================================
+volumes:
+  mysql_data:

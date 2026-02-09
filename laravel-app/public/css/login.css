@@ -1,0 +1,162 @@
+* {
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #f5f5f5;
+    overflow: hidden; /* agar lingkaran tidak bikin scroll */
+}
+
+/* =======================
+   BACKGROUND CIRCLES
+   (DI LUAR LOGIN BOX)
+======================= */
+.background-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: #d9d9d9;
+}
+
+.bg-circle-4 {
+    width: 360px;
+    height: 360px;
+    position: absolute; 
+    bottom: -100px;
+    left: 980px;
+}
+
+/* Lingkaran besar kiri atas */
+.bg-circle-1 {
+    width: 360px;
+    height: 360px;
+    top: -150px;
+    left: -50px;
+}
+
+/* Lingkaran kecil kanan atas */
+.bg-circle-2 {
+    width: 75px;
+    height: 75px;
+    top: 80px;
+    right: 250px;
+}
+
+/* Lingkaran bawah */
+.bg-circle-3 {
+    width: 75px;
+    height: 75px;
+    bottom: 75px;
+    left: 350px;
+}
+
+/* =======================
+   CONTAINER
+======================= */
+.container {
+    position: fixed;        /* ⬅️ KUNCI POSISI */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    z-index: 1;
+    padding-left: 20px;     /* kalau mau geser ke kanan */
+}
+
+/* =======================
+   LOGIN BOX
+======================= */
+.login-box {
+    display: flex;
+    background: #e5e5e5;
+    border-radius: 30px;
+    width: 900px;
+    padding: 50px;
+
+    border: 2px solid #000;       /* GARIS */
+    box-sizing: border-box;       /* PASTI TIDAK GESER */
+}
+
+/* =======================
+   LEFT SIDE
+======================= */
+.login-left {
+    width: 50%;
+    padding-right: 30px;
+    padding-top: 10px;
+}
+
+.login-left h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.login-left p {
+    font-size: 14px;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.login-left label {
+    display: block;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.login-left input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* =======================
+   BUTTON
+======================= */
+button {
+    margin-top: 25px;
+    padding: 10px;
+    width: 120px;
+    border-radius: 10px;
+    border: none;
+    background: #dcdcdc;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background: #cfcfcf;
+}
+
+/* =======================
+   RIGHT SIDE
+======================= */
+.login-right {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-right img {
+    width: 90%;
+    max-width: 360px;
+}
+
+/* =======================
+   ERROR MESSAGE
+======================= */
+.error {
+    margin-top: 10px;
+    color: red;
+    font-size: 13px;
+}

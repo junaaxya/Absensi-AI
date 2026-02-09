@@ -1,0 +1,11 @@
+# .dockerignore untuk Laravel
+node_modules
+public/build
+vendor
+.git
+.env
+*.log
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
