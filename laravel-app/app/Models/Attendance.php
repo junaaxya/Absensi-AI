@@ -18,6 +18,13 @@ class Attendance extends Model
         'jam_keluar',
         'kegiatan',
         'status',
+        'lat_in',
+        'long_in',
+        'lat_out',
+        'long_out',
+        'similarity_score_in',
+        'similarity_score_out',
+        'device_info',
     ];
 
     protected $casts = [
