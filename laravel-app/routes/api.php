@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request; // Added for the /user route
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\SystemSettingController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -13,3 +14,6 @@ Route::post('/face/register', [\App\Http\Controllers\Api\FaceRegistrationControl
     ->middleware('web'); // Enable session & CSRF for this specific internal API call if not using Sanctum
 
 Route::post('/attendance/auto', [AttendanceController::class, 'autoAttendance']);
+
+// Admin Settings Route
+Route::put('/admin/settings', [SystemSettingController::class, 'update']);

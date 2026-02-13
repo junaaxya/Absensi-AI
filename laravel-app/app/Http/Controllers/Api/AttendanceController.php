@@ -6,18 +6,76 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Attendance;
+use App\Models\SystemSetting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
+    /**
+     * Calculate distance between two coordinates using Haversine formula.
+     *
+     * @param float $lat1
+     * @param float $lon1
+     * @param float $lat2
+     * @param float $lon2
+     * @return float Distance in kilometers
+     */
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        $earthRadius = 6371; // Radius of the earth in kilometers
+
+        $latDelta = deg2rad($lat2 - $lat1);
+        $lonDelta = deg2rad($lon2 - $lon1);
+
+        $a = sin($latDelta / 2) * sin($latDelta / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($lonDelta / 2) * sin($lonDelta / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
+    }
+
     public function autoAttendance(Request $request)
     {
         $request->validate([
             'name'  => 'required|string',
             'score' => 'required|numeric',
             'type'  => 'required|in:masuk,pulang',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
         ]);
+
+        // =========================
+        // GEOFENCING VALIDATION
+        // =========================
+        $settings = SystemSetting::first();
+
+        if (!$settings) {
+            return response()->json([
+                'success' => false,
+                'message' => 'System settings not configured'
+            ], 500);
+        }
+
+        $distance = $this->calculateDistance(
+            $request->latitude,
+            $request->longitude,
+            $settings->office_latitude,
+            $settings->office_longitude
+        );
+
+        if ($distance > $settings->office_radius) {
+            return response()->json([
+                'success' => false,
+                'message' => sprintf(
+                    'Out of office range. Distance: %.2f km, Max: %.2f km',
+                    $distance,
+                    $settings->office_radius
+                )
+            ], 422);
+        }
 
         // =========================
         // NORMALISASI NAMA
@@ -76,6 +134,9 @@ class AttendanceController extends Controller
                     'jam_masuk' => $jamMasuk,
                     'status'    => $statusMasuk, // ⬅️ STATUS MASUK DIKUNCI DI SINI
                     'kegiatan'  => null,         // reset aman
+                    'lat_in'    => $request->latitude,
+                    'long_in'   => $request->longitude,
+                    'similarity_score_in' => $request->score,
                 ]
             );
 
@@ -85,6 +146,8 @@ class AttendanceController extends Controller
                 'tanggal'     => $today,
                 'jam_masuk'   => $jamMasuk,
                 'statusMasuk' => $statusMasuk,
+                'latitude'    => $request->latitude,
+                'longitude'   => $request->longitude,
             ]);
 
             return response()->json([
@@ -96,6 +159,8 @@ class AttendanceController extends Controller
                     'jam_masuk'    => $attendance->jam_masuk,
                     'status_masuk' => $attendance->status,
                     'jam_keluar'   => $attendance->jam_keluar,
+                    'lat_in'       => $attendance->lat_in,
+                    'long_in'      => $attendance->long_in,
                 ]
             ]);
         }
@@ -126,6 +191,9 @@ class AttendanceController extends Controller
         // ⛔ JANGAN PERNAH sentuh kolom status di sini
         $attendance->update([
             'jam_keluar' => $jamKeluar,
+            'lat_out'    => $request->latitude,
+            'long_out'   => $request->longitude,
+            'similarity_score_out' => $request->score,
 
             // ⬅️ SIMPAN STATUS PULANG & HADIR DI kegiatan
             'kegiatan'   => $isLembur ? 'hadir_lembur' : 'hadir',
@@ -137,6 +205,8 @@ class AttendanceController extends Controller
             'tanggal'    => $today,
             'jam_keluar' => $jamKeluar,
             'kegiatan'   => $attendance->kegiatan,
+            'latitude'   => $request->latitude,
+            'longitude'  => $request->longitude,
         ]);
 
         return response()->json([
@@ -151,6 +221,8 @@ class AttendanceController extends Controller
                 'status_pulang' => $isLembur ? 'lembur' : 'tepat_waktu',
                 'status_hadir'  => 'hadir',
                 'kegiatan'      => $attendance->kegiatan,      // hadir / hadir_lembur
+                'lat_out'       => $attendance->lat_out,
+                'long_out'      => $attendance->long_out,
             ]
         ]);
     }
