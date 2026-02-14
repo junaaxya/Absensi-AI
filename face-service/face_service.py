@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, render_template
 import cv2
 import numpy as np
 import os
+import time
 from ultralytics import YOLO
 from insightface.app import FaceAnalysis
 
@@ -284,6 +285,79 @@ def recognize_frame():
     })
 
 
+
+# =========================
+# ROUTE: REGISTER NEW USER (Single Photo)
+# =========================
+@app.route('/register', methods=['POST'])
+def register():
+    """Register a new user with a single photo during Laravel registration."""
+    try:
+        name = request.form.get('name')
+        if not name:
+            return jsonify({'status': 'error', 'message': 'Name is required'}), 400
+        
+        if 'file' not in request.files:
+            return jsonify({'status': 'error', 'message': 'Photo file is required'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'status': 'error', 'message': 'No file selected'}), 400
+        
+        print(f"📥 Registering new user: {name}")
+        
+        # Convert file to numpy array for processing
+        file_bytes = file.read()
+        nparr = np.frombuffer(file_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if img is None:
+            return jsonify({'status': 'error', 'message': 'Failed to decode image'}), 400
+        
+        # Detect face and generate embedding
+        faces = face_app.get(img)
+        if len(faces) == 0:
+            return jsonify({'status': 'error', 'message': 'No face detected in the photo'}), 400
+        
+        # Get the face with highest detection score
+        face = sorted(faces, key=lambda x: x.det_score, reverse=True)[0]
+        embedding = face.embedding
+        
+        # Normalize embedding
+        norm_embedding = embedding / np.linalg.norm(embedding)
+        
+        # Create dataset directory for user
+        user_dataset_dir = os.path.join(BASE_DIR, "dataset", name)
+        os.makedirs(user_dataset_dir, exist_ok=True)
+        
+        # Save the image to dataset folder
+        timestamp = str(int(time.time()))
+        image_filename = f"{name}_{timestamp}.jpg"
+        image_path = os.path.join(user_dataset_dir, image_filename)
+        cv2.imwrite(image_path, img)
+        print(f"💾 Saved image to: {image_path}")
+        
+        # Save embedding to embeddings folder
+        embedding_path = os.path.join(EMBEDDING_DIR, f"{name}.npy")
+        np.save(embedding_path, norm_embedding)
+        print(f"💾 Saved embedding to: {embedding_path}")
+        
+        # Update runtime memory immediately
+        global embeddings
+        embeddings[name] = norm_embedding
+        print(f"✅ Registered user '{name}' with face embedding. Total users: {len(embeddings)}")
+        
+        return jsonify({
+            'status': 'success',
+            'message': f'User {name} registered successfully with face data',
+            'user': name,
+            'image_saved': image_path,
+            'embedding_saved': embedding_path
+        })
+        
+    except Exception as e:
+        print(f"❌ Error during registration: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 # =========================
 # DEBUG: SHOW ROUTES
