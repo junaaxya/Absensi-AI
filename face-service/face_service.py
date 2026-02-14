@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, render_template
 import cv2
 import numpy as np
 import os
+import time
 from ultralytics import YOLO
 from insightface.app import FaceAnalysis
 
@@ -32,33 +33,171 @@ face_app.prepare(ctx_id=0)
 # =========================
 # LOAD EMBEDDINGS
 # =========================
-# =========================
-# LOAD EMBEDDINGS
-# =========================
 embeddings = {}
+
+def generate_embedding_from_image(image_path):
+    """Generate face embedding from a single image file."""
+    try:
+        img = cv2.imread(image_path)
+        if img is None:
+            print(f"  ⚠️ Failed to load image: {image_path}")
+            return None
+        
+        faces = face_app.get(img)
+        if len(faces) == 0:
+            print(f"  ⚠️ No face detected in: {image_path}")
+            return None
+        
+        # Get the face with highest detection score
+        face = sorted(faces, key=lambda x: x.det_score, reverse=True)[0]
+        return face.embedding
+    except Exception as e:
+        print(f"  ⚠️ Error processing {image_path}: {e}")
+        return None
+
+def scan_and_generate_embeddings():
+    """Scan dataset directory and generate embeddings for all users."""
+    global embeddings
+    
+    # Use absolute path and print it for debugging
+    dataset_dir = os.path.join(BASE_DIR, "dataset")
+    abs_dataset_path = os.path.abspath(dataset_dir)
+    
+    print(f"[DEBUG] ============================================")
+    print(f"[DEBUG] Starting scan_and_generate_embeddings()")
+    print(f"[DEBUG] Absolute Dataset Path: {abs_dataset_path}")
+    print(f"[DEBUG] Scanning directory: {dataset_dir}")
+    print(f"[DEBUG] BASE_DIR: {BASE_DIR}")
+    print(f"[DEBUG] Current working directory: {os.getcwd()}")
+    print(f"[DEBUG] ============================================")
+    
+    if not os.path.exists(dataset_dir):
+        print(f"[ERROR] Dataset directory not found: {dataset_dir}")
+        print(f"[ERROR] Full path checked: {abs_dataset_path}")
+        return
+    
+    if not os.path.isdir(dataset_dir):
+        print(f"[ERROR] Dataset path exists but is not a directory: {dataset_dir}")
+        return
+    
+    # List subdirectories
+    try:
+        subdirs = os.listdir(dataset_dir)
+        print(f"[DEBUG] Found subdirs/files in dataset: {subdirs}")
+    except OSError as e:
+        print(f"[ERROR] Could not list dataset directory: {e}")
+        return
+        
+    if not subdirs:
+        print(f"[WARNING] Dataset directory is empty! No user folders found.")
+        print(f"[WARNING] Expected structure: {dataset_dir}/<username>/<images>")
+        return
+
+    # Supported image extensions
+    image_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.webp')
+    
+    print(f"[DEBUG] Starting to process {len(subdirs)} items in dataset...")
+    
+    for username in subdirs:
+        user_dir = os.path.join(dataset_dir, username)
+        
+        # Skip if not a directory
+        if not os.path.isdir(user_dir):
+            print(f"[DEBUG] Skipping non-directory: {username}")
+            continue
+        
+        print(f"[DEBUG] Processing folder: {username}")
+        print(f"[DEBUG] User directory path: {user_dir}")
+        
+        # Collect all embeddings for this user
+        user_embeddings = []
+        
+        for filename in os.listdir(user_dir):
+            if filename.lower().endswith(image_extensions):
+                image_path = os.path.join(user_dir, filename)
+                print(f"[DEBUG] Found image: {image_path}")
+                print(f"  📷 Processing: {filename}")
+                
+                embedding = generate_embedding_from_image(image_path)
+                if embedding is not None:
+                    user_embeddings.append(embedding)
+            else:
+                print(f"[DEBUG] Skipping non-image file: {filename}")
+        
+        if user_embeddings:
+            # Calculate average embedding
+            avg_embedding = np.mean(user_embeddings, axis=0)
+            # Normalize
+            norm_embedding = avg_embedding / np.linalg.norm(avg_embedding)
+            
+            # Save to file
+            save_path = os.path.join(EMBEDDING_DIR, f"{username}.npy")
+            np.save(save_path, norm_embedding)
+            print(f"  ✅ Saved embedding: {save_path} (used {len(user_embeddings)} images)")
+            
+            # Add to memory
+            embeddings[username] = norm_embedding
+        else:
+            print(f"  ⚠️ No valid embeddings generated for {username}")
 
 def load_embeddings():
     global embeddings
     print("[INFO] Loading embeddings...")
     embeddings = {}
     
+    # Ensure embedding directory exists
     if not os.path.exists(EMBEDDING_DIR):
+        print(f"[DEBUG] Creating embedding directory: {EMBEDDING_DIR}")
         os.makedirs(EMBEDDING_DIR)
 
-    for file in os.listdir(EMBEDDING_DIR):
-        if file.endswith(".npy"):
-            name = os.path.splitext(file)[0]
-            path = os.path.join(EMBEDDING_DIR, file)
-            emb = np.load(path)
+    # Load existing embeddings first with error handling
+    try:
+        embedding_files = os.listdir(EMBEDDING_DIR)
+        print(f"[DEBUG] Found {len(embedding_files)} files in embedding dir: {embedding_files}")
+        
+        for file in embedding_files:
+            if file.endswith(".npy"):
+                name = os.path.splitext(file)[0]
+                path = os.path.join(EMBEDDING_DIR, file)
+                try:
+                    emb = np.load(path)
 
-            # ⚠️ NORMALISASI: kalau (N,512) → jadi (512,)
-            if emb.ndim == 2:
-                print(f"🛠️ Fix embedding shape for {name}: {emb.shape} → mean")
-                emb = emb.mean(axis=0)
+                    # ⚠️ NORMALISASI: kalau (N,512) → jadi (512,)
+                    if emb.ndim == 2:
+                        print(f"🛠️ Fix embedding shape for {name}: {emb.shape} → mean")
+                        emb = emb.mean(axis=0)
 
-            embeddings[name] = emb
+                    embeddings[name] = emb
+                    print(f"[DEBUG] Loaded embedding for: {name}")
+                except Exception as e:
+                    print(f"[ERROR] Failed to load embedding {file}: {e}")
+    except OSError as e:
+        print(f"[ERROR] Could not list embedding directory {EMBEDDING_DIR}: {e}")
 
-    print("[INFO] Embeddings loaded:", list(embeddings.keys()))
+    print(f"[INFO] Embeddings loaded from cache: {list(embeddings.keys())}")
+    
+    # CRITICAL FALLBACK: Scan dataset if no embeddings loaded
+    if not embeddings:
+        print("[INFO] No embeddings found in cache. Scanning dataset...")
+        scan_and_generate_embeddings()
+        print(f"[INFO] Embeddings loaded after scan: {list(embeddings.keys())}")
+    else:
+        # Also check if dataset has more users than cache
+        dataset_dir = os.path.join(BASE_DIR, "dataset")
+        print(f"[DEBUG] Checking dataset for new users at: {dataset_dir}")
+        
+        if os.path.exists(dataset_dir):
+            try:
+                dataset_users = [d for d in os.listdir(dataset_dir) if os.path.isdir(os.path.join(dataset_dir, d))]
+                print(f"[DEBUG] Dataset has {len(dataset_users)} users: {dataset_users}")
+                print(f"[DEBUG] Cache has {len(embeddings)} users: {list(embeddings.keys())}")
+                
+                if len(dataset_users) > len(embeddings):
+                     print(f"[INFO] Detected potential new users in dataset ({len(dataset_users)} users) vs cache ({len(embeddings)}). Scanning...")
+                     scan_and_generate_embeddings()
+                     print(f"[INFO] Embeddings loaded after rescan: {list(embeddings.keys())}")
+            except OSError as e:
+                print(f"[ERROR] Could not check dataset directory: {e}")
 
 # Initial load
 load_embeddings()
@@ -146,6 +285,79 @@ def recognize_frame():
     })
 
 
+
+# =========================
+# ROUTE: REGISTER NEW USER (Single Photo)
+# =========================
+@app.route('/register', methods=['POST'])
+def register():
+    """Register a new user with a single photo during Laravel registration."""
+    try:
+        name = request.form.get('name')
+        if not name:
+            return jsonify({'status': 'error', 'message': 'Name is required'}), 400
+        
+        if 'file' not in request.files:
+            return jsonify({'status': 'error', 'message': 'Photo file is required'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'status': 'error', 'message': 'No file selected'}), 400
+        
+        print(f"📥 Registering new user: {name}")
+        
+        # Convert file to numpy array for processing
+        file_bytes = file.read()
+        nparr = np.frombuffer(file_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if img is None:
+            return jsonify({'status': 'error', 'message': 'Failed to decode image'}), 400
+        
+        # Detect face and generate embedding
+        faces = face_app.get(img)
+        if len(faces) == 0:
+            return jsonify({'status': 'error', 'message': 'No face detected in the photo'}), 400
+        
+        # Get the face with highest detection score
+        face = sorted(faces, key=lambda x: x.det_score, reverse=True)[0]
+        embedding = face.embedding
+        
+        # Normalize embedding
+        norm_embedding = embedding / np.linalg.norm(embedding)
+        
+        # Create dataset directory for user
+        user_dataset_dir = os.path.join(BASE_DIR, "dataset", name)
+        os.makedirs(user_dataset_dir, exist_ok=True)
+        
+        # Save the image to dataset folder
+        timestamp = str(int(time.time()))
+        image_filename = f"{name}_{timestamp}.jpg"
+        image_path = os.path.join(user_dataset_dir, image_filename)
+        cv2.imwrite(image_path, img)
+        print(f"💾 Saved image to: {image_path}")
+        
+        # Save embedding to embeddings folder
+        embedding_path = os.path.join(EMBEDDING_DIR, f"{name}.npy")
+        np.save(embedding_path, norm_embedding)
+        print(f"💾 Saved embedding to: {embedding_path}")
+        
+        # Update runtime memory immediately
+        global embeddings
+        embeddings[name] = norm_embedding
+        print(f"✅ Registered user '{name}' with face embedding. Total users: {len(embeddings)}")
+        
+        return jsonify({
+            'status': 'success',
+            'message': f'User {name} registered successfully with face data',
+            'user': name,
+            'image_saved': image_path,
+            'embedding_saved': embedding_path
+        })
+        
+    except Exception as e:
+        print(f"❌ Error during registration: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 # =========================
 # DEBUG: SHOW ROUTES

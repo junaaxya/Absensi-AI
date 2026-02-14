@@ -26,8 +26,19 @@
                     </p>
                 </div>
 
-                <form method="POST" action="{{ route('register') }}" class="space-y-4">
+                <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" class="space-y-4">
                     @csrf
+
+                    <!-- Photo Upload -->
+                    <div>
+                        <label for="photo" class="block text-sm font-medium text-text-secondary mb-1.5 ml-1">Foto Wajah</label>
+                        <input id="photo" type="file" name="photo" required accept="image/jpeg,image/png,image/jpg"
+                            class="w-full px-4 py-3 rounded-xl bg-white border border-neutral-stone text-text-primary focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20 transition duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-pastel-sage file:text-text-primary hover:file:bg-pastel-sage-dark">
+                        <p class="text-xs text-neutral-muted mt-1 ml-1">Unggah foto wajah Anda untuk verifikasi (JPEG/PNG, max 2MB)</p>
+                        @error('photo')
+                            <p class="text-pastel-rose-dark text-sm mt-1 font-medium ml-1">{{ $message }}</p>
+                        @enderror
+                    </div>
 
                     <!-- Name -->
                     <div>
