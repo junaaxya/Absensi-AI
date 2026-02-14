@@ -9,6 +9,8 @@ use App\Models\Attendance;
 use App\Models\SystemSetting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\ConnectionException;
 
 class AttendanceController extends Controller
 {
@@ -40,8 +42,7 @@ class AttendanceController extends Controller
     public function autoAttendance(Request $request)
     {
         $request->validate([
-            'name'  => 'required|string',
-            'score' => 'required|numeric',
+            'photo' => 'required|image|mimes:jpeg,png,jpg|max:5120',
             'type'  => 'required|in:masuk,pulang',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
@@ -78,23 +79,72 @@ class AttendanceController extends Controller
         }
 
         // =========================
-        // NORMALISASI NAMA
+        // AI FACE RECOGNITION
         // =========================
-        $rawName = str_replace('_', ' ', $request->name);
+        try {
+            $flaskUrl = env('FLASK_INTERNAL_URL', 'http://face-service:5000') . '/recognize_frame';
+            
+            $photoFile = $request->file('photo');
+            
+            $aiResponse = Http::timeout(30)
+                ->attach('frame', file_get_contents($photoFile->getRealPath()), $photoFile->getClientOriginalName())
+                ->post($flaskUrl);
 
-        $user = User::whereRaw(
-            'LOWER(name) = ?',
-            [strtolower($rawName)]
-        )->first();
+            if ($aiResponse->failed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Face Service Unavailable'
+                ], 500);
+            }
 
-        Log::info("Nama dari Flask: " . $rawName);
-        Log::info("User ditemukan: " . ($user ? $user->name : 'TIDAK ADA'));
+            $aiData = $aiResponse->json();
 
-        if (!$user) {
+            // Check if face recognition was accepted
+            if (!isset($aiData['status']) || $aiData['status'] !== 'accepted') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Face not recognized (Low similarity score).'
+                ], 422);
+            }
+
+            // Find user by username (NIP)
+            $recognizedName = $aiData['name'] ?? null;
+            $similarityScore = $aiData['score'] ?? 0;
+
+            if (!$recognizedName) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Face not recognized (Low similarity score).'
+                ], 422);
+            }
+
+            $user = User::where('username', $recognizedName)->first();
+
+            Log::info("AI Recognition Result", [
+                'recognized_name' => $recognizedName,
+                'score' => $similarityScore,
+                'user_found' => $user ? 'YES' : 'NO'
+            ]);
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Face recognized as {$recognizedName}, but user not found in database."
+                ], 422);
+            }
+
+        } catch (ConnectionException $e) {
+            Log::error('Face Service Connection Error', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
-                'message' => 'User tidak ditemukan'
-            ], 404);
+                'message' => 'Face Service Unavailable'
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('Face Recognition Error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Face Service Unavailable'
+            ], 500);
         }
 
         // =========================
@@ -136,7 +186,7 @@ class AttendanceController extends Controller
                     'kegiatan'  => null,         // reset aman
                     'lat_in'    => $request->latitude,
                     'long_in'   => $request->longitude,
-                    'similarity_score_in' => $request->score,
+                    'similarity_score_in' => $similarityScore,
                 ]
             );
 
@@ -193,7 +243,7 @@ class AttendanceController extends Controller
             'jam_keluar' => $jamKeluar,
             'lat_out'    => $request->latitude,
             'long_out'   => $request->longitude,
-            'similarity_score_out' => $request->score,
+            'similarity_score_out' => $similarityScore,
 
             // ⬅️ SIMPAN STATUS PULANG & HADIR DI kegiatan
             'kegiatan'   => $isLembur ? 'hadir_lembur' : 'hadir',

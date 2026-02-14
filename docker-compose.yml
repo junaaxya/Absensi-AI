@@ -81,8 +81,11 @@ services:
     ports:
       - "5000:5000"
     volumes:
+      - ./face-service/face_service.py:/app/face_service.py # Mount the code for hot-reloading/updates
+      - ./face-service/dataset:/app/dataset
       - ./face-service/embeddings:/app/embeddings
       - ./face-service/yolov8n.pt:/app/yolov8n.pt
+      - ./face-service/templates:/app/templates # Also mount templates just in case
     environment:
       - FLASK_ENV=production
     networks:

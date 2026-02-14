@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Absensi - Face Recognition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-container {
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 100px;
+            word-wrap: break-word;
+        }
+
+        .status-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            color: #1565c0;
+        }
+
+        .status-success {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            color: #2e7d32;
+        }
+
+        .status-error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
+
+        .status-loading {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            color: #ef6c00;
+        }
+
+        .status-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .status-message {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .coords-info {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Absensi</h1>
+        <p class="subtitle">Face Recognition & Geolocation Test</p>
+        
+        <div class="video-container">
+            <video id="webcam" autoplay playsinline></video>
+            <div class="video-placeholder" id="videoPlaceholder">
+                <p>Loading camera...</p>
+            </div>
+        </div>
+        
+        <div class="coords-info" id="coordsInfo">
+            GPS: Waiting for location...
+        </div>
+        
+        <button id="checkInBtn" class="btn btn-primary" disabled>
+            Check In / Masuk
+        </button>
+        
+        <div id="statusContainer" class="status-container status-info">
+            <div class="status-title">Status</div>
+            <div class="status-message" id="statusMessage">
+                Please allow camera access to begin testing.
+            </div>
+        </div>
+    </div>
+    
+    <canvas id="captureCanvas" style="display: none;"></canvas>
+
+    <script>
+        // Elements
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('captureCanvas');
+        const checkInBtn = document.getElementById('checkInBtn');
+        const statusContainer = document.getElementById('statusContainer');
+        const statusMessage = document.getElementById('statusMessage');
+        const videoPlaceholder = document.getElementById('videoPlaceholder');
+        const coordsInfo = document.getElementById('coordsInfo');
+
+        let currentLatitude = null;
+        let currentLongitude = null;
+        let stream = null;
+
+        // Initialize camera on page load
+        async function initCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    }, 
+                    audio: false 
+                });
+                
+                video.srcObject = stream;
+                videoPlaceholder.style.display = 'none';
+                
+                updateStatus('info', 'Camera Ready', 'Camera is active. Click "Check In" to test attendance.');
+                checkInBtn.disabled = false;
+                
+                // Try to get initial GPS position
+                getGPSLocation();
+                
+            } catch (error) {
+                console.error('Camera error:', error);
+                updateStatus('error', 'Camera Error', 'Unable to access camera. Please allow camera permissions and refresh the page.');
+                checkInBtn.disabled = true;
+            }
+        }
+
+        // Get GPS Location
+        function getGPSLocation() {
+            if (!navigator.geolocation) {
+                coordsInfo.textContent = 'GPS: Geolocation is not supported by this browser.';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    currentLatitude = position.coords.latitude;
+                    currentLongitude = position.coords.longitude;
+                    coordsInfo.textContent = `GPS: ${currentLatitude.toFixed(6)}, ${currentLongitude.toFixed(6)}`;
+                },
+                (error) => {
+                    console.error('GPS error:', error);
+                    coordsInfo.textContent = 'GPS: Unable to get location. Please enable location services.';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        // Update status display
+        function updateStatus(type, title, message) {
+            statusContainer.className = `status-container status-${type}`;
+            statusContainer.innerHTML = `
+                <div class="status-title">${title}</div>
+                <div class="status-message">${message}</div>
+            `;
+        }
+
+        // Capture frame from video
+        function captureFrame() {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            return new Promise((resolve) => {
+                canvas.toBlob((blob) => {
+                    resolve(blob);
+                }, 'image/jpeg', 0.9);
+            });
+        }
+
+        // Handle check-in button click
+        checkInBtn.addEventListener('click', async () => {
+            // Check if we have GPS coordinates
+            if (currentLatitude === null || currentLongitude === null) {
+                updateStatus('loading', 'Getting Location', 'Requesting GPS location... Please allow location access.');
+                
+                // Try to get location again
+                await new Promise((resolve) => {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            currentLatitude = position.coords.latitude;
+                            currentLongitude = position.coords.longitude;
+                            coordsInfo.textContent = `GPS: ${currentLatitude.toFixed(6)}, ${currentLongitude.toFixed(6)}`;
+                            resolve();
+                        },
+                        (error) => {
+                            updateStatus('error', 'GPS Error', 'Unable to get GPS location. Please enable location services and try again.');
+                            resolve();
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                });
+                
+                if (currentLatitude === null || currentLongitude === null) {
+                    return;
+                }
+            }
+
+            // Disable button and show loading
+            checkInBtn.disabled = true;
+            updateStatus('loading', 'Processing', '<span class="loading-spinner"></span>Capturing face and sending to server...');
+
+            try {
+                // Capture frame
+                const photoBlob = await captureFrame();
+                
+                // Create FormData
+                const formData = new FormData();
+                formData.append('photo', photoBlob, 'capture.jpg');
+                formData.append('type', 'masuk');
+                formData.append('latitude', currentLatitude);
+                formData.append('longitude', currentLongitude);
+
+                // Send request
+                const response = await fetch('/api/attendance/auto', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    updateStatus('success', 'Success!', `
+                        <strong>${result.message}</strong><br>
+                        User: ${result.data?.user_name || 'N/A'}<br>
+                        Time: ${result.data?.jam_masuk || 'N/A'}<br>
+                        Status: ${result.data?.status_masuk || 'N/A'}
+                    `);
+                } else {
+                    updateStatus('error', 'Error', result.message || 'An unknown error occurred');
+                }
+
+            } catch (error) {
+                console.error('Request error:', error);
+                updateStatus('error', 'Network Error', 'Failed to connect to server. Please check your connection and try again.');
+            } finally {
+                checkInBtn.disabled = false;
+            }
+        });
+
+        // Initialize on load
+        initCamera();
+    </script>
+</body>
+</html>
