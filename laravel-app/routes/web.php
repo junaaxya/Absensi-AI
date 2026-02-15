@@ -5,6 +5,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\IzinController;
+use App\Http\Middleware\EnsureUserHasRole;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -20,14 +21,7 @@ Route::middleware(['auth'])->group(function () {
     // DASHBOARD KARYAWAN
     Route::get('/dashboard', [AttendanceController::class, 'dashboard'])
         ->name('dashboard');
-        
 
-    // ABSENSI
-    Route::post('/absen-masuk', [AttendanceController::class, 'absenMasuk'])
-        ->name('absen.masuk');
-
-    Route::post('/absen-keluar', [AttendanceController::class, 'absenKeluar'])
-        ->name('absen.keluar');
 
     // PROFILE
     Route::get('/profile', [ProfileController::class, 'edit'])
@@ -45,9 +39,23 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile/password', [PasswordController::class, 'update'])
         ->name('password.update');
 
-    // PENGAJUAN KETIDAKHADIRAN
-    Route::post('/izin', [IzinController::class, 'store'])
-        ->name('izin.store');
+    // PENGAJUAN KETIDAKHADIRAN (User)
+    Route::post('/izin', [IzinController::class, 'store'])->name('izin.store');
+    Route::get('/izin/riwayat', [IzinController::class, 'index'])->name('izin.index');
+
+    // ADMIN ROUTES
+    Route::middleware([EnsureUserHasRole::class . ':admin'])->prefix('admin')->group(function () {
+        // Manajemen Karyawan
+        Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
+
+        // Laporan Absensi
+        Route::get('/attendance', [AttendanceController::class, 'adminIndex'])->name('admin.attendance.index');
+
+        // Approval Izin
+        Route::get('/izin', [IzinController::class, 'adminIndex'])->name('admin.izin.index');
+        Route::patch('/izin/{izin}/approve', [IzinController::class, 'approve'])->name('admin.izin.approve');
+        Route::patch('/izin/{izin}/reject', [IzinController::class, 'reject'])->name('admin.izin.reject');
+    });
 });
 
 /*
@@ -55,4 +63,4 @@ Route::middleware(['auth'])->group(function () {
 | AUTH ROUTES (LOGIN, REGISTER, LOGOUT)
 |--------------------------------------------------------------------------
 */
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

@@ -34,25 +34,25 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'photo' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ]);
 
-        // Generate username dari nama (lowercase, tanpa spasi)
-        $username = strtolower(str_replace(' ', '', $request->name));
-        
-        // Pastikan username unik
-        $baseUsername = $username;
-        $counter = 1;
-        while (User::where('username', $username)->exists()) {
-            $username = $baseUsername . $counter;
-            $counter++;
-        }
-
         DB::beginTransaction();
 
         try {
+            // Generate username dari nama (lowercase, tanpa spasi) — inside transaction to prevent race condition
+            $username = strtolower(str_replace(' ', '', $request->name));
+
+            // Pastikan username unik (within transaction scope)
+            $baseUsername = $username;
+            $counter = 1;
+            while (User::where('username', $username)->exists()) {
+                $username = $baseUsername . $counter;
+                $counter++;
+            }
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -69,8 +69,8 @@ class RegisteredUserController extends Controller
                 file_get_contents($photo->getRealPath()),
                 $photo->getClientOriginalName()
             )->post("{$flaskUrl}/register", [
-                'name' => $username,
-            ]);
+                        'name' => $username,
+                    ]);
 
             if (!$response->successful()) {
                 DB::rollBack();
@@ -87,7 +87,8 @@ class RegisteredUserController extends Controller
             event(new Registered($user));
             Auth::login($user);
 
-            return redirect(route('dashboard', absolute: false));
+            return redirect(route('dashboard', absolute: false))
+                ->with('success', 'Selamat datang, ' . $user->name . '! Akun Anda berhasil dibuat.');
 
         } catch (\Exception $e) {
             DB::rollBack();

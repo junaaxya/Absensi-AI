@@ -72,7 +72,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/absen-keluar', [AttendanceController::class, 'absenKeluar'])
         ->name('absen.keluar');
 
-        Route::get('/profile', [ProfileController::class, 'edit'])
+    Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
 
     Route::patch('/profile', [ProfileController::class, 'update'])
@@ -81,5 +81,4 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
-    Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
 });
