@@ -367,38 +367,50 @@ print(app.url_map)
 
 @app.route('/register-face', methods=['POST'])
 def register_face():
+    """Register/update face data with multiple photos (used from API/dashboard)."""
     try:
-        user_id = request.form.get('user_id')
-        if not user_id:
-            return jsonify({'status': 'error', 'message': 'User ID required'}), 400
-            
+        username = request.form.get('username')
+        if not username:
+            return jsonify({'status': 'error', 'message': 'Username is required'}), 400
+
         photos = request.files.getlist('photos')
         if not photos:
-            photos = request.files.getlist('photos[]') # Try array notation
-            
+            photos = request.files.getlist('photos[]')  # Try array notation
+
         if not photos:
             return jsonify({'status': 'error', 'message': 'No photos provided'}), 400
 
-        print(f"Registering face for User ID: {user_id}, Photos: {len(photos)}")
+        print(f"📥 Registering face for username: {username}, Photos: {len(photos)}")
 
-        embeddings_list = [] # Renamed to avoid conflict with global 'embeddings'
-        for photo in photos:
+        # Create dataset directory for user
+        user_dataset_dir = os.path.join(BASE_DIR, "dataset", username)
+        os.makedirs(user_dataset_dir, exist_ok=True)
+
+        embeddings_list = []
+        for idx, photo in enumerate(photos):
             # Convert to numpy array
             in_memory_file = np.frombuffer(photo.read(), np.uint8)
             img = cv2.imdecode(in_memory_file, cv2.IMREAD_COLOR)
-            
+
             if img is None:
-                print(f"Failed to decode image: {photo.filename}")
+                print(f"  ⚠️ Failed to decode image: {photo.filename}")
                 continue
 
             # Detect and get embedding
-            faces = face_app.get(img) # Changed app_insightface to face_app
+            faces = face_app.get(img)
             if len(faces) > 0:
                 # Ambil wajah terbesar/terbaik
                 face = sorted(faces, key=lambda x: x.det_score, reverse=True)[0]
                 embeddings_list.append(face.embedding)
+
+                # Save photo to dataset folder
+                timestamp = str(int(time.time()))
+                image_filename = f"{username}_{timestamp}_{idx}.jpg"
+                image_path = os.path.join(user_dataset_dir, image_filename)
+                cv2.imwrite(image_path, img)
+                print(f"  💾 Saved image to: {image_path}")
             else:
-                 print(f"No face detected in: {photo.filename}")
+                print(f"  ⚠️ No face detected in: {photo.filename}")
 
         if not embeddings_list:
             return jsonify({'status': 'error', 'message': 'No valid faces detected in photos'}), 400
@@ -407,21 +419,24 @@ def register_face():
         avg_embedding = np.mean(embeddings_list, axis=0)
         norm_embedding = avg_embedding / np.linalg.norm(avg_embedding)
 
-        # Save to file
-        save_path = os.path.join(EMBEDDING_DIR, f"{user_id}.npy") # Changed EMBEDDINGS_DIR to EMBEDDING_DIR, removed "user_" prefix
+        # Save to file (using username as key)
+        save_path = os.path.join(EMBEDDING_DIR, f"{username}.npy")
         np.save(save_path, norm_embedding)
-        
-        # Reload embeddings to memory
-        load_embeddings()
+        print(f"  💾 Saved embedding to: {save_path}")
+
+        # Update runtime memory directly (faster than full reload)
+        global embeddings
+        embeddings[username] = norm_embedding
+        print(f"  ✅ Registered '{username}' with {len(embeddings_list)}/{len(photos)} photos. Total users: {len(embeddings)}")
 
         return jsonify({
-            'status': 'success', 
+            'status': 'success',
             'message': f'Face registered successfully. Used {len(embeddings_list)}/{len(photos)} photos.',
             'embedding_path': save_path
         })
 
     except Exception as e:
-        print(f"Error registering face: {e}")
+        print(f"❌ Error registering face: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 if __name__ == "__main__":
