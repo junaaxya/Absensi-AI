@@ -5,6 +5,9 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\IzinController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Middleware\AdminOnly;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -48,6 +51,39 @@ Route::middleware(['auth'])->group(function () {
     // PENGAJUAN KETIDAKHADIRAN
     Route::post('/izin', [IzinController::class, 'store'])
         ->name('izin.store');
+
+    // ADMIN ONLY
+    Route::middleware(AdminOnly::class)->group(function () {
+        Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
+            ->name('admin.dashboard');
+
+        Route::get('/admin/attendance', [App\Http\Controllers\AdminAttendanceController::class, 'index'])
+            ->name('admin.attendance');
+
+        Route::get('/admin/absence-management', [App\Http\Controllers\AdminAbsenceController::class, 'index'])
+            ->name('admin.absence.index');
+
+        Route::patch('/admin/absence-management/{izin}/status', [App\Http\Controllers\AdminAbsenceController::class, 'updateStatus'])
+            ->name('admin.absence.updateStatus');
+            
+        Route::resource('employees', EmployeeController::class);
+
+        // SETTINGS
+        Route::get('/admin/settings', [App\Http\Controllers\AdminSystemSettingController::class, 'index'])
+            ->name('admin.settings.index');
+        
+        Route::patch('/admin/settings/work-hours', [App\Http\Controllers\AdminSystemSettingController::class, 'updateWorkHours'])
+            ->name('admin.settings.work-hours.update');
+
+        Route::post('/admin/settings/work-hours/reset', [App\Http\Controllers\AdminSystemSettingController::class, 'resetWorkHours'])
+            ->name('admin.settings.work-hours.reset');
+
+        Route::patch('/admin/settings/location', [App\Http\Controllers\AdminSystemSettingController::class, 'updateLocation'])
+            ->name('admin.settings.location.update');
+
+        Route::post('/admin/settings/location/reset', [App\Http\Controllers\AdminSystemSettingController::class, 'resetLocation'])
+            ->name('admin.settings.location.reset');
+    });
 });
 
 /*

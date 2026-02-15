@@ -18,4 +18,9 @@ class Izin extends Model
         'dokumen',
         'status',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

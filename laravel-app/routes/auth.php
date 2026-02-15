@@ -9,8 +9,6 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
-use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -59,27 +57,4 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
-});
-
-Route::middleware(['auth'])->group(function () {
-
-    Route::get('/dashboard', [AttendanceController::class, 'dashboard'])
-        ->name('dashboard');
-
-    Route::post('/absen-masuk', [AttendanceController::class, 'absenMasuk'])
-        ->name('absen.masuk');
-
-    Route::post('/absen-keluar', [AttendanceController::class, 'absenKeluar'])
-        ->name('absen.keluar');
-
-        Route::get('/profile', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
-
-    Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
-
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
-
-    Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
 });

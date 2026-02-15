@@ -171,8 +171,18 @@ class AttendanceController extends Controller
 
             $jamMasuk = $now->format('H:i:s');
 
-            // batas jam masuk 08:00
-            $batasMasuk = Carbon::createFromTime(8, 0, 0);
+            // 🟢 UPDATE: GUNAKAN PENGATURAN JAM DARI DATABASE
+            // Mengambil jam masuk dan toleransi dari database
+            $workStart = $settings->work_start_time ?? '08:00:00';
+            $tolerance = $settings->late_tolerance_minutes ?? 15;
+
+            // Membuat objek Carbon untuk batas masuk + toleransi
+            $batasMasuk = Carbon::createFromFormat('H:i:s', $workStart)->addMinutes($tolerance);
+            
+            // Cek apakah waktu sekarang melewati batas masuk
+            // Note: Perlu set tanggal hari ini agar perbandingan akurat
+            $batasMasuk->setDate($now->year, $now->month, $now->day);
+            
             $statusMasuk = $now->gt($batasMasuk) ? 'terlambat' : 'tepat_waktu';
 
             $attendance = Attendance::updateOrCreate(
@@ -182,8 +192,8 @@ class AttendanceController extends Controller
                 ],
                 [
                     'jam_masuk' => $jamMasuk,
-                    'status'    => $statusMasuk, // ⬅️ STATUS MASUK DIKUNCI DI SINI
-                    'kegiatan'  => null,         // reset aman
+                    'status'    => $statusMasuk,
+                    'kegiatan'  => null,
                     'lat_in'    => $request->latitude,
                     'long_in'   => $request->longitude,
                     'similarity_score_in' => $similarityScore,
@@ -196,6 +206,7 @@ class AttendanceController extends Controller
                 'tanggal'     => $today,
                 'jam_masuk'   => $jamMasuk,
                 'statusMasuk' => $statusMasuk,
+                'batas_masuk' => $batasMasuk->toTimeString(),
                 'latitude'    => $request->latitude,
                 'longitude'   => $request->longitude,
             ]);
@@ -234,9 +245,12 @@ class AttendanceController extends Controller
 
         $jamKeluar = $now->format('H:i:s');
 
-        // batas jam pulang 17:00
-        $batasPulang = Carbon::createFromTime(17, 0, 0);
-        $isLembur = $now->gte($batasPulang);
+        // 🟢 UPDATE: GUNAKAN PENGATURAN LEMBUR DARI DATABASE
+        $overtimeStart = $settings->overtime_start_time ?? '17:30:00';
+        $batasLembur = Carbon::createFromFormat('H:i:s', $overtimeStart);
+        $batasLembur->setDate($now->year, $now->month, $now->day);
+
+        $isLembur = $now->gte($batasLembur);
 
         // ⛔ JANGAN PERNAH sentuh kolom status di sini
         $attendance->update([
@@ -255,6 +269,7 @@ class AttendanceController extends Controller
             'tanggal'    => $today,
             'jam_keluar' => $jamKeluar,
             'kegiatan'   => $attendance->kegiatan,
+            'batas_lembur' => $batasLembur->toTimeString(),
             'latitude'   => $request->latitude,
             'longitude'  => $request->longitude,
         ]);
@@ -267,10 +282,10 @@ class AttendanceController extends Controller
                 'tanggal'       => $attendance->tanggal,
                 'jam_masuk'     => $attendance->jam_masuk,
                 'jam_keluar'    => $attendance->jam_keluar,
-                'status_masuk'  => $attendance->status,        // TERLAMBAT / TEPAT_WAKTU
+                'status_masuk'  => $attendance->status,
                 'status_pulang' => $isLembur ? 'lembur' : 'tepat_waktu',
                 'status_hadir'  => 'hadir',
-                'kegiatan'      => $attendance->kegiatan,      // hadir / hadir_lembur
+                'kegiatan'      => $attendance->kegiatan,
                 'lat_out'       => $attendance->lat_out,
                 'long_out'      => $attendance->long_out,
             ]
