@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 
+use App\Models\SystemSetting;
+
 class EmployeeController extends Controller
 {
     /**
@@ -15,6 +17,7 @@ class EmployeeController extends Controller
     public function index(Request $request)
     {
         $query = User::query();
+
 
         // 1. Filter Role: Default hide main admin if not explicitly filtering
         // Logic: if role filter is set, use it. If not, hide 'admin' unless we want to see other admins.
@@ -43,7 +46,11 @@ class EmployeeController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.employees.index', compact('employees'));
+
+        $employees = $query->latest()->paginate(10)->withQueryString();
+        $settings = SystemSetting::first();
+
+        return view('admin.employees.index', compact('employees', 'settings'));
     }
 
     /**
@@ -53,8 +60,8 @@ class EmployeeController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
-            'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:' . User::class],
+            'username' => ['required', 'string', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'jabatan' => ['nullable', 'string', 'max:255'],
             'role' => ['required', 'string', 'in:admin,karyawan'],
@@ -77,10 +84,12 @@ class EmployeeController extends Controller
      */
     public function update(Request $request, User $employee)
     {
+
          $request->validate([
+
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$employee->id],
-            'username' => ['required', 'string', 'max:255', 'unique:users,username,'.$employee->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $employee->id],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $employee->id],
             'jabatan' => ['nullable', 'string', 'max:255'],
             'role' => ['required', 'string', 'in:admin,karyawan'],
         ]);

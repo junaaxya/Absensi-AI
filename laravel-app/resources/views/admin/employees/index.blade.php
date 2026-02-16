@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html class="light" lang="id">
 <head>
@@ -516,7 +517,9 @@
                         </div>
                         <p class="text-primary font-bold text-lg" x-text="selected?.has_face_data ? 'Terdaftar' : 'Belum Terdaftar'"></p>
                         <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Jumlah Foto: <span class="font-bold text-slate-800 dark:text-slate-200" x-text="selectedFiles.length"></span></p>
+
                     </div>
+                </div>
 
                     <!-- Upload Area -->
                     <div class="md:col-span-2 border-2 border-dashed border-secondary/40 dark:border-secondary/20 bg-secondary/5 dark:bg-secondary/5 rounded-2xl p-6 flex flex-col items-center justify-center group hover:border-secondary transition-colors cursor-pointer" onclick="document.getElementById('face-upload').click()">

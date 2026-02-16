@@ -9,6 +9,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Middleware\AdminOnly;
 
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -23,14 +24,7 @@ Route::middleware(['auth'])->group(function () {
     // DASHBOARD KARYAWAN
     Route::get('/dashboard', [AttendanceController::class, 'dashboard'])
         ->name('dashboard');
-        
 
-    // ABSENSI
-    Route::post('/absen-masuk', [AttendanceController::class, 'absenMasuk'])
-        ->name('absen.masuk');
-
-    Route::post('/absen-keluar', [AttendanceController::class, 'absenKeluar'])
-        ->name('absen.keluar');
 
     // PROFILE
     Route::get('/profile', [ProfileController::class, 'edit'])
@@ -47,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::patch('/profile/password', [PasswordController::class, 'update'])
         ->name('password.update');
+
 
     // PENGAJUAN KETIDAKHADIRAN
     Route::post('/izin', [IzinController::class, 'store'])
@@ -83,6 +78,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/admin/settings/location/reset', [App\Http\Controllers\AdminSystemSettingController::class, 'resetLocation'])
             ->name('admin.settings.location.reset');
+
     });
 });
 
@@ -91,4 +87,4 @@ Route::middleware(['auth'])->group(function () {
 | AUTH ROUTES (LOGIN, REGISTER, LOGOUT)
 |--------------------------------------------------------------------------
 */
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

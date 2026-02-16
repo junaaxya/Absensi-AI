@@ -20,50 +20,36 @@ class FaceRegistrationController extends Controller
         ]);
 
         $user = User::findOrFail($request->user_id);
-        $flaskUrl = config('services.flask.url', env('FLASK_SERVICE_URL', 'http://flask:5000'));
-        
+        $flaskUrl = config('services.flask.url', env('FLASK_SERVICE_URL', 'http://face-service:5000'));
+
         $savedPaths = [];
-        $flaskPhotos = [];
 
         try {
-            // 1. Simpan foto sementara di Laravel Storage
+            // 1. Simpan foto sementara & siapkan multipart request
+            $pendingRequest = Http::asMultipart();
+
             foreach ($request->file('photos') as $index => $photo) {
-                // Generate unique filename: userid_timestamp_index.jpg
-                $filename = "{$user->id}_" . time() . "_{$index}." . $photo->getClientOriginalExtension();
+                $filename = "{$user->username}_" . time() . "_{$index}." . $photo->getClientOriginalExtension();
                 $path = $photo->storeAs('temp_faces', $filename, 'local');
-                
                 $savedPaths[] = $path;
-                
-                // Siapkan untuk dikirim ke Flask
-                $flaskPhotos[] = [
-                    'name' => 'photos',
-                    'contents' => fopen(storage_path("app/{$path}"), 'r'),
-                    'filename' => $filename
-                ];
+
+                // Attach setiap foto ke request
+                $pendingRequest->attach(
+                    'photos',
+                    fopen(storage_path("app/{$path}"), 'r'),
+                    $filename
+                );
             }
 
-            // 2. Kirim ke Flask Service untuk generate embedding
-            // Note: Flask service perlu endpoint /register yang menerima multipart/form-data
-            $response = Http::post("{$flaskUrl}/register-face", [
-                'user_id' => $user->id,
-            ]);
-            
-            // Karena Http client Laravel agak tricky dengan multiple files dengan key sama, 
-            // kita gunakan pendekatan manual jika diperlukan, atau loop attach.
-            // Pendekatan attach manual:
-            $pendingRequest = Http::asMultipart();
-            foreach ($flaskPhotos as $photo) {
-                $pendingRequest->attach($photo['name'], $photo['contents'], $photo['filename']);
-            }
-            // Kirim user_id sebagai field biasa
+            // 2. Kirim ke Flask Service (single request dengan semua foto + username)
             $response = $pendingRequest->post("{$flaskUrl}/register-face", [
-                'user_id' => $user->id
+                'username' => $user->username,
             ]);
 
             if ($response->successful()) {
-                // 3. Update status di database (jika sukses)
-                $user->update(['has_face_data' => true]); 
-                
+                // 3. Update status di database
+                $user->update(['has_face_data' => true]);
+
                 return response()->json([
                     'message' => 'Data wajah berhasil didaftarkan',
                     'data' => $response->json()

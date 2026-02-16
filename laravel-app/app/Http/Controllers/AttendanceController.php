@@ -16,44 +16,60 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // tanggal filter (default hari ini)
-        $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
+        // Filter status bulan/tahun (default: bulan berjalan)
+        $bulan = $request->get('bulan', Carbon::now()->month);
+        $tahun = $request->get('tahun', Carbon::now()->year);
 
-        // absensi hari ini (untuk panel atas)
+        // absensi hari ini (untuk panel atas - TETAP HARI INI)
         $attendanceToday = Attendance::where('user_id', $user->id)
-            ->where('tanggal', $tanggal)
+            ->where('tanggal', Carbon::today()->toDateString())
             ->first();
 
-        // riwayat absensi user (untuk tabel bawah)
+        // riwayat absensi user (difilter bulan/tahun)
         $attendanceHistory = Attendance::where('user_id', $user->id)
+            ->whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
             ->orderBy('tanggal', 'desc')
             ->get();
 
         return view('dashboard', [
-            'user'              => $user,
-            'attendanceToday'  => $attendanceToday,
-            'attendanceHistory'=> $attendanceHistory,
-            'tanggal'          => $tanggal,
+            'user' => $user,
+            'attendanceToday' => $attendanceToday,
+            'attendanceHistory' => $attendanceHistory,
+            'bulan' => $bulan,
+            'tahun' => $tahun,
         ]);
+
     }
 
-    /**
-     * Tombol Absen Masuk (UI saja)
-     * Real logic tetap dari Flask → API
-     */
-    public function absenMasuk()
-    {
-        $flaskUrl = config('services.flask.url', env('FLASK_SERVICE_URL', 'http://face-service:5000'));
-        return redirect("{$flaskUrl}/?type=masuk");
-    }
+
 
     /**
-     * Tombol Absen Keluar (UI saja)
-     * Real logic tetap dari Flask → API
+     * Laporan Absensi untuk Admin
      */
-    public function absenKeluar()
+    public function adminIndex(Request $request)
     {
-        $flaskUrl = config('services.flask.url', env('FLASK_SERVICE_URL', 'http://face-service:5000'));
-        return redirect("{$flaskUrl}/?type=pulang");
+        $startDate = $request->get('start_date', Carbon::today()->toDateString());
+        $endDate = $request->get('end_date', Carbon::today()->toDateString());
+        $userId = $request->get('user_id');
+
+        $query = Attendance::with('user');
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('tanggal', [$startDate, $endDate]);
+        }
+
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+
+        $attendances = $query->latest('tanggal')
+            ->latest('jam_masuk')
+            ->paginate(20)
+            ->withQueryString();
+
+        $users = \App\Models\User::orderBy('name')->get();
+
+        return view('admin.attendance.index', compact('attendances', 'users', 'startDate', 'endDate', 'userId'));
     }
 }
