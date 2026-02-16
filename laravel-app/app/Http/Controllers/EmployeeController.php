@@ -23,7 +23,7 @@ class EmployeeController extends Controller
         // Logic: if role filter is set, use it. If not, hide 'admin' unless we want to see other admins.
         // Generally good to hide current user or super admin, but let's keep it simple based on request.
         // Let's filter out current user to avoid self-delete issues, or just basic role filter.
-        
+
         if ($request->filled('role') && $request->role !== 'Semua') {
             $query->where('role', strtolower($request->role));
         }
@@ -36,9 +36,9 @@ class EmployeeController extends Controller
         // 3. Search (Name or NIP/Username)
         if ($request->filled('q')) {
             $search = $request->q;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%");
+                    ->orWhere('username', 'like', "%{$search}%");
             });
         }
 
@@ -54,6 +54,14 @@ class EmployeeController extends Controller
     }
 
     /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('admin.employees.create');
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -64,7 +72,7 @@ class EmployeeController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'jabatan' => ['nullable', 'string', 'max:255'],
-            'role' => ['required', 'string', 'in:admin,karyawan'],
+            'role' => ['required', 'string', 'in:admin,karyawan,staf,manager'],
         ]);
 
         $user = User::create([
@@ -80,18 +88,26 @@ class EmployeeController extends Controller
     }
 
     /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(User $employee)
+    {
+        return view('admin.employees.edit', compact('employee'));
+    }
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, User $employee)
     {
 
-         $request->validate([
+        $request->validate([
 
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $employee->id],
             'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $employee->id],
             'jabatan' => ['nullable', 'string', 'max:255'],
-            'role' => ['required', 'string', 'in:admin,karyawan'],
+            'role' => ['required', 'string', 'in:admin,karyawan,staf,manager'],
         ]);
 
         $employee->update([

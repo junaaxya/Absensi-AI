@@ -13,29 +13,29 @@
     <!-- Toast Notification System -->
     @if(session('success') || session('error') || $errors->any())
         <div x-data="{
-            toasts: [],
-            init() {
-                @if(session('success'))
-                    this.addToast('success', '{{ session('success') }}');
-                @endif
-                @if(session('error'))
-                    this.addToast('error', '{{ session('error') }}');
-                @endif
-                @if($errors->any())
-                    @foreach($errors->all() as $error)
-                        this.addToast('error', '{{ $error }}');
-                    @endforeach
-                @endif
-            },
-            addToast(type, message) {
-                const id = Date.now() + Math.random();
-                this.toasts.push({ id, type, message });
-                setTimeout(() => this.removeToast(id), 5000);
-            },
-            removeToast(id) {
-                this.toasts = this.toasts.filter(t => t.id !== id);
-            }
-        }" class="fixed top-4 right-4 z-50 flex flex-col gap-3 w-full max-w-sm">
+                toasts: [],
+                init() {
+                    @if(session('success'))
+                        this.addToast('success', '{{ session('success') }}');
+                    @endif
+                    @if(session('error'))
+                        this.addToast('error', '{{ session('error') }}');
+                    @endif
+                    @if($errors->any())
+                        @foreach($errors->all() as $error)
+                            this.addToast('error', '{{ $error }}');
+                        @endforeach
+                    @endif
+                },
+                addToast(type, message) {
+                    const id = Date.now() + Math.random();
+                    this.toasts.push({ id, type, message });
+                    setTimeout(() => this.removeToast(id), 5000);
+                },
+                removeToast(id) {
+                    this.toasts = this.toasts.filter(t => t.id !== id);
+                }
+            }" class="fixed top-4 right-4 z-50 flex flex-col gap-3 w-full max-w-sm">
             <template x-for="toast in toasts" :key="toast.id">
                 <div x-show="true" x-transition:enter="transition ease-out duration-300"
                     x-transition:enter-start="opacity-0 translate-x-8 scale-95"
@@ -43,15 +43,16 @@
                     x-transition:leave="transition ease-in duration-200"
                     x-transition:leave-start="opacity-100 translate-x-0 scale-100"
                     x-transition:leave-end="opacity-0 translate-x-8 scale-95" :class="{
-                        'bg-emerald-50 border-emerald-200': toast.type === 'success',
-                        'bg-red-50 border-red-200': toast.type === 'error'
-                     }" class="rounded-xl border p-4 shadow-lg backdrop-blur-sm relative overflow-hidden cursor-pointer"
+                            'bg-emerald-50 border-emerald-200': toast.type === 'success',
+                            'bg-red-50 border-red-200': toast.type === 'error'
+                         }"
+                    class="rounded-xl border p-4 shadow-lg backdrop-blur-sm relative overflow-hidden cursor-pointer"
                     @click="removeToast(toast.id)">
                     <div class="flex items-start gap-3">
                         <div :class="{
-                            'bg-emerald-100 text-emerald-600': toast.type === 'success',
-                            'bg-red-100 text-red-600': toast.type === 'error'
-                        }" class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center">
+                                'bg-emerald-100 text-emerald-600': toast.type === 'success',
+                                'bg-red-100 text-red-600': toast.type === 'error'
+                            }" class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center">
                             <svg x-show="toast.type === 'success'" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -118,6 +119,9 @@
             <div
                 class="w-full max-w-md bg-neutral-warm p-8 rounded-2xl shadow-soft border border-neutral-stone/50 z-10 relative">
                 <div class="mb-8 text-center">
+                    <div class="flex justify-center mb-4">
+                        <x-application-logo class="w-20 h-20" />
+                    </div>
                     <h1 class="text-3xl font-bold text-text-primary mb-2 tracking-tight">Selamat Datang</h1>
                     <p class="text-text-secondary text-sm">
                         Masuk ke Sistem Absensi <br>
