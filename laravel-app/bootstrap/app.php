@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\AdminOnly;
 
 use App\Http\Middleware\EnsureUserHasRole;
 
@@ -13,9 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware) {
+
+    ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->api(); // 👈 WAJIB
         $middleware->alias([
-            'role' => EnsureUserHasRole::class,
+            'admin' => AdminOnly::class,
+
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

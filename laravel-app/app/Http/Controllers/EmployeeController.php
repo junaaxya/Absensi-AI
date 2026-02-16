@@ -18,14 +18,34 @@ class EmployeeController extends Controller
     {
         $query = User::query();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
+
+        // 1. Filter Role: Default hide main admin if not explicitly filtering
+        // Logic: if role filter is set, use it. If not, hide 'admin' unless we want to see other admins.
+        // Generally good to hide current user or super admin, but let's keep it simple based on request.
+        // Let's filter out current user to avoid self-delete issues, or just basic role filter.
+        
+        if ($request->filled('role') && $request->role !== 'Semua') {
+            $query->where('role', strtolower($request->role));
+        }
+
+        // 2. Filter Jabatan
+        if ($request->filled('jabatan') && $request->jabatan !== 'Semua') {
+            $query->where('jabatan', $request->jabatan);
+        }
+
+        // 3. Search (Name or NIP/Username)
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('username', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('username', 'like', "%{$search}%");
             });
         }
+
+        $employees = $query->latest()
+            ->paginate(10)
+            ->withQueryString();
+
 
         $employees = $query->latest()->paginate(10)->withQueryString();
         $settings = SystemSetting::first();
@@ -45,7 +65,6 @@ class EmployeeController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'jabatan' => ['nullable', 'string', 'max:255'],
             'role' => ['required', 'string', 'in:admin,karyawan'],
-            // 'nip' => ['nullable', 'string'], // Jika ada kolom NIP
         ]);
 
         $user = User::create([
@@ -65,8 +84,9 @@ class EmployeeController extends Controller
      */
     public function update(Request $request, User $employee)
     {
-        // Validasi update bisa disesuaikan (misal password nullable)
-        $request->validate([
+
+         $request->validate([
+
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $employee->id],
             'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $employee->id],

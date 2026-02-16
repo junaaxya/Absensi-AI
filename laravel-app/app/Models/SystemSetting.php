@@ -16,11 +16,17 @@ class SystemSetting extends Model
         'office_latitude',
         'office_longitude',
         'office_radius',
+        'work_start_time',
+        'work_end_time',
+        'overtime_start_time',
+        'overtime_end_time',
+        'late_tolerance_minutes',
     ];
 
     protected $casts = [
         'office_latitude' => 'float',
         'office_longitude' => 'float',
         'office_radius' => 'float',
+        'late_tolerance_minutes' => 'integer',
     ];
 }
