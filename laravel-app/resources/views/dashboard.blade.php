@@ -1,278 +1,241 @@
 @extends('layouts.absensi')
 
+@push('styles')
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        .employee-dashboard {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .glass-attendance {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+    </style>
+@endpush
+
 @section('content')
-    <div x-data="{ izinOpen: false }" class="pb-20 md:pb-0">
+    <div x-data="{}" class="employee-dashboard space-y-6 pb-16">
+        <header class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+            <div class="relative z-10 flex flex-col gap-2">
+                <p class="text-sm font-semibold uppercase tracking-wider text-slate-500">Employee Dashboard</p>
+                <h1 class="text-2xl font-bold text-slate-900 md:text-3xl">Halo, {{ $user->name }} 👋</h1>
+                <p class="text-sm text-slate-500 md:text-base">
+                    Ringkasan absensi Anda hari ini, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}.
+                </p>
+            </div>
+            <div class="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-emerald-200/30 blur-2xl"></div>
+        </header>
 
-        <!-- COMPACT PROFILE HEADER (Gojek/Shopee Style) -->
-        <div class="md:hidden flex items-center justify-between mb-6 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold border border-emerald-200">
-                    {{ substr(Auth::user()->name, 0, 1) }}
-                </div>
-                <div class="leading-tight">
-                    <p class="text-xs text-gray-500 font-medium">Selamat Pagi,</p>
-                    <h2 class="text-sm font-bold text-gray-800">{{ explode(' ', $user->name)[0] }}</h2>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                 <div class="text-right hidden sm:block">
-                    <p class="text-xs text-gray-400">{{ \Carbon\Carbon::now()->translatedFormat('l, d M') }}</p>
-                </div>
-                <button class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                </button>
-            </div>
-        </div>
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+            <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm xl:col-span-5">
+                <h2 class="mb-5 flex items-center gap-2 text-lg font-bold text-slate-900">
+                    <span class="material-icons-round text-emerald-600">history</span>
+                    Aktivitas Hari Ini
+                </h2>
 
-        <!-- Desktop Header (Kept simple) -->
-        <div class="hidden md:flex items-center justify-between mb-10 mt-6 px-6">
-            <div>
-                 <h1 class="text-2xl font-bold text-gray-800 mb-2">Hallo, {{ explode(' ', $user->name)[0] }}! 👋</h1>
-                 <p class="text-gray-500 text-sm">Akses cepat menu presensi Anda.</p>
-            </div>
-             <div class="text-right">
-                <h3 class="text-2xl font-bold text-emerald-600 mb-1">{{ \Carbon\Carbon::now()->format('H:i') }}</h3>
-                <p class="text-sm text-gray-500">{{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</p>
-            </div>
-        </div>
-
-        <!-- "GOJEK" STYLE ICON GRID (4 Columns) -->
-        <div class="bg-white rounded-[24px] p-5 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 mb-6">
-            <div class="grid grid-cols-4 gap-y-6 gap-x-2 md:gap-8">
-                
-                <!-- ABSEN MASUK (Green) -->
-                <button @click="startAttendance('masuk')" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="relative w-12 h-12 md:w-16 md:h-16 rounded-full bg-green-500 shadow-md shadow-green-200 flex items-center justify-center transition-all group-hover:bg-green-600">
-                        <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                             <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                        </svg>
+                <div class="space-y-4">
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Absensi Masuk</p>
                         @if($attendanceToday && $attendanceToday->jam_masuk)
-                            <div class="absolute -right-1 -top-1 w-4 h-4 bg-white rounded-full flex items-center justify-center border border-green-100">
-                                <svg class="w-2.5 h-2.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                            </div>
+                            <p class="mt-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                                <span class="material-icons-round text-base">check_circle</span>
+                                {{ \Carbon\Carbon::parse($attendanceToday->jam_masuk)->format('H:i') }} WIB
+                            </p>
+                        @else
+                            <p class="mt-2 flex items-center gap-2 text-sm italic text-slate-500">
+                                <span class="material-icons-round text-base">warning_amber</span>
+                                Absen masuk belum dilakukan
+                            </p>
                         @endif
                     </div>
-                    <span class="text-[10px] md:text-sm font-medium text-gray-700 text-center leading-tight">Masuk</span>
-                </button>
 
-                <!-- ABSEN KELUAR (Red) -->
-                <button @click="startAttendance('pulang')" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="relative w-12 h-12 md:w-16 md:h-16 rounded-full bg-red-500 shadow-md shadow-red-200 flex items-center justify-center transition-all group-hover:bg-red-600">
-                        <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                           <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                         @if($attendanceToday && $attendanceToday->jam_keluar)
-                            <div class="absolute -right-1 -top-1 w-4 h-4 bg-white rounded-full flex items-center justify-center border border-red-100">
-                                <svg class="w-2.5 h-2.5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                            </div>
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Makan Siang</p>
+                        <p class="mt-2 text-sm italic text-slate-500">Belum dilakukan</p>
+                    </div>
+
+                    <div class="rounded-2xl border border-sky-200 bg-sky-50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-sky-700">Absen Keluar</p>
+                        @if($attendanceToday && $attendanceToday->jam_keluar)
+                            <p class="mt-2 flex items-center gap-2 text-sm font-semibold text-sky-700">
+                                <span class="material-icons-round text-base">check_circle</span>
+                                {{ \Carbon\Carbon::parse($attendanceToday->jam_keluar)->format('H:i') }} WIB
+                            </p>
+                        @else
+                            <p class="mt-2 flex items-center gap-2 text-sm text-sky-700">
+                                <span class="material-icons-round text-base">hourglass_empty</span>
+                                Belum dilakukan
+                            </p>
                         @endif
                     </div>
-                    <span class="text-[10px] md:text-sm font-medium text-gray-700 text-center leading-tight">Keluar</span>
-                </button>
+                </div>
+            </section>
 
-                <!-- IZIN / SAKIT (Amber) -->
-                <button @click="$dispatch('open-modal', 'izin')" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-amber-500 shadow-md shadow-amber-200 flex items-center justify-center transition-all group-hover:bg-amber-600">
-                        <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                    </div>
-                    <span class="text-[10px] md:text-sm font-medium text-gray-700 text-center leading-tight">Izin</span>
-                </button>
-
-                <!-- RIWAYAT (Blue) -->
-                <a href="#history-section" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-500 shadow-md shadow-blue-200 flex items-center justify-center transition-all group-hover:bg-blue-600">
-                        <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                           <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                     <span class="text-[10px] md:text-sm font-medium text-gray-700 text-center leading-tight">Riwayat</span>
-                </a>
-
-                <!-- JADWAL (Purple) -->
-                <button class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-purple-500 shadow-md shadow-purple-200 flex items-center justify-center transition-all group-hover:bg-purple-600">
-                        <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <span class="text-[10px] md:text-sm font-medium text-gray-700 text-center leading-tight">Jadwal</span>
-                </button>
-
-                <!-- PROFIL (Indigo) -->
-                <a href="{{ route('profile.edit') }}" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-indigo-500 shadow-md shadow-indigo-200 flex items-center justify-center transition-all group-hover:bg-indigo-600">
-                        <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                           <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                    </div>
-                    <span class="text-[10px] md:text-sm font-medium text-gray-700 text-center leading-tight">Profil</span>
-                </a>
-
-                 <!-- ADMIN (Teal) - CONDITIONAL -->
-                 @if(Auth::user()->role === 'admin')
-                    <a href="{{ route('employees.index') }}" class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                        <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-teal-500 shadow-md shadow-teal-200 flex items-center justify-center transition-all group-hover:bg-teal-600">
-                             <svg class="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </div>
-                        <span class="text-[10px] md:text-sm font-medium text-gray-700 text-center leading-tight">Admin</span>
-                    </a>
-                 @endif
-
-                 <!-- More Item (Gray) -->
-                 <button class="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform duration-200">
-                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center transition-all group-hover:bg-gray-200">
-                         <svg class="w-6 h-6 md:w-8 md:h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-                        </svg>
-                    </div>
-                    <span class="text-[10px] md:text-sm font-medium text-gray-500 text-center leading-tight">Lainnya</span>
-                </button>
-
-            </div>
-        </div>
-
-        <!-- STATUS CARD (Below Grid) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <!-- ABSEN TODAY CARD -->
-            <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                
-                <h3 class="font-semibold text-emerald-100 text-sm mb-4">Status Hari Ini</h3>
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-emerald-100 mb-1">Masuk</p>
-                        <p class="text-2xl font-bold font-mono tracking-wide">
-                            {{ $attendanceToday && $attendanceToday->jam_masuk ? \Carbon\Carbon::parse($attendanceToday->jam_masuk)->format('H:i') : '--:--' }}
+            <section class="space-y-4 xl:col-span-7">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jam Masuk Kerja</p>
+                        <p class="mt-2 text-xl font-bold text-slate-900">
+                            {{ \Carbon\Carbon::parse($workStartTime)->format('H.i') }} WIB
                         </p>
                     </div>
-                    <div class="h-8 w-px bg-white/30"></div>
-                     <div>
-                        <p class="text-xs text-emerald-100 mb-1">Keluar</p>
-                        <p class="text-2xl font-bold font-mono tracking-wide text-white/90">
-                            {{ $attendanceToday && $attendanceToday->jam_keluar ? \Carbon\Carbon::parse($attendanceToday->jam_keluar)->format('H:i') : '--:--' }}
+                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jam Pulang Kerja</p>
+                        <p class="mt-2 text-xl font-bold text-slate-900">
+                            {{ \Carbon\Carbon::parse($workEndTime)->format('H.i') }} WIB
                         </p>
                     </div>
                 </div>
-            </div>
 
-            <!-- QUOTE / INFO CARD -->
-             <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 flex-shrink-0">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <h2 class="mb-3 text-sm font-bold text-slate-900">Kegiatan Hari Ini</h2>
+                    <textarea
+                        class="h-32 w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500"
+                        placeholder="Tuliskan laporan singkat kegiatan hari ini..."
+                        >{{ $attendanceToday?->kegiatan && !in_array($attendanceToday->kegiatan, ['hadir', 'hadir_lembur']) ? $attendanceToday->kegiatan : '' }}</textarea>
+                    <p class="mt-2 text-xs text-slate-400">Kolom ini siap dipakai saat fitur simpan kegiatan diaktifkan.</p>
                 </div>
-                <div>
-                     <h4 class="font-bold text-gray-800 text-sm">Tetap Semangat!</h4>
-                     <p class="text-xs text-gray-500 mt-1">Kehadiran tepat waktu mencerminkan profesionalisme Anda.</p>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <button
+                        @click="startAttendance('masuk')"
+                        class="flex items-center justify-center gap-2 rounded-2xl bg-emerald-200 px-4 py-4 text-sm font-bold text-slate-800 transition hover:brightness-95">
+                        <span class="material-icons-round">login</span>
+                        Absen Masuk
+                    </button>
+
+                    <button
+                        @click="startAttendance('pulang')"
+                        class="flex items-center justify-center gap-2 rounded-2xl bg-rose-200 px-4 py-4 text-sm font-bold text-slate-800 transition hover:brightness-95">
+                        <span class="material-icons-round">logout</span>
+                        Absen Keluar
+                    </button>
+
+                    <button
+                        @click="$dispatch('open-modal', 'izin')"
+                        class="md:col-span-2 flex items-center justify-center gap-2 rounded-2xl bg-violet-200 px-4 py-4 text-sm font-bold text-slate-800 transition hover:brightness-95">
+                        <span class="material-icons-round">event_busy</span>
+                        Pengajuan Ketidakhadiran
+                    </button>
                 </div>
-            </div>
+            </section>
         </div>
 
-        <!-- ATTENDANCE HISTORY LIST -->
-        <div id="history-section" class="scroll-mt-24">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-text-primary">Riwayat Aktivitas</h3>
-                <form method="GET" action="{{ route('dashboard') }}" class="flex gap-2">
-                    <select name="bulan"
-                        class="rounded-lg border-none bg-white shadow-sm text-sm py-2 pl-3 pr-8 focus:ring-pastel-sage"
-                        onchange="this.form.submit()">
-                        @foreach(range(1, 12) as $m)
-                            <option value="{{ $m }}" {{ request('bulan', date('n')) == $m ? 'selected' : '' }}>
-                                {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
-                            </option>
-                        @endforeach
-                    </select>
+        <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-3 border-b border-slate-100 p-4 md:flex-row md:items-center md:justify-between md:p-6">
+                <form method="GET" action="{{ route('dashboard') }}" class="flex w-full flex-col gap-3 md:flex-row md:items-center">
+                    <div class="relative w-full md:max-w-sm">
+                        <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                        <input
+                            name="q"
+                            type="text"
+                            value="{{ $search }}"
+                            placeholder="Cari status, kegiatan, atau jam..."
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                    </div>
+
+                    <div class="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
+                        <input
+                            name="start_date"
+                            type="date"
+                            value="{{ $startDate }}"
+                            class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                        <input
+                            name="end_date"
+                            type="date"
+                            value="{{ $endDate }}"
+                            class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                    </div>
+
+                    <div class="flex items-center gap-2 md:ml-auto">
+                        <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                            Filter
+                        </button>
+                        <a href="{{ route('dashboard') }}" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                            Reset
+                        </a>
+                    </div>
                 </form>
             </div>
 
-            <div class="bg-white rounded-2xl border border-neutral-stone/50 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-neutral-warm/50 border-b border-neutral-stone/50">
-                            <tr>
-                                <th class="px-6 py-4 font-semibold text-text-secondary">Tanggal</th>
-                                <th class="px-6 py-4 font-semibold text-text-secondary text-center">Jam</th>
-                                <th class="px-6 py-4 font-semibold text-text-secondary text-center">Status</th>
-                                <th class="px-6 py-4 font-semibold text-text-secondary text-center">Aksi</th>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-[11px] uppercase tracking-widest text-slate-500">
+                        <tr>
+                            <th class="px-6 py-4">No</th>
+                            <th class="px-6 py-4">Nama</th>
+                            <th class="px-6 py-4">Tanggal</th>
+                            <th class="px-6 py-4">Jam Masuk</th>
+                            <th class="px-6 py-4">Jam Keluar</th>
+                            <th class="px-6 py-4">Jam Kerja</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4">Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($attendanceHistory as $row)
+                            @php
+                                $durationLabel = '-';
+                                if ($row->jam_masuk && $row->jam_keluar) {
+                                    $minutes = \Carbon\Carbon::parse($row->jam_masuk)->diffInMinutes(\Carbon\Carbon::parse($row->jam_keluar));
+                                    $hours = intdiv($minutes, 60);
+                                    $remainingMinutes = $minutes % 60;
+                                    $durationLabel = $remainingMinutes > 0 ? "{$hours}j {$remainingMinutes}m" : "{$hours}j";
+                                }
+                            @endphp
+                            <tr class="transition hover:bg-slate-50">
+                                <td class="px-6 py-4">{{ ($attendanceHistory->firstItem() ?? 0) + $loop->index }}</td>
+                                <td class="px-6 py-4 font-semibold text-slate-800">{{ $user->name }}</td>
+                                <td class="px-6 py-4">{{ \Carbon\Carbon::parse($row->tanggal)->translatedFormat('d M Y') }}</td>
+                                <td class="px-6 py-4">{{ $row->jam_masuk ? \Carbon\Carbon::parse($row->jam_masuk)->format('H:i') . ' WIB' : '-' }}</td>
+                                <td class="px-6 py-4">{{ $row->jam_keluar ? \Carbon\Carbon::parse($row->jam_keluar)->format('H:i') . ' WIB' : '-' }}</td>
+                                <td class="px-6 py-4">{{ $durationLabel }}</td>
+                                <td class="px-6 py-4">
+                                    @if($row->status === 'tepat_waktu')
+                                        <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Tepat Waktu</span>
+                                    @elseif($row->status === 'terlambat')
+                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">Terlambat</span>
+                                    @else
+                                        <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{{ ucfirst(str_replace('_', ' ', $row->status ?? '-')) }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-slate-500">
+                                    @if($row->kegiatan === 'hadir_lembur')
+                                        Lembur
+                                    @elseif($row->kegiatan === 'hadir')
+                                        Hadir
+                                    @else
+                                        {{ $row->kegiatan ?: '-' }}
+                                    @endif
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody class="divide-y divide-neutral-stone/30">
-                            @forelse($attendanceHistory as $row)
-                                <tr class="hover:bg-neutral-warm/30 transition">
-                                    <td class="px-6 py-4">
-                                        <div class="font-bold text-text-primary">
-                                            {{ \Carbon\Carbon::parse($row->tanggal)->translatedFormat('d F Y') }}</div>
-                                        <div class="text-xs text-text-secondary">
-                                            {{ \Carbon\Carbon::parse($row->tanggal)->translatedFormat('l') }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <span
-                                                class="bg-pastel-sage/20 text-pastel-sage-dark px-2 py-1 rounded text-xs font-bold">{{ $row->jam_masuk ? \Carbon\Carbon::parse($row->jam_masuk)->format('H:i') : '-' }}</span>
-                                            <span class="text-text-muted">➜</span>
-                                            <span
-                                                class="bg-pastel-rose/20 text-pastel-rose-dark px-2 py-1 rounded text-xs font-bold">{{ $row->jam_keluar ? \Carbon\Carbon::parse($row->jam_keluar)->format('H:i') : '-' }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        @if(in_array($row->status, ['izin', 'sakit', 'cuti', 'dinas']))
-                                            <span
-                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-pastel-peach/30 text-amber-800">
-                                                {{ ucfirst($row->status) }}
-                                            </span>
-                                        @elseif($row->status === 'terlambat')
-                                            <span
-                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-pastel-rose/30 text-red-800">
-                                                Terlambat
-                                            </span>
-                                        @else
-                                            <span
-                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-pastel-sage/30 text-green-800">
-                                                Hadir
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        @if($row->lat_in && $row->long_in)
-                                            <a href="https://www.google.com/maps?q={{ $row->lat_in }},{{ $row->long_in }}"
-                                                target="_blank" class="text-pastel-sky-dark hover:underline text-xs">
-                                                Lihat Lokasi
-                                            </a>
-                                        @else
-                                            <span class="text-text-muted text-xs">-</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="px-6 py-8 text-center text-text-secondary italic">
-                                        Belum ada data absensi bulan ini.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="px-6 py-10 text-center italic text-slate-500">Belum ada riwayat absensi pada filter ini.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        </div>
 
-        <!-- LEAVE REQUEST MODAL -->
+            <div class="border-t border-slate-100 p-4 md:p-5">
+                {{ $attendanceHistory->links() }}
+            </div>
+        </section>
+
         <x-pastel-modal name="izin" title="Pengajuan Ketidakhadiran" maxWidth="lg">
             <form method="POST" action="{{ route('izin.store') }}" enctype="multipart/form-data" class="space-y-4">
                 @csrf
 
                 <div>
-                    <label class="block text-sm font-medium text-text-secondary mb-1">Jenis Pengajuan</label>
+                    <label class="mb-1 block text-sm font-medium text-text-secondary">Jenis Pengajuan</label>
                     <select name="jenis" required
-                        class="w-full px-4 py-2 rounded-xl bg-white border border-neutral-stone focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20 transition">
+                        class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20">
                         <option value="izin">Izin</option>
                         <option value="sakit">Sakit</option>
                         <option value="cuti">Cuti</option>
@@ -282,92 +245,252 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-text-secondary mb-1">Tanggal Mulai</label>
+                        <label class="mb-1 block text-sm font-medium text-text-secondary">Tanggal Mulai</label>
                         <input type="date" name="tanggal_mulai" required
-                            class="w-full px-4 py-2 rounded-xl bg-white border border-neutral-stone focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20 transition">
+                            class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-text-secondary mb-1">Tanggal Selesai</label>
+                        <label class="mb-1 block text-sm font-medium text-text-secondary">Tanggal Selesai</label>
                         <input type="date" name="tanggal_selesai" required
-                            class="w-full px-4 py-2 rounded-xl bg-white border border-neutral-stone focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20 transition">
+                            class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-text-secondary mb-1">Alasan</label>
+                    <label class="mb-1 block text-sm font-medium text-text-secondary">Alasan</label>
                     <textarea name="alasan" required rows="3"
-                        class="w-full px-4 py-2 rounded-xl bg-white border border-neutral-stone focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20 transition"></textarea>
+                        class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20"></textarea>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-text-secondary mb-1">Lampirkan Foto atau Dokumen</label>
-                    <input type="file" name="dokumen" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="w-full text-sm text-text-secondary
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded-xl file:border-0
-                            file:text-sm file:font-semibold
-                            file:bg-pastel-sage/20 file:text-pastel-sage-dark
-                            hover:file:bg-pastel-sage/30
-                        ">
+                    <label class="mb-1 block text-sm font-medium text-text-secondary">Lampirkan Foto atau Dokumen</label>
+                    <input type="file" name="dokumen" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        class="w-full text-sm text-text-secondary file:mr-4 file:rounded-xl file:border-0 file:bg-pastel-sage/20 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-pastel-sage-dark hover:file:bg-pastel-sage/30">
                     <p class="mt-1 text-xs text-text-secondary">Format: PDF, JPG, PNG, DOCX (Max 5MB)</p>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4">
                     <button type="button" @click="show = false"
-                        class="px-4 py-2 text-sm font-medium text-text-secondary hover:bg-neutral-stone/30 rounded-lg transition">
+                        class="rounded-lg px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-neutral-stone/30">
                         Batal
                     </button>
                     <button type="submit"
-                        class="px-4 py-2 text-sm font-medium bg-pastel-sage hover:bg-pastel-sage-dark text-text-primary rounded-lg transition shadow-soft">
+                        class="rounded-lg bg-pastel-sage px-4 py-2 text-sm font-medium text-text-primary shadow-soft transition hover:bg-pastel-sage-dark">
                         Ajukan
                     </button>
                 </div>
             </form>
         </x-pastel-modal>
-
     </div>
-    <!-- CAMERA MODAL -->
-    <x-pastel-modal name="camera-modal" title="Ambil Foto Selfie" maxWidth="lg">
-        <div x-data="cameraHandler()" @open-camera.window="initCamera($event.detail.type)" class="space-y-4">
 
-            <!-- Video Preview -->
-            <div class="relative w-full aspect-[4/5] bg-black rounded-xl overflow-hidden shadow-inner">
-                <video x-ref="video" class="w-full h-full object-cover transform scale-x-[-1]" autoplay playsinline
-                    muted></video>
-                <canvas x-ref="canvas" class="hidden"></canvas>
-
-                <!-- Overlay Loading -->
-                <div x-show="loading"
-                    class="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white z-10">
-                    <svg class="animate-spin h-8 w-8 text-white mb-2" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                    <span x-text="loadingText" class="text-sm font-medium"></span>
+    <x-pastel-modal name="camera-modal" title="Absensi" maxWidth="2xl">
+        <div x-data="cameraHandler()"
+            @open-camera.window="initCamera($event.detail.type)"
+            @modal-closed.window="if ($event.detail === 'camera-modal') resetState()"
+            class="glass-attendance rounded-3xl p-2 md:p-4">
+            <div class="mb-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+                        <span class="material-icons-round">fingerprint</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900" x-text="attendanceType === 'pulang' ? 'Absen Pulang' : 'Absen Masuk'"></h3>
+                        <p class="text-xs text-slate-500"
+                            x-text="step === 'result' ? 'Konfirmasi hasil verifikasi absensi.' : 'Pastikan wajah terlihat jelas saat pengambilan foto.'"></p>
+                    </div>
                 </div>
-
-                <!-- Error Message -->
-                <div x-show="errorMessage"
-                    class="absolute bottom-4 left-4 right-4 bg-red-500/90 text-white px-4 py-2 rounded-xl text-sm text-center"
-                    x-text="errorMessage"></div>
+                <div class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 md:block"
+                    x-text="new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'"></div>
             </div>
 
-            <!-- Actions -->
-            <div class="flex justify-between items-center px-2">
-                <button type="button" @click="$dispatch('close-modal', 'camera-modal')"
-                    class="px-4 py-2 text-text-secondary hover:bg-neutral-stone/20 rounded-xl transition">
-                    Batal
-                </button>
+            <template x-if="step === 'capture'">
+                <div>
+                    <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                        <div class="space-y-4">
+                            <div class="relative aspect-square overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-100">
+                                <video x-show="!capturedPreview" x-ref="video" class="h-full w-full scale-x-[-1] object-cover" autoplay playsinline muted></video>
+                                <img x-show="capturedPreview" :src="capturedPreview" alt="Hasil foto absensi" class="h-full w-full object-cover" />
+                                <canvas x-ref="canvas" class="hidden"></canvas>
 
-                <button @click="takePicture" :disabled="loading"
-                    class="h-16 w-16 rounded-full border-4 border-pastel-sage bg-white flex items-center justify-center hover:bg-pastel-sage/20 transition disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 shadow-md">
-                    <div class="h-12 w-12 rounded-full bg-pastel-sage"></div>
-                </button>
+                                <div x-show="!stream && !loading && !capturedPreview"
+                                    class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-500">
+                                    <span class="material-icons-round text-4xl text-slate-400">photo_camera</span>
+                                    <p class="text-sm font-medium">Kamera belum menyala</p>
+                                    <p class="text-xs">Izinkan akses kamera di browser Anda</p>
+                                </div>
 
-                <div class="w-16"></div> <!-- Spacer for center alignment -->
-            </div>
+                                <div x-show="loading" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/50 text-white">
+                                    <svg class="mb-2 h-8 w-8 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span x-text="loadingText" class="text-sm font-medium"></span>
+                                </div>
+
+                                <div x-show="errorMessage"
+                                    class="absolute bottom-3 left-3 right-3 rounded-xl bg-red-500/90 px-3 py-2 text-center text-xs text-white"
+                                    x-text="errorMessage"></div>
+                            </div>
+
+                            <button @click="takePicture" :disabled="loading || !stream"
+                                class="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-200 px-4 py-3.5 text-sm font-bold text-slate-800 transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50">
+                                <span class="material-icons-round">camera_alt</span>
+                                Ambil Absensi
+                            </button>
+                        </div>
+
+                        <div class="flex flex-col gap-4">
+                            <div>
+                                <label for="kegiatan-modal" class="mb-2 block text-sm font-semibold text-slate-700">Kegiatan Hari Ini</label>
+                                <textarea id="kegiatan-modal" x-model="kegiatanText" rows="7"
+                                    placeholder="Tuliskan rencana kegiatan atau target Anda hari ini..."
+                                    class="w-full resize-none rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"></textarea>
+                                <p class="mt-1 text-right text-[10px] font-semibold uppercase tracking-wider text-slate-400">Opsional</p>
+                            </div>
+
+                            <div class="flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4">
+                                <span class="material-icons-round text-sky-600">info</span>
+                                <div class="text-sm">
+                                    <p class="font-semibold text-slate-800">Informasi Penting</p>
+                                    <p class="mt-1 text-slate-600">Pastikan wajah tidak tertutup masker atau objek lain saat mengambil absensi.</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-auto grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <button type="button" @click="$dispatch('close-modal', 'camera-modal')"
+                                    class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                                    Batal
+                                </button>
+                                <button type="button" @click="saveAttendance" :disabled="loading || !capturedBlob"
+                                    class="flex items-center justify-center gap-2 rounded-2xl bg-sky-200 px-4 py-3 text-sm font-bold text-slate-800 transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50">
+                                    <span class="material-icons-round text-base">save</span>
+                                    Simpan Kehadiran
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+                        <div class="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3">
+                            <span class="material-icons-round text-amber-600">location_on</span>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Lokasi</p>
+                                <p class="text-xs font-semibold text-slate-700">{{ $officeName }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-3">
+                            <span class="material-icons-round text-violet-600">verified_user</span>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-violet-700">Verifikasi</p>
+                                <p class="text-xs font-semibold text-slate-700">Biometric Face Recognition</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
+                            <span class="material-icons-round text-emerald-600">history</span>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Status Hari Ini</p>
+                                <p class="text-xs font-semibold text-slate-700"
+                                    x-text="attendanceType === 'pulang' ? 'Proses Absen Pulang' : 'Belum Melakukan Absen Masuk'"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="step === 'result'">
+                <div class="space-y-4">
+                    <div class="rounded-2xl border border-slate-200 bg-slate-100 p-4">
+                        <div class="mx-auto w-full max-w-2xl rounded-xl border border-slate-200 bg-white shadow-sm">
+                            <div class="border-b border-slate-200 px-4 py-3 text-center text-lg font-bold text-slate-800"
+                                x-text="attendanceType === 'pulang' ? 'Absen Pulang' : 'Absen Masuk'"></div>
+
+                            <div class="space-y-4 p-4">
+                                <div class="relative h-56 overflow-hidden rounded-lg bg-slate-700">
+                                    <img x-show="capturedPreview" :src="capturedPreview" alt="Capture result" class="h-full w-full object-cover opacity-70" />
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="relative h-36 w-36 rounded-2xl border-4"
+                                            :class="attendanceResult?.success ? 'border-emerald-400' : 'border-red-400'">
+                                            <div class="absolute -left-1 -top-1 h-4 w-4 border-l-4 border-t-4"
+                                                :class="attendanceResult?.success ? 'border-emerald-400' : 'border-red-400'"></div>
+                                            <div class="absolute -right-1 -top-1 h-4 w-4 border-r-4 border-t-4"
+                                                :class="attendanceResult?.success ? 'border-emerald-400' : 'border-red-400'"></div>
+                                            <div class="absolute -bottom-1 -left-1 h-4 w-4 border-b-4 border-l-4"
+                                                :class="attendanceResult?.success ? 'border-emerald-400' : 'border-red-400'"></div>
+                                            <div class="absolute -bottom-1 -right-1 h-4 w-4 border-b-4 border-r-4"
+                                                :class="attendanceResult?.success ? 'border-emerald-400' : 'border-red-400'"></div>
+                                            <div class="absolute -top-10 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-semibold text-white"
+                                                :class="attendanceResult?.success ? 'bg-emerald-500' : 'bg-red-500'">
+                                                <span x-text="(attendanceResult?.data?.user_name || '{{ $user->name }}') + (attendanceResult?.success ? ' - Dikenali' : ' - Tidak dikenali')"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3 rounded-lg border bg-slate-100 px-4 py-3"
+                                    :class="attendanceResult?.success ? 'border-emerald-200' : 'border-red-200'">
+                                    <div class="flex h-11 w-11 items-center justify-center rounded-full border-2 border-slate-800 bg-white">
+                                        <span class="material-icons-round text-lg" x-text="attendanceResult?.success ? 'check' : 'close'"></span>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-900" x-text="attendanceResult?.success ? 'Wajah dikenali' : 'Wajah tidak dikenali'"></p>
+                                        <p class="text-sm text-slate-600">Nama: <span class="font-semibold" x-text="attendanceResult?.data?.user_name || '{{ $user->name }}'"></span></p>
+                                    </div>
+                                </div>
+
+                                <div class="rounded-lg border border-slate-200 p-3 text-sm text-slate-700">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-icons-round text-base">schedule</span>
+                                        <span x-text="capturedAt"></span>
+                                    </div>
+                                    <div class="mt-2 flex items-center gap-2">
+                                        <span class="material-icons-round text-base">location_on</span>
+                                        <span x-text="locationStatus"></span>
+                                    </div>
+                                </div>
+
+                                <div class="rounded-lg border border-slate-200 p-3">
+                                    <div class="flex items-center gap-3 text-sm text-slate-700">
+                                        <div class="flex h-7 w-7 items-center justify-center rounded-full border border-slate-800">
+                                            <span class="material-icons-round text-sm">check</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold" x-text="attendanceType === 'pulang' ? 'Jam Pulang Tercatat' : 'Jam Masuk Tercatat'"></p>
+                                            <p x-text="resultStatusLabel()"></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div x-show="attendanceResult?.success && attendanceType === 'masuk' && attendanceResult?.data?.status_masuk === 'terlambat'"
+                                    class="flex items-start gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs text-red-700">
+                                    <span class="material-icons-round text-sm">warning</span>
+                                    <p>Absen terlambat. Mohon tingkatkan ketepatan waktu.</p>
+                                </div>
+
+                                <div x-show="attendanceResult && !attendanceResult.success"
+                                    class="flex items-start gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs text-red-700">
+                                    <span class="material-icons-round text-sm">error</span>
+                                    <p x-text="attendanceResult?.message"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <button type="button" @click="closeAndRefresh" x-show="attendanceResult?.success"
+                            class="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 sm:col-span-2">
+                            Kembali ke Dashboard
+                        </button>
+                        <button type="button" @click="retryCapture" x-show="attendanceResult && !attendanceResult.success"
+                            class="rounded-2xl bg-sky-200 px-4 py-3 text-sm font-bold text-slate-800 transition hover:brightness-95">
+                            Coba Lagi
+                        </button>
+                        <button type="button" @click="$dispatch('close-modal', 'camera-modal')" x-show="attendanceResult && !attendanceResult.success"
+                            class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </template>
         </div>
     </x-pastel-modal>
 
@@ -375,13 +498,22 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('cameraHandler', () => ({
                 stream: null,
-                loading: true,
+                loading: false,
                 loadingText: 'Menyiapkan kamera...',
                 errorMessage: '',
-                attendanceType: '', // 'masuk' or 'pulang'
+                step: 'capture',
+                attendanceType: '',
+                capturedBlob: null,
+                capturedPreview: '',
+                kegiatanText: '',
+                attendanceResult: null,
+                capturedAt: '',
+                locationStatus: '',
 
                 async initCamera(type) {
                     this.attendanceType = type;
+                    this.resetState(false);
+                    this.step = 'capture';
                     this.loading = true;
                     this.loadingText = 'Menyalakan kamera...';
                     this.errorMessage = '';
@@ -391,38 +523,56 @@
                         this.$refs.video.srcObject = this.stream;
                         this.loading = false;
                     } catch (err) {
-                        console.error(err);
                         this.loading = false;
                         this.errorMessage = 'Gagal akses kamera: ' + err.message;
                     }
                 },
 
-                async takePicture() {
+                takePicture() {
                     this.loading = true;
-                    this.loadingText = 'Mengambil lokasi...';
+                    this.loadingText = 'Mengambil foto...';
                     this.errorMessage = '';
 
                     const video = this.$refs.video;
                     const canvas = this.$refs.canvas;
 
-                    // Capture Frame
+                    if (!video.videoWidth || !video.videoHeight) {
+                        this.loading = false;
+                        this.errorMessage = 'Kamera belum siap. Silakan coba lagi.';
+                        return;
+                    }
+
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     const ctx = canvas.getContext('2d');
-                    // Flip context horizontally if using front camera (optional, consistent with preview)
-                    // ctx.translate(canvas.width, 0);
-                    // ctx.scale(-1, 1);
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                    // Convert to Blob
-                    canvas.toBlob(async (blob) => {
+                    canvas.toBlob((blob) => {
                         if (!blob) {
                             this.loading = false;
                             this.errorMessage = 'Gagal mengambil gambar.';
                             return;
                         }
 
-                        // Get Geolocation
+                        this.capturedBlob = blob;
+                        if (this.capturedPreview) {
+                            URL.revokeObjectURL(this.capturedPreview);
+                        }
+                        this.capturedPreview = URL.createObjectURL(blob);
+                        this.loading = false;
+                    }, 'image/jpeg', 0.8);
+                },
+
+                saveAttendance() {
+                    if (!this.capturedBlob) {
+                        this.errorMessage = 'Ambil foto absensi terlebih dahulu.';
+                        return;
+                    }
+
+                    this.loading = true;
+                    this.loadingText = 'Mengambil lokasi...';
+                    this.errorMessage = '';
+
                         if (!navigator.geolocation) {
                             this.loading = false;
                             this.errorMessage = 'Browser tidak support Geolocation.';
@@ -431,7 +581,16 @@
 
                         navigator.geolocation.getCurrentPosition(
                             async (position) => {
-                                await this.submitAttendance(blob, position.coords.latitude, position.coords.longitude);
+                                this.capturedAt = new Date().toLocaleString('id-ID', {
+                                    weekday: 'long',
+                                    day: '2-digit',
+                                    month: 'long',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }) + ' WIB';
+                                this.locationStatus = `Lokasi terekam (${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)})`;
+                                await this.submitAttendance(this.capturedBlob, position.coords.latitude, position.coords.longitude);
                             },
                             (err) => {
                                 this.loading = false;
@@ -439,7 +598,6 @@
                             },
                             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                         );
-                    }, 'image/jpeg', 0.8);
                 },
 
                 async submitAttendance(photoBlob, lat, long) {
@@ -452,31 +610,100 @@
                     formData.append('longitude', long);
 
                     try {
-                        // Get CSRF Token
                         const token = document.querySelector('meta[name="csrf-token"]').content;
 
                         const response = await fetch('/api/attendance/auto', {
                             method: 'POST',
                             headers: {
                                 'X-CSRF-TOKEN': token,
-                                'Accept': 'application/json'
+                                Accept: 'application/json'
                             },
                             body: formData
                         });
 
                         const result = await response.json();
 
+                        this.loading = false;
+                        this.stopCamera();
+                        this.step = 'result';
+                        this.attendanceResult = {
+                            success: response.ok,
+                            message: result?.message || 'Terjadi kesalahan sistem.',
+                            data: result?.data || {}
+                        };
+
                         if (!response.ok) {
-                            throw new Error(result.message || 'Terjadi kesalahan sistem.');
+                            this.errorMessage = '';
                         }
-
-                        // Success
-                        // Reload page to update dashboard data
-                        window.location.href = "{{ route('dashboard') }}?status=success&message=" + encodeURIComponent(result.message);
-
                     } catch (error) {
                         this.loading = false;
-                        this.errorMessage = error.message;
+                        this.stopCamera();
+                        this.step = 'result';
+                        this.attendanceResult = {
+                            success: false,
+                            message: error.message || 'Terjadi kesalahan jaringan.',
+                            data: {}
+                        };
+                        this.errorMessage = '';
+                    }
+                },
+
+                resultStatusLabel() {
+                    if (!this.attendanceResult) {
+                        return '-';
+                    }
+
+                    if (!this.attendanceResult.success) {
+                        return 'Status: Gagal diverifikasi';
+                    }
+
+                    if (this.attendanceType === 'pulang') {
+                        const pulang = this.attendanceResult.data?.status_pulang;
+                        if (pulang === 'lembur') {
+                            return 'Status: Lembur';
+                        }
+
+                        return 'Status: Pulang tercatat';
+                    }
+
+                    const masuk = this.attendanceResult.data?.status_masuk;
+                    if (masuk === 'tepat_waktu') {
+                        return 'Status: Tepat waktu';
+                    }
+                    if (masuk === 'terlambat') {
+                        return 'Status: Terlambat';
+                    }
+
+                    return 'Status: Berhasil tercatat';
+                },
+
+                closeAndRefresh() {
+                    this.$dispatch('close-modal', 'camera-modal');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 150);
+                },
+
+                async retryCapture() {
+                    await this.initCamera(this.attendanceType || 'masuk');
+                },
+
+                resetState(stopStream = true) {
+                    this.loading = false;
+                    this.loadingText = 'Menyiapkan kamera...';
+                    this.errorMessage = '';
+                    this.step = 'capture';
+                    this.capturedBlob = null;
+                    if (this.capturedPreview) {
+                        URL.revokeObjectURL(this.capturedPreview);
+                    }
+                    this.capturedPreview = '';
+                    this.kegiatanText = '';
+                    this.attendanceResult = null;
+                    this.capturedAt = '';
+                    this.locationStatus = '';
+                    if (stopStream) {
+                        this.stopCamera();
                     }
                 },
 
@@ -489,10 +716,8 @@
             }));
         });
 
-        // Helper function outside Alpine component to interact with it
         function startAttendance(type) {
             window.dispatchEvent(new CustomEvent('open-modal', { detail: 'camera-modal' }));
-            // Wait for modal to open then init camera
             setTimeout(() => {
                 window.dispatchEvent(new CustomEvent('open-camera', { detail: { type: type } }));
             }, 100);
