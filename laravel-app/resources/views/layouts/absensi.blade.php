@@ -114,9 +114,8 @@
         class="hidden md:flex flex-col w-64 h-screen fixed inset-y-0 left-0 bg-white/80 backdrop-blur-xl border-r border-neutral-stone/50 z-40">
         <!-- Logo Area -->
         <div class="h-20 flex items-center gap-3 px-6 border-b border-neutral-stone/30">
-            <div
-                class="w-10 h-10 rounded-xl bg-gradient-to-br from-pastel-sage to-pastel-sky flex items-center justify-center shadow-soft text-white font-bold text-xl">
-                LW
+            <div class="w-10 h-10 flex items-center justify-center">
+                <x-application-logo class="w-10 h-10 shadow-soft rounded-xl" />
             </div>
             <span class="font-bold text-xl text-text-primary tracking-tight">Presensi</span>
         </div>
@@ -215,9 +214,9 @@
     <!-- Mobile Header (conditionally hidden if dashboard provides its own) -->
     <div class="md:hidden flex items-center justify-between mb-6" x-show="!$routeIs('dashboard')">
         <div class="flex items-center gap-3">
-            <div
-                class="w-10 h-10 rounded-xl bg-gradient-to-br from-pastel-sage to-pastel-sky flex items-center justify-center shadow-soft text-white font-bold text-lg">
-                LW</div>
+            <div class="w-10 h-10 flex items-center justify-center">
+                <x-application-logo class="w-10 h-10 shadow-soft rounded-xl" />
+            </div>
             <div>
                 <h1 class="font-bold text-lg text-text-primary leading-tight">Presensi</h1>
                 <p class="text-xs text-text-secondary">{{ \Carbon\Carbon::now()->format('d F Y') }}</p>

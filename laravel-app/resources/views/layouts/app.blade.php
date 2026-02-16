@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <title>Sistem Presensi</title>
@@ -11,12 +12,13 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body>
 
     <!-- HEADER -->
     <div class="topbar">
         <div class="logo">
-            <img src="{{ asset('images/LW.png') }}" class="logo-img">
+            <x-application-logo class="logo-img" />
             <span class="logo-text">Sistem Presensi</span>
         </div>
     </div>
@@ -27,4 +29,5 @@
     </main>
 
 </body>
+
 </html>

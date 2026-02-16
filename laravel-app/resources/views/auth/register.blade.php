@@ -125,6 +125,9 @@
             <div
                 class="w-full max-w-md bg-neutral-warm p-8 rounded-2xl shadow-soft border border-neutral-stone/50 z-10 relative">
                 <div class="mb-6 text-center">
+                    <div class="flex justify-center mb-4">
+                        <x-application-logo class="w-20 h-20" />
+                    </div>
                     <h1 class="text-3xl font-bold text-text-primary mb-2 tracking-tight">Buat Akun Baru</h1>
                     <p class="text-text-secondary text-sm">
                         Daftar untuk mengakses Sistem Absensi <br>
