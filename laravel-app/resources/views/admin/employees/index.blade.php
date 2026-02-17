@@ -34,19 +34,23 @@
             </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('employees.index', array_merge(request()->except(['page', 'face_status']), ['face_status' => 'all'])) }}"
-                class="rounded-full border px-4 py-2 text-xs font-bold transition {{ in_array(request('face_status', 'all'), ['all', null], true) ? 'border-primary bg-primary/30 text-slate-800 dark:text-slate-100' : 'border-slate-200 bg-white text-slate-500 hover:border-primary/50 dark:border-slate-700 dark:bg-card-dark dark:text-slate-300' }}">
-                Semua
-            </a>
-            <a href="{{ route('employees.index', array_merge(request()->except(['page', 'face_status']), ['face_status' => 'registered'])) }}"
-                class="rounded-full border px-4 py-2 text-xs font-bold transition {{ request('face_status') === 'registered' ? 'border-primary bg-primary/30 text-slate-800 dark:text-slate-100' : 'border-slate-200 bg-white text-slate-500 hover:border-primary/50 dark:border-slate-700 dark:bg-card-dark dark:text-slate-300' }}">
-                Face Terdaftar
-            </a>
-            <a href="{{ route('employees.index', array_merge(request()->except(['page', 'face_status']), ['face_status' => 'unregistered'])) }}"
-                class="rounded-full border px-4 py-2 text-xs font-bold transition {{ request('face_status') === 'unregistered' ? 'border-primary bg-primary/30 text-slate-800 dark:text-slate-100' : 'border-slate-200 bg-white text-slate-500 hover:border-primary/50 dark:border-slate-700 dark:bg-card-dark dark:text-slate-300' }}">
-                Face Belum
-            </a>
+        <div class="flex gap-2 w-full md:w-auto">
+            <button onclick="window.location='{{ route('employees.create') }}'"
+                class="flex-1 md:flex-none bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-slate-900/20 active:scale-95">
+                <span class="material-icons-round text-lg">add</span>
+                Tambah
+            </button>
+            <button onclick="window.location='{{ route('admin.export.employees') }}'"
+                class="flex-1 md:flex-none bg-sky/20 text-sky-700 dark:text-sky-300 border border-sky/20 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-sky/30 transition-all shadow-sm active:scale-95">
+                <span class="material-icons-round text-lg">download</span>
+                Export
+            </button>
+            <button
+                class="flex-1 md:flex-none bg-white dark:bg-card-dark text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95">
+                <span class="material-icons-round text-lg">filter_list</span>
+                Filter
+            </button>
+
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

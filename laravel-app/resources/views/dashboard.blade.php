@@ -10,13 +10,72 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        .glass-attendance {
-            background: rgba(255, 255, 255, 0.82);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-        }
-    </style>
-@endpush
+
+        <!-- ANNOUNCEMENTS SECTION -->
+        @if(isset($activeAnnouncements) && $activeAnnouncements->count() > 0)
+            <div class="mb-6 space-y-4">
+                @foreach($activeAnnouncements as $announcement)
+                    @php
+                        $bgColor = match($announcement->type) {
+                            'info' => 'bg-blue-50 border-blue-100 text-blue-800',
+                            'warning' => 'bg-yellow-50 border-yellow-100 text-yellow-800',
+                            'danger' => 'bg-red-50 border-red-100 text-red-800',
+                            default => 'bg-slate-50 border-slate-100 text-slate-800',
+                        };
+                        $icon = match($announcement->type) {
+                            'info' => 'info',
+                            'warning' => 'warning',
+                            'danger' => 'error',
+                            default => 'campaign',
+                        };
+                        $iconColor = match($announcement->type) {
+                            'info' => 'text-blue-500',
+                            'warning' => 'text-yellow-500',
+                            'danger' => 'text-red-500',
+                            default => 'text-slate-500',
+                        };
+                    @endphp
+                    <div class="{{ $bgColor }} border rounded-2xl p-4 flex items-start gap-3 shadow-sm relative overflow-hidden">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <span class="material-icons-round {{ $iconColor }}">{{ $icon }}</span>
+                        </div>
+                        <div class="flex-1 z-10">
+                            <h4 class="font-bold text-sm mb-1">{{ $announcement->title }}</h4>
+                            <p class="text-xs opacity-90 leading-relaxed">{{ $announcement->content }}</p>
+                            <p class="text-[10px] mt-2 opacity-70 font-medium">
+                                {{ \Carbon\Carbon::parse($announcement->start_date)->format('d M Y') }}
+                            </p>
+                        </div>
+                        <!-- Decorative Circle -->
+                        <div class="absolute -right-4 -bottom-4 w-16 h-16 rounded-full bg-white opacity-20 z-0"></div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+        <!-- COMPACT PROFILE HEADER (Gojek/Shopee Style) -->
+        <div class="md:hidden flex items-center justify-between mb-6 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold border border-emerald-200">
+                    {{ substr(Auth::user()->name, 0, 1) }}
+                </div>
+                <div class="leading-tight">
+                    <p class="text-xs text-gray-500 font-medium">Selamat Pagi,</p>
+                    <h2 class="text-sm font-bold text-gray-800">{{ explode(' ', $user->name)[0] }}</h2>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                 <div class="text-right hidden sm:block">
+                    <p class="text-xs text-gray-400">{{ \Carbon\Carbon::now()->translatedFormat('l, d M') }}</p>
+                </div>
+                <button class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
 
 @section('content')
     <div x-data="{}" class="employee-dashboard space-y-6 pb-16">
