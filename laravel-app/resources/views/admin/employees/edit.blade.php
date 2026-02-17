@@ -46,6 +46,23 @@
                         @enderror
                     </div>
 
+                    <!-- Departemen -->
+                    <div class="col-span-2">
+                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Departemen</label>
+                        <select name="department_id"
+                            class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border {{ $errors->has('department_id') ? 'border-rose-400 ring-2 ring-rose-200' : 'border-slate-200 dark:border-slate-700' }} rounded-xl focus:ring-2 focus:ring-sage focus:border-sage transition-all text-slate-900 dark:text-white font-medium">
+                            <option value="">-- Pilih Departemen --</option>
+                            @foreach($departments as $dept)
+                                <option value="{{ $dept->id }}" {{ old('department_id', $employee->department_id) == $dept->id ? 'selected' : '' }}>
+                                    {{ $dept->name }} ({{ $dept->code }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('department_id')
+                            <p class="text-rose-500 text-xs mt-1 font-bold">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Email -->
                     <div>
                         <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Alamat Email</label>

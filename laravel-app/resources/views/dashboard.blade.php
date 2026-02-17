@@ -3,6 +3,48 @@
 @section('content')
     <div x-data="{ izinOpen: false }" class="pb-20 md:pb-0">
 
+        <!-- ANNOUNCEMENTS SECTION -->
+        @if(isset($activeAnnouncements) && $activeAnnouncements->count() > 0)
+            <div class="mb-6 space-y-4">
+                @foreach($activeAnnouncements as $announcement)
+                    @php
+                        $bgColor = match($announcement->type) {
+                            'info' => 'bg-blue-50 border-blue-100 text-blue-800',
+                            'warning' => 'bg-yellow-50 border-yellow-100 text-yellow-800',
+                            'danger' => 'bg-red-50 border-red-100 text-red-800',
+                            default => 'bg-slate-50 border-slate-100 text-slate-800',
+                        };
+                        $icon = match($announcement->type) {
+                            'info' => 'info',
+                            'warning' => 'warning',
+                            'danger' => 'error',
+                            default => 'campaign',
+                        };
+                        $iconColor = match($announcement->type) {
+                            'info' => 'text-blue-500',
+                            'warning' => 'text-yellow-500',
+                            'danger' => 'text-red-500',
+                            default => 'text-slate-500',
+                        };
+                    @endphp
+                    <div class="{{ $bgColor }} border rounded-2xl p-4 flex items-start gap-3 shadow-sm relative overflow-hidden">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <span class="material-icons-round {{ $iconColor }}">{{ $icon }}</span>
+                        </div>
+                        <div class="flex-1 z-10">
+                            <h4 class="font-bold text-sm mb-1">{{ $announcement->title }}</h4>
+                            <p class="text-xs opacity-90 leading-relaxed">{{ $announcement->content }}</p>
+                            <p class="text-[10px] mt-2 opacity-70 font-medium">
+                                {{ \Carbon\Carbon::parse($announcement->start_date)->format('d M Y') }}
+                            </p>
+                        </div>
+                        <!-- Decorative Circle -->
+                        <div class="absolute -right-4 -bottom-4 w-16 h-16 rounded-full bg-white opacity-20 z-0"></div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
         <!-- COMPACT PROFILE HEADER (Gojek/Shopee Style) -->
         <div class="md:hidden flex items-center justify-between mb-6 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
             <div class="flex items-center gap-3">

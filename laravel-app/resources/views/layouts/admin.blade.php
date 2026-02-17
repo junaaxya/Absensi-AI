@@ -208,6 +208,14 @@
                 </div>
             @endif
 
+            @if(session('info'))
+                <div class="mb-6 bg-sky-100 border border-sky-200 text-sky-700 px-4 py-3 rounded-2xl flex items-center gap-3 shadow-sm"
+                    role="alert">
+                    <span class="material-icons-round text-sky-600">info</span>
+                    <span class="block sm:inline font-medium">{{ session('info') }}</span>
+                </div>
+            @endif
+
             @yield('content')
         </main>
     </div>

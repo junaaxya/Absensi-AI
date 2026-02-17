@@ -8,13 +8,43 @@
                 <h1 class="text-2xl font-bold text-text-primary">Laporan Absensi</h1>
                 <p class="text-text-secondary mt-1">Pantau kehadiran seluruh karyawan.</p>
             </div>
-            <!-- EXPORT BUTTON (Placeholder for future) -->
-            <!-- 
-            <a href="#" class="px-4 py-2 bg-pastel-sage hover:bg-pastel-sage-dark text-text-primary font-bold rounded-xl transition shadow-soft flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Export Excel
-            </a>
-            -->
+            <!-- EXPORT BUTTON -->
+            <div x-data="{ showExportModal: false }">
+                <button @click="showExportModal = true" class="px-4 py-2 bg-pastel-sage hover:bg-pastel-sage-dark text-text-primary font-bold rounded-xl transition shadow-soft flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Export Data
+                </button>
+
+                <!-- EXPORT MODAL -->
+                <div x-show="showExportModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                    x-transition.opacity>
+                    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl" @click.outside="showExportModal = false">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="font-bold text-lg text-text-primary">Export Data Absensi</h3>
+                            <button @click="showExportModal = false" class="p-1 rounded-lg hover:bg-neutral-stone/20">
+                                <svg class="w-6 h-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        <form action="{{ route('admin.export.attendance') }}" method="GET">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-text-secondary uppercase mb-1">Dari Tanggal</label>
+                                    <input type="date" name="start_date" value="{{ $startDate }}"
+                                        class="w-full px-4 py-2 rounded-xl border border-neutral-stone bg-white focus:ring-2 focus:ring-pastel-sage/50 focus:border-pastel-sage transition text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-text-secondary uppercase mb-1">Sampai Tanggal</label>
+                                    <input type="date" name="end_date" value="{{ $endDate }}"
+                                        class="w-full px-4 py-2 rounded-xl border border-neutral-stone bg-white focus:ring-2 focus:ring-pastel-sage/50 focus:border-pastel-sage transition text-sm">
+                                </div>
+                                <button type="submit" class="w-full py-3 bg-pastel-sage hover:bg-pastel-sage-dark text-text-primary font-bold rounded-xl transition shadow-soft flex items-center justify-center gap-2">
+                                    Download Excel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- MAIN CARD -->

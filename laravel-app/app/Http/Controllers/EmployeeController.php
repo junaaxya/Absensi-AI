@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Department;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -58,7 +59,8 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        return view('admin.employees.create');
+        $departments = Department::active()->orderBy('name')->get();
+        return view('admin.employees.create', compact('departments'));
     }
 
     /**
@@ -73,6 +75,7 @@ class EmployeeController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'jabatan' => ['nullable', 'string', 'max:255'],
             'role' => ['required', 'string', 'in:admin,karyawan,staf,manager'],
+            'department_id' => ['nullable', 'exists:departments,id'],
         ]);
 
         $user = User::create([
@@ -82,6 +85,7 @@ class EmployeeController extends Controller
             'password' => Hash::make($request->password),
             'jabatan' => $request->jabatan,
             'role' => $request->role,
+            'department_id' => $request->department_id,
         ]);
 
         return redirect()->route('employees.index')->with('success', 'Karyawan berhasil ditambahkan.');
@@ -92,7 +96,8 @@ class EmployeeController extends Controller
      */
     public function edit(User $employee)
     {
-        return view('admin.employees.edit', compact('employee'));
+        $departments = Department::active()->orderBy('name')->get();
+        return view('admin.employees.edit', compact('employee', 'departments'));
     }
 
     /**
@@ -108,6 +113,7 @@ class EmployeeController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $employee->id],
             'jabatan' => ['nullable', 'string', 'max:255'],
             'role' => ['required', 'string', 'in:admin,karyawan,staf,manager'],
+            'department_id' => ['nullable', 'exists:departments,id'],
         ]);
 
         $employee->update([
@@ -116,6 +122,7 @@ class EmployeeController extends Controller
             'username' => $request->username,
             'jabatan' => $request->jabatan,
             'role' => $request->role,
+            'department_id' => $request->department_id,
         ]);
 
         if ($request->filled('password')) {

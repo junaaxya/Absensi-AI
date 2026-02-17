@@ -7,10 +7,14 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Attendance;
 use App\Models\SystemSetting;
+use App\Models\WorkShift;
+use App\Models\Holiday;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\Client\ConnectionException;
+use App\Notifications\LateCheckinNotification;
 
 class AttendanceController extends Controller
 {
@@ -148,19 +152,39 @@ class AttendanceController extends Controller
         }
 
         // =========================
-        // WAKTU SEKARANG
+        // WAKTU SEKARANG & LOGIC INTEGRATION
         // =========================
         $now   = Carbon::now();
         $today = $now->toDateString();
+        $dayName = $now->format('l');
 
-        $attendance = Attendance::where('user_id', $user->id)
-            ->where('tanggal', $today)
-            ->first();
+        // 1. Holiday Check
+        $isHoliday = Holiday::whereDate('date', $today)->exists();
+
+        // 2. Shift & Settings Logic
+        $shift = $user->shift;
+        $workStartTime = $settings->work_start_time ?? '08:00:00';
+        $workEndTime = $settings->work_end_time ?? '17:00:00';
+        $lateTolerance = $settings->late_tolerance_minutes ?? 15;
+
+        if ($shift) {
+            $workStartTime = $shift->start_time;
+            $workEndTime = $shift->end_time;
+
+            // If today is not in working days, treat as holiday
+            $workingDays = $shift->days ?? [];
+            if (!in_array($dayName, $workingDays)) {
+                $isHoliday = true;
+            }
+        }
 
         // =====================================================
         // ===================== ABSEN MASUK ====================
         // =====================================================
         if ($request->type === 'masuk') {
+            $attendance = Attendance::where('user_id', $user->id)
+                ->where('tanggal', $today)
+                ->first();
 
             if ($attendance && $attendance->jam_masuk) {
                 return response()->json([
@@ -171,19 +195,12 @@ class AttendanceController extends Controller
 
             $jamMasuk = $now->format('H:i:s');
 
-            // 🟢 UPDATE: GUNAKAN PENGATURAN JAM DARI DATABASE
-            // Mengambil jam masuk dan toleransi dari database
-            $workStart = $settings->work_start_time ?? '08:00:00';
-            $tolerance = $settings->late_tolerance_minutes ?? 15;
-
             // Membuat objek Carbon untuk batas masuk + toleransi
-            $batasMasuk = Carbon::createFromFormat('H:i:s', $workStart)->addMinutes($tolerance);
-            
-            // Cek apakah waktu sekarang melewati batas masuk
-            // Note: Perlu set tanggal hari ini agar perbandingan akurat
+            $batasMasuk = Carbon::createFromFormat('H:i:s', $workStartTime)->addMinutes($lateTolerance);
             $batasMasuk->setDate($now->year, $now->month, $now->day);
-            
-            $statusMasuk = $now->gt($batasMasuk) ? 'terlambat' : 'tepat_waktu';
+
+            // If holiday, force tepat_waktu
+            $statusMasuk = $isHoliday ? 'tepat_waktu' : ($now->gt($batasMasuk) ? 'terlambat' : 'tepat_waktu');
 
             $attendance = Attendance::updateOrCreate(
                 [
@@ -206,10 +223,13 @@ class AttendanceController extends Controller
                 'tanggal'     => $today,
                 'jam_masuk'   => $jamMasuk,
                 'statusMasuk' => $statusMasuk,
+                'is_holiday'  => $isHoliday,
                 'batas_masuk' => $batasMasuk->toTimeString(),
-                'latitude'    => $request->latitude,
-                'longitude'   => $request->longitude,
             ]);
+
+            if ($statusMasuk === 'terlambat' && $settings->notify_late_checkin) {
+                $this->sendLateCheckinNotification($settings, $user, $jamMasuk, $today);
+            }
 
             return response()->json([
                 'success' => true,
@@ -229,6 +249,18 @@ class AttendanceController extends Controller
         // =====================================================
         // ===================== ABSEN PULANG ===================
         // =====================================================
+        // Night Shift Handling: Look for open record first
+        $attendance = Attendance::where('user_id', $user->id)
+            ->whereNull('jam_keluar')
+            ->orderBy('tanggal', 'desc')
+            ->first();
+
+        if (!$attendance) {
+            $attendance = Attendance::where('user_id', $user->id)
+                ->where('tanggal', $today)
+                ->first();
+        }
+
         if (!$attendance || !$attendance->jam_masuk) {
             return response()->json([
                 'success' => false,
@@ -245,33 +277,27 @@ class AttendanceController extends Controller
 
         $jamKeluar = $now->format('H:i:s');
 
-        // 🟢 UPDATE: GUNAKAN PENGATURAN LEMBUR DARI DATABASE
-        $overtimeStart = $settings->overtime_start_time ?? '17:30:00';
-        $batasLembur = Carbon::createFromFormat('H:i:s', $overtimeStart);
+        // Overtime check: Use workEndTime as per instruction
+        $batasLembur = Carbon::createFromFormat('H:i:s', $workEndTime);
         $batasLembur->setDate($now->year, $now->month, $now->day);
 
         $isLembur = $now->gte($batasLembur);
 
-        // ⛔ JANGAN PERNAH sentuh kolom status di sini
         $attendance->update([
             'jam_keluar' => $jamKeluar,
             'lat_out'    => $request->latitude,
             'long_out'   => $request->longitude,
             'similarity_score_out' => $similarityScore,
-
-            // ⬅️ SIMPAN STATUS PULANG & HADIR DI kegiatan
             'kegiatan'   => $isLembur ? 'hadir_lembur' : 'hadir',
         ]);
 
         Log::info("ABSEN PULANG OK", [
             'user_id'    => $user->id,
             'nama'       => $user->name,
-            'tanggal'    => $today,
+            'tanggal'    => $attendance->tanggal,
             'jam_keluar' => $jamKeluar,
             'kegiatan'   => $attendance->kegiatan,
             'batas_lembur' => $batasLembur->toTimeString(),
-            'latitude'   => $request->latitude,
-            'longitude'  => $request->longitude,
         ]);
 
         return response()->json([
@@ -290,5 +316,30 @@ class AttendanceController extends Controller
                 'long_out'      => $attendance->long_out,
             ]
         ]);
+    }
+
+    private function sendLateCheckinNotification(SystemSetting $settings, User $user, string $checkinTime, string $date): void
+    {
+        $emailsRaw = $settings->notification_emails;
+
+        if (empty($emailsRaw)) {
+            return;
+        }
+
+        $emails = array_filter(array_map('trim', preg_split('/[,;\n]+/', $emailsRaw)));
+
+        foreach ($emails as $email) {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                try {
+                    Notification::route('mail', $email)
+                        ->notify(new LateCheckinNotification($user->name, $checkinTime, $date));
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send late checkin notification', [
+                        'email' => $email,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
     }
 }

@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \App\Traits\Auditable;
 
     /**
      * The attributes that are mass assignable.
@@ -26,6 +26,8 @@ class User extends Authenticatable
     'jabatan',
     'foto',
     'has_face_data',
+    'department_id',
+    'shift_id',
     ];
 
     /**
@@ -50,5 +52,15 @@ class User extends Authenticatable
             'password' => 'hashed',
             'has_face_data' => 'boolean',
         ];
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(WorkShift::class);
     }
 }

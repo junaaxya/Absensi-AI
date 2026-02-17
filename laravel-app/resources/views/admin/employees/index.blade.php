@@ -18,6 +18,11 @@
                 <span class="material-icons-round text-lg">add</span>
                 Tambah
             </button>
+            <button onclick="window.location='{{ route('admin.export.employees') }}'"
+                class="flex-1 md:flex-none bg-sky/20 text-sky-700 dark:text-sky-300 border border-sky/20 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-sky/30 transition-all shadow-sm active:scale-95">
+                <span class="material-icons-round text-lg">download</span>
+                Export
+            </button>
             <button
                 class="flex-1 md:flex-none bg-white dark:bg-card-dark text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95">
                 <span class="material-icons-round text-lg">filter_list</span>
