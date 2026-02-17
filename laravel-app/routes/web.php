@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\IzinController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\AdminEmployeeFaceController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Middleware\AdminOnly;
 
@@ -77,6 +78,16 @@ Route::middleware(['auth'])->group(function () {
             ->name('admin.absence.updateStatus');
             
         Route::resource('employees', EmployeeController::class);
+
+        Route::get('/admin/employees/{employee}/face-data', [AdminEmployeeFaceController::class, 'show'])
+            ->name('admin.employees.face-data.show');
+
+        Route::delete('/admin/employees/{employee}/face-data', [AdminEmployeeFaceController::class, 'destroy'])
+            ->name('admin.employees.face-data.destroy');
+
+        Route::delete('/admin/employees/{employee}/face-data/photos/{photo}', [AdminEmployeeFaceController::class, 'destroyPhoto'])
+            ->where('photo', '.*')
+            ->name('admin.employees.face-data.photos.destroy');
 
         // SETTINGS
         Route::get('/admin/settings', [App\Http\Controllers\AdminSystemSettingController::class, 'index'])
