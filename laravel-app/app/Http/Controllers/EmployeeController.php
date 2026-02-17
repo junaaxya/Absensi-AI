@@ -42,12 +42,20 @@ class EmployeeController extends Controller
             });
         }
 
+        // 4. Face data status filter
+        if ($request->filled('face_status')) {
+            if ($request->face_status === 'registered') {
+                $query->where('has_face_data', true);
+            }
+
+            if ($request->face_status === 'unregistered') {
+                $query->where('has_face_data', false);
+            }
+        }
+
         $employees = $query->latest()
             ->paginate(10)
             ->withQueryString();
-
-
-        $employees = $query->latest()->paginate(10)->withQueryString();
         $settings = SystemSetting::first();
 
         return view('admin.employees.index', compact('employees', 'settings'));
