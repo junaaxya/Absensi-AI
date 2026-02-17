@@ -44,6 +44,9 @@ Route::middleware(['auth'])->group(function () {
 
 
     // PENGAJUAN KETIDAKHADIRAN
+    Route::get('/izin', [IzinController::class, 'index'])
+        ->name('izin.index');
+
     Route::post('/izin', [IzinController::class, 'store'])
         ->name('izin.store');
 
@@ -55,8 +58,20 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/attendance', [App\Http\Controllers\AdminAttendanceController::class, 'index'])
             ->name('admin.attendance');
 
+        Route::get('/admin/attendance/index', [App\Http\Controllers\AdminAttendanceController::class, 'index'])
+            ->name('admin.attendance.index');
+
         Route::get('/admin/absence-management', [App\Http\Controllers\AdminAbsenceController::class, 'index'])
             ->name('admin.absence.index');
+
+        Route::get('/admin/izin', [App\Http\Controllers\AdminAbsenceController::class, 'index'])
+            ->name('admin.izin.index');
+
+        Route::patch('/admin/izin/{izin}/approve', [IzinController::class, 'approve'])
+            ->name('admin.izin.approve');
+
+        Route::patch('/admin/izin/{izin}/reject', [IzinController::class, 'reject'])
+            ->name('admin.izin.reject');
 
         Route::patch('/admin/absence-management/{izin}/status', [App\Http\Controllers\AdminAbsenceController::class, 'updateStatus'])
             ->name('admin.absence.updateStatus');

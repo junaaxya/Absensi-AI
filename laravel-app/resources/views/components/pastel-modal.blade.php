@@ -11,10 +11,16 @@ $maxWidthClass = match($maxWidth) {
 };
 @endphp
 
-<div x-data="{ open: false }" 
+<div x-data="{
+        open: false,
+        closeModal() {
+            this.open = false;
+            this.$dispatch('modal-closed', '{{ $name }}');
+        }
+     }"
      x-on:open-modal.window="if ($event.detail === '{{ $name }}') open = true"
-     x-on:close-modal.window="if ($event.detail === '{{ $name }}') open = false"
-     x-on:keydown.escape.window="open = false"
+     x-on:close-modal.window="if ($event.detail === '{{ $name }}') closeModal()"
+     x-on:keydown.escape.window="if (open) closeModal()"
      class="relative z-50">
     
     <!-- Backdrop -->
@@ -25,8 +31,8 @@ $maxWidthClass = match($maxWidth) {
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-black/50 z-40" 
-         @click="open = false"></div>
+         class="fixed inset-0 bg-black/50 z-40"
+         @click="closeModal()"></div>
     
     <!-- Modal -->
     <div x-show="open" 
@@ -41,7 +47,7 @@ $maxWidthClass = match($maxWidth) {
             <!-- Header -->
             <div class="flex justify-between items-center px-6 py-4 border-b border-neutral-stone/50">
                 <h3 class="text-lg font-bold text-text-primary">{{ $title }}</h3>
-                <button @click="open = false" class="text-text-secondary hover:text-text-primary transition-colors p-1 rounded-lg hover:bg-neutral-stone/30">
+                <button @click="closeModal()" class="text-text-secondary hover:text-text-primary transition-colors p-1 rounded-lg hover:bg-neutral-stone/30">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
