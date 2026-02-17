@@ -165,8 +165,8 @@
                     <span>Data Karyawan</span>
                 </a>
 
-                <a href="{{ route('admin.izin.index') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.izin.*') ? 'bg-pastel-rose/20 text-pastel-rose-dark font-semibold' : 'text-text-secondary hover:bg-neutral-stone/30 hover:text-text-primary' }}">
+                <a href="{{ route('admin.absence.index') }}"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.absence.*') || request()->routeIs('admin.izin.*') ? 'bg-pastel-rose/20 text-pastel-rose-dark font-semibold' : 'text-text-secondary hover:bg-neutral-stone/30 hover:text-text-primary' }}">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -174,8 +174,8 @@
                     <span>Approval Izin</span>
                 </a>
 
-                <a href="{{ route('admin.attendance.index') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.attendance.*') ? 'bg-pastel-peach/20 text-amber-700 font-semibold' : 'text-text-secondary hover:bg-neutral-stone/30 hover:text-text-primary' }}">
+                <a href="{{ route('admin.attendance') }}"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.attendance') || request()->routeIs('admin.attendance.*') ? 'bg-pastel-peach/20 text-amber-700 font-semibold' : 'text-text-secondary hover:bg-neutral-stone/30 hover:text-text-primary' }}">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

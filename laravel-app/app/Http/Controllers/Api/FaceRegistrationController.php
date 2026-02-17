@@ -20,7 +20,7 @@ class FaceRegistrationController extends Controller
         ]);
 
         $user = User::findOrFail($request->user_id);
-        $flaskUrl = config('services.flask.url', env('FLASK_SERVICE_URL', 'http://face-service:5000'));
+        $flaskUrl = config('services.flask.url', env('FLASK_INTERNAL_URL', env('FLASK_SERVICE_URL', 'http://face-service:5000')));
 
         $savedPaths = [];
 
@@ -32,11 +32,12 @@ class FaceRegistrationController extends Controller
                 $filename = "{$user->username}_" . time() . "_{$index}." . $photo->getClientOriginalExtension();
                 $path = $photo->storeAs('temp_faces', $filename, 'local');
                 $savedPaths[] = $path;
+                $absolutePath = Storage::disk('local')->path($path);
 
                 // Attach setiap foto ke request
                 $pendingRequest->attach(
                     'photos',
-                    fopen(storage_path("app/{$path}"), 'r'),
+                    fopen($absolutePath, 'r'),
                     $filename
                 );
             }

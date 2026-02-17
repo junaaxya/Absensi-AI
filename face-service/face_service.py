@@ -1,13 +1,15 @@
 print("🔥🔥🔥 THIS IS THE CORRECT face_service.py 🔥🔥🔥")
 print("FILE PATH =", __file__)
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 import cv2
 import numpy as np
 import os
 import time
+import shutil
 from ultralytics import YOLO
 from insightface.app import FaceAnalysis
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -139,6 +141,50 @@ def scan_and_generate_embeddings():
             embeddings[username] = norm_embedding
         else:
             print(f"  ⚠️ No valid embeddings generated for {username}")
+
+
+def get_user_dataset_dir(username):
+    return os.path.join(BASE_DIR, "dataset", username)
+
+
+def safe_identity(value):
+    if not value:
+        return None
+    cleaned = secure_filename(value)
+    return cleaned if cleaned else None
+
+
+def regenerate_embedding_for_user(username):
+    """Regenerate user's embedding from remaining dataset photos."""
+    user_dir = get_user_dataset_dir(username)
+    image_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.webp')
+    embedding_path = os.path.join(EMBEDDING_DIR, f"{username}.npy")
+
+    if not os.path.isdir(user_dir):
+        if os.path.exists(embedding_path):
+            os.remove(embedding_path)
+        embeddings.pop(username, None)
+        return 0
+
+    embeddings_list = []
+    for filename in os.listdir(user_dir):
+        if filename.lower().endswith(image_extensions):
+            image_path = os.path.join(user_dir, filename)
+            embedding = generate_embedding_from_image(image_path)
+            if embedding is not None:
+                embeddings_list.append(embedding)
+
+    if not embeddings_list:
+        if os.path.exists(embedding_path):
+            os.remove(embedding_path)
+        embeddings.pop(username, None)
+        return 0
+
+    avg_embedding = np.mean(embeddings_list, axis=0)
+    norm_embedding = avg_embedding / np.linalg.norm(avg_embedding)
+    np.save(embedding_path, norm_embedding)
+    embeddings[username] = norm_embedding
+    return len(embeddings_list)
 
 def load_embeddings():
     global embeddings
@@ -438,6 +484,121 @@ def register_face():
     except Exception as e:
         print(f"❌ Error registering face: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/face-dataset/<username>', methods=['GET'])
+def face_dataset(username):
+    safe_username = safe_identity(username)
+    if not safe_username:
+        return jsonify({'status': 'error', 'message': 'Invalid username'}), 400
+
+    user_dir = get_user_dataset_dir(safe_username)
+    image_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.webp')
+
+    photos = []
+    if os.path.isdir(user_dir):
+        for filename in sorted(os.listdir(user_dir)):
+            if filename.lower().endswith(image_extensions):
+                safe_file = safe_identity(filename)
+                if not safe_file:
+                    continue
+                photos.append({
+                    'filename': safe_file,
+                    'status': 'valid',
+                    'photo_url': f"/face-dataset/{safe_username}/photo/{safe_file}"
+                })
+
+    embedding_path = os.path.join(EMBEDDING_DIR, f"{safe_username}.npy")
+    registered = os.path.exists(embedding_path) and len(photos) > 0
+
+    return jsonify({
+        'status': 'success',
+        'username': safe_username,
+        'registered': registered,
+        'photo_count': len(photos),
+        'photos': photos,
+    })
+
+
+@app.route('/face-dataset/<username>/photo/<filename>', methods=['GET'])
+def face_dataset_photo(username, filename):
+    safe_username = safe_identity(username)
+    safe_filename = safe_identity(filename)
+
+    if not safe_username or not safe_filename:
+        return jsonify({'status': 'error', 'message': 'Invalid path'}), 400
+
+    user_dir = get_user_dataset_dir(safe_username)
+    file_path = os.path.join(user_dir, safe_filename)
+
+    if not os.path.exists(file_path):
+        return jsonify({'status': 'error', 'message': 'Photo not found'}), 404
+
+    return send_from_directory(user_dir, safe_filename)
+
+
+@app.route('/face-dataset/<username>', methods=['DELETE'])
+def delete_face_dataset(username):
+    safe_username = safe_identity(username)
+    if not safe_username:
+        return jsonify({'status': 'error', 'message': 'Invalid username'}), 400
+
+    user_dir = get_user_dataset_dir(safe_username)
+    embedding_path = os.path.join(EMBEDDING_DIR, f"{safe_username}.npy")
+
+    if os.path.isdir(user_dir):
+        shutil.rmtree(user_dir, ignore_errors=True)
+
+    if os.path.exists(embedding_path):
+        os.remove(embedding_path)
+
+    embeddings.pop(safe_username, None)
+
+    return jsonify({
+        'status': 'success',
+        'message': 'Face dataset deleted',
+        'username': safe_username,
+        'remaining_photo_count': 0,
+    })
+
+
+@app.route('/face-dataset/<username>/photo/<filename>', methods=['DELETE'])
+def delete_face_dataset_photo(username, filename):
+    safe_username = safe_identity(username)
+    safe_filename = safe_identity(filename)
+
+    if not safe_username or not safe_filename:
+        return jsonify({'status': 'error', 'message': 'Invalid path'}), 400
+
+    user_dir = get_user_dataset_dir(safe_username)
+    file_path = os.path.join(user_dir, safe_filename)
+
+    if not os.path.exists(file_path):
+        return jsonify({'status': 'error', 'message': 'Photo not found'}), 404
+
+    os.remove(file_path)
+
+    remaining_count = 0
+    if os.path.isdir(user_dir):
+        image_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.webp')
+        remaining_files = [
+            f for f in os.listdir(user_dir)
+            if f.lower().endswith(image_extensions)
+        ]
+        remaining_count = len(remaining_files)
+
+        if remaining_count == 0:
+            shutil.rmtree(user_dir, ignore_errors=True)
+
+    valid_embedding_count = regenerate_embedding_for_user(safe_username)
+
+    return jsonify({
+        'status': 'success',
+        'message': 'Photo deleted',
+        'username': safe_username,
+        'remaining_photo_count': remaining_count,
+        'registered': valid_embedding_count > 0,
+    })
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)

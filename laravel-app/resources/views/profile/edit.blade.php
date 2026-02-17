@@ -1,140 +1,189 @@
 @extends('layouts.absensi')
 
+@push('styles')
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        .profile-page {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+@endpush
+
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6">
+    <div class="profile-page mx-auto max-w-6xl space-y-6 pb-16">
+        <header class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">Profil</h1>
+            <p class="mt-2 text-base text-slate-500 md:text-lg">Atur profil sesuai dengan identitas anda!</p>
+        </header>
 
-    <!-- HEADER CARD -->
-    <div class="bg-gradient-to-r from-pastel-sage/20 to-pastel-sky/20 p-8 rounded-2xl border border-neutral-stone/30 flex flex-col md:flex-row items-center gap-6 shadow-sm">
-        <!-- Avatar -->
-        <div class="relative group shrink-0">
-             <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-soft bg-white">
-                <img src="{{ $user->foto ? asset('storage/'.$user->foto) : asset('img/default.png') }}" class="w-full h-full object-cover" alt="Avatar">
-             </div>
-             <!-- Photo Upload Form (Hidden input + Label) -->
-             <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="absolute bottom-0 right-0">
-                @csrf @method('PATCH')
-                <input type="file" name="foto" id="uploadFoto" hidden onchange="this.form.submit()">
-                <label for="uploadFoto" class="block w-8 h-8 bg-pastel-sky hover:bg-pastel-sky-dark text-blue-700 rounded-full flex items-center justify-center cursor-pointer shadow-sm transition transform hover:scale-105 border-2 border-white" title="Ganti Foto">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                </label>
-             </form>
-        </div>
-        
-        <!-- Name & Role -->
-        <div class="text-center md:text-left">
-            <h2 class="text-2xl font-bold text-text-primary">{{ $user->name }}</h2>
-            <p class="text-text-secondary">{{ $user->email }}</p>
-            <div class="mt-2 flex flex-wrap justify-center md:justify-start gap-2">
-                <x-pastel-badge type="info">{{ $user->role ?? 'Karyawan' }}</x-pastel-badge>
-                @if($user->jabatan)
-                    <x-pastel-badge type="warning">{{ $user->jabatan }}</x-pastel-badge>
-                @endif
-            </div>
-        </div>
-    </div>
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:col-span-3">
+                <div class="border-b border-slate-200 bg-emerald-50 px-6 py-4">
+                    <h2 class="flex items-center gap-2 text-lg font-bold text-slate-800">
+                        <span class="material-icons-round text-emerald-700">person</span>
+                        Informasi Akun
+                    </h2>
+                </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- ACCOUNT INFO -->
-        <x-pastel-card header="Informasi Akun">
-            <dl class="space-y-4 divide-y divide-neutral-stone/30">
-                <div class="pt-2 flex justify-between">
-                    <dt class="text-sm font-medium text-text-secondary">Nama Lengkap</dt>
-                    <dd class="text-sm text-text-primary font-medium">{{ $user->name }}</dd>
-                </div>
-                <div class="pt-4 flex justify-between">
-                    <dt class="text-sm font-medium text-text-secondary">Email</dt>
-                    <dd class="text-sm text-text-primary font-medium">{{ $user->email }}</dd>
-                </div>
-                <div class="pt-4 flex justify-between">
-                    <dt class="text-sm font-medium text-text-secondary">Role</dt>
-                    <dd class="text-sm text-text-primary font-medium">{{ $user->role ?? 'Karyawan' }}</dd>
-                </div>
-                <div class="pt-4 flex justify-between">
-                    <dt class="text-sm font-medium text-text-secondary">Jabatan</dt>
-                    <dd class="text-sm text-text-primary font-medium">{{ $user->jabatan ?? '-' }}</dd>
-                </div>
-            </dl>
-        </x-pastel-card>
-
-        <!-- SECURITY & ACTIONS -->
-        <div class="space-y-6">
-            <x-pastel-card header="Keamanan & Aksi">
-                <div class="space-y-4">
-                    <button x-data @click="$dispatch('open-modal', 'password-modal')" class="w-full py-3 px-4 bg-white border border-neutral-stone hover:bg-neutral-stone/10 rounded-xl flex items-center justify-between transition group shadow-sm">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 bg-pastel-sage/20 rounded-lg text-pastel-sage-dark">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                <div class="flex flex-col items-start gap-8 p-8 md:flex-row md:gap-10">
+                    <div class="flex w-full flex-col items-center gap-3 md:w-auto">
+                        <div class="relative">
+                            <div class="h-40 w-40 overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-100">
+                                <img src="{{ $user->foto ? asset('storage/' . $user->foto) : asset('img/default.png') }}" alt="Foto Profil"
+                                    class="h-full w-full object-cover">
                             </div>
-                            <span class="font-medium text-text-primary">Ubah Password</span>
+
+                            <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data"
+                                class="absolute -bottom-3 -right-3">
+                                @csrf
+                                @method('PATCH')
+                                <input type="file" name="foto" id="uploadFoto" hidden onchange="this.form.submit()">
+                                <label for="uploadFoto"
+                                    class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-slate-900 text-white shadow-md transition hover:bg-slate-700"
+                                    title="Pilih Foto">
+                                    <span class="material-icons-round text-base">add_a_photo</span>
+                                </label>
+                            </form>
                         </div>
-                        <span class="text-text-secondary group-hover:translate-x-1 transition">→</span>
-                    </button>
-                    
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full py-3 px-4 bg-pastel-rose/10 hover:bg-pastel-rose/20 text-pastel-rose-dark border border-pastel-rose/20 rounded-xl flex items-center justify-between transition group shadow-sm">
+
+                        <label for="uploadFoto" class="cursor-pointer text-sm font-semibold text-slate-600 transition hover:text-slate-900">
+                            Pilih Foto
+                        </label>
+                    </div>
+
+                    <div class="grid flex-1 grid-cols-1 gap-x-12 gap-y-6 md:grid-cols-2">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-400">Nama Lengkap</label>
+                            <p class="border-b border-slate-100 pb-2 text-lg font-medium text-slate-900">{{ $user->name }}</p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-400">Email</label>
+                            <p class="border-b border-slate-100 pb-2 text-lg font-medium text-slate-900">{{ $user->email }}</p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-400">Role</label>
+                            <p class="border-b border-slate-100 pb-2 text-lg font-medium text-slate-900">
+                                {{ ucfirst($user->role ?? 'karyawan') }}
+                            </p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-400">Jabatan</label>
+                            <p class="border-b border-slate-100 pb-2 text-lg font-medium text-slate-900">
+                                {{ $user->jabatan ?? '-' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
+                <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+                    <h2 class="flex items-center gap-2 text-lg font-bold text-slate-800">
+                        <span class="material-icons-round text-slate-500">notifications</span>
+                        Notifikasi Masuk
+                    </h2>
+                </div>
+
+                <div class="space-y-4 p-6">
+                    <div class="flex gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                        <span class="material-icons-round text-emerald-600">check_circle</span>
+                        <p class="text-sm text-slate-700">Pengajuan Ketidakhadiran anda di validasi, cek data presensi.</p>
+                    </div>
+                    <div class="flex gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
+                        <span class="material-icons-round text-red-500">cancel</span>
+                        <p class="text-sm text-slate-700">Pengajuan Ketidakhadiran anda di Tolak, Silahkan Absensi seperti biasa.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+                    <h2 class="flex items-center gap-2 text-lg font-bold text-slate-800">
+                        <span class="material-icons-round text-slate-500">lock_person</span>
+                        Akun Login
+                    </h2>
+                </div>
+
+                <div class="space-y-6 p-6">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-400">Username</label>
+                        <p class="rounded-lg border border-slate-200 bg-slate-50 p-3 font-mono text-lg text-slate-900">
+                            {{ $user->username ?? '-' }}
+                        </p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-400">Password</label>
+                        <p class="rounded-lg border border-slate-200 bg-slate-50 p-3 font-mono text-lg tracking-tight text-slate-900">
+                            ••••••••••••
+                        </p>
+                    </div>
+
+                    <div class="space-y-3 border-t border-slate-100 pt-2">
+                        <button x-data @click="$dispatch('open-modal', 'password-modal')"
+                            class="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:bg-slate-50">
                             <div class="flex items-center gap-3">
-                                <div class="p-2 bg-white/50 rounded-lg">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                <div class="rounded-lg bg-emerald-100 p-2 text-emerald-700">
+                                    <span class="material-icons-round text-base">lock</span>
                                 </div>
-                                <span class="font-medium">Keluar Aplikasi</span>
+                                <span class="font-semibold text-slate-800">Ubah Password</span>
                             </div>
+                            <span class="material-icons-round text-slate-500">chevron_right</span>
                         </button>
-                    </form>
-                </div>
-            </x-pastel-card>
 
-            <!-- NOTIFICATIONS -->
-            <x-pastel-card header="Notifikasi">
-                <div class="space-y-3">
-                    <div class="bg-pastel-sky/10 border border-pastel-sky/20 rounded-lg p-3 text-sm text-text-primary flex gap-3">
-                        <span class="text-blue-500 text-lg">ℹ️</span>
-                        <span>Pengajuan Ketidakhadiran anda divalidasi, cek data presensi</span>
-                    </div>
-                    <div class="bg-pastel-rose/10 border border-pastel-rose/20 rounded-lg p-3 text-sm text-text-primary flex gap-3">
-                        <span class="text-red-500 text-lg">⚠️</span>
-                        <span>Pengajuan Ketidakhadiran anda ditolak, Silahkan Absensi seperti biasa</span>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit"
+                                class="flex w-full items-center justify-between rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-left transition hover:bg-rose-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="rounded-lg bg-white p-2 text-rose-600">
+                                        <span class="material-icons-round text-base">logout</span>
+                                    </div>
+                                    <span class="font-semibold text-rose-700">Logout</span>
+                                </div>
+                            </button>
+                        </form>
                     </div>
                 </div>
-            </x-pastel-card>
+            </section>
         </div>
-    </div>
 
-    <!-- PASSWORD MODAL -->
-    <x-pastel-modal name="password-modal" title="Ubah Password">
-        <form method="POST" action="{{ route('password.update') }}" class="p-6">
-            @csrf @method('PATCH')
-            
-            <div class="space-y-4">
-                 <div>
+        <x-pastel-modal name="password-modal" title="Ubah Password">
+            <form method="POST" action="{{ route('password.update') }}" class="space-y-4 p-6">
+                @csrf
+                @method('PATCH')
+
+                <div>
                     <x-input-label for="current_password" value="Password Lama" />
                     <x-text-input id="current_password" name="current_password" type="password" class="mt-1 block w-full" required />
                     <x-input-error class="mt-2" :messages="$errors->get('current_password')" />
                 </div>
 
-                 <div>
+                <div>
                     <x-input-label for="password" value="Password Baru" />
                     <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" required />
                     <x-input-error class="mt-2" :messages="$errors->get('password')" />
                 </div>
 
-                 <div>
+                <div>
                     <x-input-label for="password_confirmation" value="Konfirmasi Password" />
-                    <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" required />
+                    <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full"
+                        required />
                     <x-input-error class="mt-2" :messages="$errors->get('password_confirmation')" />
                 </div>
-            </div>
 
-            <div class="flex justify-end gap-3 mt-6">
-                <x-secondary-button x-on:click="$dispatch('close-modal', 'password-modal')">
-                    Batal
-                </x-secondary-button>
-                <x-primary-button>
-                    Simpan Password
-                </x-primary-button>
-            </div>
-        </form>
-    </x-pastel-modal>
-
-</div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <x-secondary-button x-on:click="$dispatch('close-modal', 'password-modal')">
+                        Batal
+                    </x-secondary-button>
+                    <x-primary-button>
+                        Simpan Password
+                    </x-primary-button>
+                </div>
+            </form>
+        </x-pastel-modal>
+    </div>
 @endsection
