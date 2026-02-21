@@ -167,6 +167,7 @@ class AdminSystemSettingController extends Controller
             'office_latitude' => 'required|numeric|between:-90,90',
             'office_longitude' => 'required|numeric|between:-180,180',
             'office_radius' => 'required|numeric|min:0.01', // Minimum 10 meters (0.01 km)
+            'office_gps_tolerance' => 'nullable|integer|min:10',
         ]);
 
         $settings = SystemSetting::first();
@@ -174,6 +175,7 @@ class AdminSystemSettingController extends Controller
             'office_latitude' => $request->office_latitude,
             'office_longitude' => $request->office_longitude,
             'office_radius' => $request->office_radius,
+            'office_gps_tolerance' => $request->office_gps_tolerance ?? 150,
         ]);
 
         return back()->with('success', 'Lokasi presensi berhasil diperbarui.');
@@ -187,7 +189,8 @@ class AdminSystemSettingController extends Controller
         $settings->update([
             'office_latitude' => -6.2088,
             'office_longitude' => 106.8456,
-            'office_radius' => 0.1
+            'office_radius' => 0.1,
+            'office_gps_tolerance' => 150
         ]);
 
         return back()->with('success', 'Lokasi presensi dikembalikan ke default.');
