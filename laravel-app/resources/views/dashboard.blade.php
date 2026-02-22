@@ -1,26 +1,79 @@
-@extends('layouts.absensi')
+@extends('layouts.employee-dashboard')
 
 @push('styles')
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
-        .employee-dashboard {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+        .camera-container {
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            border-radius: 1rem;
+            overflow: hidden;
+            background-color: #000;
+            position: relative;
+            aspect-ratio: 4/3;
         }
 
+        #camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
 
-        <!-- ANNOUNCEMENTS SECTION -->
+        .face-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 70%;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .camera-overlay-text {
+            position: absolute;
+            top: 1rem;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+        }
+    </style>
+@endpush
+
+@section('content')
+    <div x-data="{}" class="space-y-8">
+        
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Selamat Datang, {{ explode(' ', $user->name)[0] }}</h2>
+                <p class="text-slate-500 dark:text-slate-400">Silahkan isi kegiatan anda hari ini.</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="document.documentElement.classList.toggle('dark')" class="w-10 h-10 rounded-full flex items-center justify-center bg-card-light dark:bg-card-dark border border-slate-200 dark:border-slate-700 shadow-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Announcements -->
         @if(isset($activeAnnouncements) && $activeAnnouncements->count() > 0)
-            <div class="mb-6 space-y-4">
+            <div class="space-y-4">
                 @foreach($activeAnnouncements as $announcement)
                     @php
                         $bgColor = match($announcement->type) {
-                            'info' => 'bg-blue-50 border-blue-100 text-blue-800',
-                            'warning' => 'bg-yellow-50 border-yellow-100 text-yellow-800',
-                            'danger' => 'bg-red-50 border-red-100 text-red-800',
-                            default => 'bg-slate-50 border-slate-100 text-slate-800',
+                            'info' => 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/50 text-blue-800 dark:text-blue-300',
+                            'warning' => 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/50 text-amber-800 dark:text-amber-300',
+                            'danger' => 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/50 text-red-800 dark:text-red-300',
+                            default => 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700/50 text-slate-800 dark:text-slate-300',
                         };
                         $icon = match($announcement->type) {
                             'info' => 'info',
@@ -29,193 +82,75 @@
                             default => 'campaign',
                         };
                         $iconColor = match($announcement->type) {
-                            'info' => 'text-blue-500',
-                            'warning' => 'text-yellow-500',
-                            'danger' => 'text-red-500',
-                            default => 'text-slate-500',
+                            'info' => 'text-blue-500 dark:text-blue-400',
+                            'warning' => 'text-amber-500 dark:text-amber-400',
+                            'danger' => 'text-red-500 dark:text-red-400',
+                            default => 'text-slate-500 dark:text-slate-400',
                         };
                     @endphp
-                    <div class="{{ $bgColor }} border rounded-2xl p-4 flex items-start gap-3 shadow-sm relative overflow-hidden">
-                        <div class="flex-shrink-0 mt-0.5">
-                            <span class="material-icons-round {{ $iconColor }}">{{ $icon }}</span>
-                        </div>
-                        <div class="flex-1 z-10">
+                    <div class="{{ $bgColor }} border rounded-2xl p-4 flex items-start gap-3 shadow-sm">
+                        <span class="material-symbols-outlined mt-0.5 {{ $iconColor }}">{{ $icon }}</span>
+                        <div>
                             <h4 class="font-bold text-sm mb-1">{{ $announcement->title }}</h4>
                             <p class="text-xs opacity-90 leading-relaxed">{{ $announcement->content }}</p>
-                            <p class="text-[10px] mt-2 opacity-70 font-medium">
-                                {{ \Carbon\Carbon::parse($announcement->start_date)->format('d M Y') }}
-                            </p>
                         </div>
-                        <!-- Decorative Circle -->
-                        <div class="absolute -right-4 -bottom-4 w-16 h-16 rounded-full bg-white opacity-20 z-0"></div>
                     </div>
                 @endforeach
             </div>
         @endif
 
-        <!-- COMPACT PROFILE HEADER (Gojek/Shopee Style) -->
-        <div class="md:hidden flex items-center justify-between mb-6 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold border border-emerald-200">
-                    {{ substr(Auth::user()->name, 0, 1) }}
-                </div>
-                <div class="leading-tight">
-                    <p class="text-xs text-gray-500 font-medium">Selamat Pagi,</p>
-                    <h2 class="text-sm font-bold text-gray-800">{{ explode(' ', $user->name)[0] }}</h2>
-                </div>
+        <!-- Kegiatan -->
+        <section class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 transition-all">
+            <div class="mb-2 flex items-center justify-between">
+                <label class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Kegiatan Hari Ini</label>
+                <span class="text-[11px] text-slate-400">Wajib diisi sebelum absen</span>
             </div>
-            <div class="flex items-center gap-2">
-                 <div class="text-right hidden sm:block">
-                    <p class="text-xs text-gray-400">{{ \Carbon\Carbon::now()->translatedFormat('l, d M') }}</p>
-                </div>
-                <button class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                </button>
-            </div>
+            <textarea 
+                id="kegiatan-input"
+                class="w-full min-h-[140px] p-4 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-800/50 focus:ring-primary focus:border-primary transition-all text-sm placeholder:text-slate-400 text-slate-800 dark:text-slate-200" 
+                placeholder="Tuliskan kegiatan yang anda lakukan hari ini..."
+            >{{ $attendanceToday?->kegiatan && !in_array($attendanceToday->kegiatan, ['hadir', 'hadir_lembur']) ? $attendanceToday->kegiatan : '' }}</textarea>
+            <p class="mt-2 text-[12px] text-slate-400 italic flex items-center gap-1">
+                <span class="material-symbols-outlined !text-sm">info</span>
+                Kegiatan ini akan tersimpan otomatis saat anda melakukan absensi.
+            </p>
+        </section>
+
+        <!-- Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <button @click="startAttendance('masuk')" class="group flex items-center justify-center gap-3 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 py-6 rounded-2xl font-bold text-lg transition-all border border-emerald-200/50 dark:border-emerald-500/20">
+                <span class="material-symbols-outlined transition-transform group-hover:-translate-x-1">login</span>
+                Absen Masuk
+            </button>
+            <button @click="startAttendance('pulang')" class="group flex items-center justify-center gap-3 bg-rose-100 hover:bg-rose-200 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 py-6 rounded-2xl font-bold text-lg transition-all border border-rose-200/50 dark:border-rose-500/20">
+                <span class="material-symbols-outlined transition-transform group-hover:translate-x-1">logout</span>
+                Absen Keluar
+            </button>
         </div>
 
+        <button onclick="window.location='{{ route('izin.index') }}'" class="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors font-semibold text-sm">
+            <span class="material-symbols-outlined">event_note</span>
+            Pengajuan Ketidakhadiran
+        </button>
 
-@section('content')
-    <div x-data="{}" class="employee-dashboard space-y-6 pb-16">
-        <header class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-            <div class="relative z-10 flex flex-col gap-2">
-                <p class="text-sm font-semibold uppercase tracking-wider text-slate-500">Employee Dashboard</p>
-                <h1 class="text-2xl font-bold text-slate-900 md:text-3xl">Halo, {{ $user->name }} 👋</h1>
-                <p class="text-sm text-slate-500 md:text-base">
-                    Ringkasan absensi Anda hari ini, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}.
-                </p>
-            </div>
-            <div class="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-emerald-200/30 blur-2xl"></div>
-        </header>
-
-        <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
-            <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm xl:col-span-5">
-                <h2 class="mb-5 flex items-center gap-2 text-lg font-bold text-slate-900">
-                    <span class="material-icons-round text-emerald-600">history</span>
-                    Aktivitas Hari Ini
-                </h2>
-
-                <div class="space-y-4">
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Absensi Masuk</p>
-                        @if($attendanceToday && $attendanceToday->jam_masuk)
-                            <p class="mt-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
-                                <span class="material-icons-round text-base">check_circle</span>
-                                {{ \Carbon\Carbon::parse($attendanceToday->jam_masuk)->format('H:i') }} WIB
-                            </p>
-                        @else
-                            <p class="mt-2 flex items-center gap-2 text-sm italic text-slate-500">
-                                <span class="material-icons-round text-base">warning_amber</span>
-                                Absen masuk belum dilakukan
-                            </p>
-                        @endif
+        <!-- Table Section -->
+        <section class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/20">
+                <form method="GET" action="{{ route('dashboard') }}" class="flex flex-col lg:flex-row gap-4">
+                    <div class="relative flex-1">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                        <input name="q" value="{{ $search }}" class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-800/50 focus:ring-primary focus:border-primary text-slate-800 dark:text-slate-200" placeholder="Cari aktivitas..." type="text"/>
                     </div>
-
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Makan Siang</p>
-                        <p class="mt-2 text-sm italic text-slate-500">Belum dilakukan</p>
-                    </div>
-
-                    <div class="rounded-2xl border border-sky-200 bg-sky-50 p-4">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-sky-700">Absen Keluar</p>
-                        @if($attendanceToday && $attendanceToday->jam_keluar)
-                            <p class="mt-2 flex items-center gap-2 text-sm font-semibold text-sky-700">
-                                <span class="material-icons-round text-base">check_circle</span>
-                                {{ \Carbon\Carbon::parse($attendanceToday->jam_keluar)->format('H:i') }} WIB
-                            </p>
-                        @else
-                            <p class="mt-2 flex items-center gap-2 text-sm text-sky-700">
-                                <span class="material-icons-round text-base">hourglass_empty</span>
-                                Belum dilakukan
-                            </p>
-                        @endif
-                    </div>
-                </div>
-            </section>
-
-            <section class="space-y-4 xl:col-span-7">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jam Masuk Kerja</p>
-                        <p class="mt-2 text-xl font-bold text-slate-900">
-                            {{ \Carbon\Carbon::parse($workStartTime)->format('H.i') }} WIB
-                        </p>
-                    </div>
-                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jam Pulang Kerja</p>
-                        <p class="mt-2 text-xl font-bold text-slate-900">
-                            {{ \Carbon\Carbon::parse($workEndTime)->format('H.i') }} WIB
-                        </p>
-                    </div>
-                </div>
-
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <h2 class="mb-3 text-sm font-bold text-slate-900">Kegiatan Hari Ini</h2>
-                    <textarea
-                        class="h-32 w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500"
-                        placeholder="Tuliskan laporan singkat kegiatan hari ini..."
-                        >{{ $attendanceToday?->kegiatan && !in_array($attendanceToday->kegiatan, ['hadir', 'hadir_lembur']) ? $attendanceToday->kegiatan : '' }}</textarea>
-                    <p class="mt-2 text-xs text-slate-400">Kolom ini siap dipakai saat fitur simpan kegiatan diaktifkan.</p>
-                </div>
-
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <button
-                        @click="startAttendance('masuk')"
-                        class="flex items-center justify-center gap-2 rounded-2xl bg-emerald-200 px-4 py-4 text-sm font-bold text-slate-800 transition hover:brightness-95">
-                        <span class="material-icons-round">login</span>
-                        Absen Masuk
-                    </button>
-
-                    <button
-                        @click="startAttendance('pulang')"
-                        class="flex items-center justify-center gap-2 rounded-2xl bg-rose-200 px-4 py-4 text-sm font-bold text-slate-800 transition hover:brightness-95">
-                        <span class="material-icons-round">logout</span>
-                        Absen Keluar
-                    </button>
-
-                    <button
-                        @click="$dispatch('open-modal', 'izin')"
-                        class="md:col-span-2 flex items-center justify-center gap-2 rounded-2xl bg-violet-200 px-4 py-4 text-sm font-bold text-slate-800 transition hover:brightness-95">
-                        <span class="material-icons-round">event_busy</span>
-                        Pengajuan Ketidakhadiran
-                    </button>
-                </div>
-            </section>
-        </div>
-
-        <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div class="flex flex-col gap-3 border-b border-slate-100 p-4 md:flex-row md:items-center md:justify-between md:p-6">
-                <form method="GET" action="{{ route('dashboard') }}" class="flex w-full flex-col gap-3 md:flex-row md:items-center">
-                    <div class="relative w-full md:max-w-sm">
-                        <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                        <input
-                            name="q"
-                            type="text"
-                            value="{{ $search }}"
-                            placeholder="Cari status, kegiatan, atau jam..."
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
-                    </div>
-
-                    <div class="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
-                        <input
-                            name="start_date"
-                            type="date"
-                            value="{{ $startDate }}"
-                            class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
-                        <input
-                            name="end_date"
-                            type="date"
-                            value="{{ $endDate }}"
-                            class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
-                    </div>
-
-                    <div class="flex items-center gap-2 md:ml-auto">
-                        <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <div class="flex items-center gap-2">
+                            <input name="start_date" value="{{ $startDate }}" class="text-sm rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-800/50 focus:ring-primary focus:border-primary text-slate-800 dark:text-slate-200" type="date"/>
+                            <span class="text-slate-400">s/d</span>
+                            <input name="end_date" value="{{ $endDate }}" class="text-sm rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-800/50 focus:ring-primary focus:border-primary text-slate-800 dark:text-slate-200" type="date"/>
+                        </div>
+                        <button type="submit" class="bg-primary text-white px-6 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition-colors shadow-sm shadow-emerald-500/20">
                             Filter
                         </button>
-                        <a href="{{ route('dashboard') }}" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                        <a href="{{ route('dashboard') }}" class="px-6 py-2 text-slate-500 hover:text-slate-800 dark:hover:text-white text-sm font-semibold transition-colors">
                             Reset
                         </a>
                     </div>
@@ -223,20 +158,18 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="min-w-full text-left text-sm">
-                    <thead class="bg-slate-50 text-[11px] uppercase tracking-widest text-slate-500">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50">
                         <tr>
-                            <th class="px-6 py-4">No</th>
-                            <th class="px-6 py-4">Nama</th>
-                            <th class="px-6 py-4">Tanggal</th>
-                            <th class="px-6 py-4">Jam Masuk</th>
-                            <th class="px-6 py-4">Jam Keluar</th>
-                            <th class="px-6 py-4">Jam Kerja</th>
-                            <th class="px-6 py-4">Status</th>
-                            <th class="px-6 py-4">Keterangan</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">Tanggal</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">Jam Masuk</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">Jam Keluar</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">Jam Kerja</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">Status</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">Keterangan</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
                         @forelse($attendanceHistory as $row)
                             @php
                                 $durationLabel = '-';
@@ -247,321 +180,192 @@
                                     $durationLabel = $remainingMinutes > 0 ? "{$hours}j {$remainingMinutes}m" : "{$hours}j";
                                 }
                             @endphp
-                            <tr class="transition hover:bg-slate-50">
-                                <td class="px-6 py-4">{{ ($attendanceHistory->firstItem() ?? 0) + $loop->index }}</td>
-                                <td class="px-6 py-4 font-semibold text-slate-800">{{ $user->name }}</td>
-                                <td class="px-6 py-4">{{ \Carbon\Carbon::parse($row->tanggal)->translatedFormat('d M Y') }}</td>
-                                <td class="px-6 py-4">{{ $row->jam_masuk ? \Carbon\Carbon::parse($row->jam_masuk)->format('H:i') . ' WIB' : '-' }}</td>
-                                <td class="px-6 py-4">{{ $row->jam_keluar ? \Carbon\Carbon::parse($row->jam_keluar)->format('H:i') . ' WIB' : '-' }}</td>
-                                <td class="px-6 py-4">{{ $durationLabel }}</td>
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                <td class="px-6 py-4 text-sm font-medium">{{ \Carbon\Carbon::parse($row->tanggal)->translatedFormat('d M Y') }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ $row->jam_masuk ? \Carbon\Carbon::parse($row->jam_masuk)->format('H:i') . ' WIB' : '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ $row->jam_keluar ? \Carbon\Carbon::parse($row->jam_keluar)->format('H:i') . ' WIB' : '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ $durationLabel }}</td>
                                 <td class="px-6 py-4">
                                     @if($row->status === 'tepat_waktu')
-                                        <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Tepat Waktu</span>
+                                        <span class="px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase">Tepat Waktu</span>
                                     @elseif($row->status === 'terlambat')
-                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">Terlambat</span>
+                                        <span class="px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-[10px] font-bold uppercase">Terlambat</span>
+                                    @elseif($row->status === 'pulang_cepat')
+                                        <span class="px-2 py-1 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 text-[10px] font-bold uppercase">Pulang Cepat</span>
+                                    @elseif($row->status === 'lembur')
+                                        <span class="px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-[10px] font-bold uppercase">Lembur</span>
                                     @else
-                                        <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{{ ucfirst(str_replace('_', ' ', $row->status ?? '-')) }}</span>
+                                        <span class="px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-500/20 text-slate-700 dark:text-slate-400 text-[10px] font-bold uppercase">{{ str_replace('_', ' ', $row->status) }}</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-slate-500">
-                                    @if($row->kegiatan === 'hadir_lembur')
-                                        Lembur
-                                    @elseif($row->kegiatan === 'hadir')
-                                        Hadir
-                                    @else
-                                        {{ $row->kegiatan ?: '-' }}
-                                    @endif
-                                </td>
+                                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ $row->kegiatan ?: '-' }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-10 text-center italic text-slate-500">Belum ada riwayat absensi pada filter ini.</td>
+                                <td colspan="6" class="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada riwayat absensi.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+            
+            @if($attendanceHistory->hasPages())
+                <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <span class="text-xs text-slate-500">Menampilkan {{ $attendanceHistory->firstItem() }} sampai {{ $attendanceHistory->lastItem() }} dari {{ $attendanceHistory->total() }} riwayat</span>
+                    <div class="flex gap-2">
+                        @if ($attendanceHistory->onFirstPage())
+                            <button disabled class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 opacity-50"><span class="material-symbols-outlined">chevron_left</span></button>
+                        @else
+                            <a href="{{ $attendanceHistory->previousPageUrl() }}" class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"><span class="material-symbols-outlined">chevron_left</span></a>
+                        @endif
 
-            <div class="border-t border-slate-100 p-4 md:p-5">
-                {{ $attendanceHistory->links() }}
-            </div>
+                        @if ($attendanceHistory->hasMorePages())
+                            <a href="{{ $attendanceHistory->nextPageUrl() }}" class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"><span class="material-symbols-outlined">chevron_right</span></a>
+                        @else
+                            <button disabled class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 opacity-50"><span class="material-symbols-outlined">chevron_right</span></button>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </section>
-
-        <x-pastel-modal name="izin" title="Pengajuan Ketidakhadiran" maxWidth="lg">
-            <form method="POST" action="{{ route('izin.store') }}" enctype="multipart/form-data" class="space-y-4">
-                @csrf
-
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-text-secondary">Jenis Pengajuan</label>
-                    <select name="jenis" required
-                        class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20">
-                        <option value="izin">Izin</option>
-                        <option value="sakit">Sakit</option>
-                        <option value="cuti">Cuti</option>
-                        <option value="dinas">Dinas</option>
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="mb-1 block text-sm font-medium text-text-secondary">Tanggal Mulai</label>
-                        <input type="date" name="tanggal_mulai" required
-                            class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20">
-                    </div>
-                    <div>
-                        <label class="mb-1 block text-sm font-medium text-text-secondary">Tanggal Selesai</label>
-                        <input type="date" name="tanggal_selesai" required
-                            class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-text-secondary">Alasan</label>
-                    <textarea name="alasan" required rows="3"
-                        class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20"></textarea>
-                </div>
-
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-text-secondary">Lampirkan Foto atau Dokumen</label>
-                    <input type="file" name="dokumen" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                        class="w-full text-sm text-text-secondary file:mr-4 file:rounded-xl file:border-0 file:bg-pastel-sage/20 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-pastel-sage-dark hover:file:bg-pastel-sage/30">
-                    <p class="mt-1 text-xs text-text-secondary">Format: PDF, JPG, PNG, DOCX (Max 5MB)</p>
-                </div>
-
-                <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" @click="show = false"
-                        class="rounded-lg px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-neutral-stone/30">
-                        Batal
-                    </button>
-                    <button type="submit"
-                        class="rounded-lg bg-pastel-sage px-4 py-2 text-sm font-medium text-text-primary shadow-soft transition hover:bg-pastel-sage-dark">
-                        Ajukan
-                    </button>
-                </div>
-            </form>
-        </x-pastel-modal>
     </div>
 
-    <x-pastel-modal name="camera-modal" title="Absensi" maxWidth="2xl">
-        <div x-data="cameraHandler()"
-            @open-camera.window="initCamera($event.detail.type)"
-            @modal-closed.window="if ($event.detail === 'camera-modal') resetState()"
-            class="glass-attendance rounded-3xl p-2 md:p-4">
-            <div class="mb-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
-                        <span class="material-icons-round">fingerprint</span>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-slate-900" x-text="attendanceType === 'pulang' ? 'Absen Pulang' : 'Absen Masuk'"></h3>
-                        <p class="text-xs text-slate-500"
-                            x-text="step === 'result' ? 'Konfirmasi hasil verifikasi absensi.' : 'Pastikan wajah terlihat jelas saat pengambilan foto.'"></p>
-                    </div>
-                </div>
-                <div class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 md:block"
-                    x-text="new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'"></div>
+    <!-- Modal Camera Absensi (Reused functionality) -->
+    <div x-data="cameraModal"
+        @open-modal.window="if ($event.detail === 'camera-modal') { show = true }"
+        @close-modal.window="if ($event.detail === 'camera-modal') { show = false; stopCamera(); }"
+        @open-camera.window="initCamera($event.detail.type)"
+        x-show="show" x-cloak
+        class="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto overflow-x-hidden bg-slate-900/80 p-4 backdrop-blur-sm">
+        
+        <div x-show="show"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            @click.outside="$dispatch('close-modal', 'camera-modal')"
+            class="relative w-full max-w-2xl transform overflow-hidden rounded-3xl bg-card-light dark:bg-card-dark text-left shadow-xl transition-all border border-slate-200 dark:border-slate-700">
+            
+            <div class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white" x-text="attendanceType === 'masuk' ? 'Absen Masuk' : 'Absen Keluar'"></h3>
+                <button @click="$dispatch('close-modal', 'camera-modal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
             </div>
 
-            <template x-if="step === 'capture'">
-                <div>
-                    <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
-                        <div class="space-y-4">
-                            <div class="relative aspect-square overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-100">
-                                <video x-show="!capturedPreview" x-ref="video" class="h-full w-full scale-x-[-1] object-cover" autoplay playsinline muted></video>
-                                <img x-show="capturedPreview" :src="capturedPreview" alt="Hasil foto absensi" class="h-full w-full object-cover" />
-                                <canvas x-ref="canvas" class="hidden"></canvas>
+            <div class="p-6">
+                <!-- Step 1: Loading/Camera -->
+                <div x-show="step === 'capture'" class="space-y-6">
+                    <div x-show="loading" class="flex flex-col items-center justify-center py-12">
+                        <svg class="h-10 w-10 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400" x-text="loadingText"></p>
+                    </div>
 
-                                <div x-show="!stream && !loading && !capturedPreview"
-                                    class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-500">
-                                    <span class="material-icons-round text-4xl text-slate-400">photo_camera</span>
-                                    <p class="text-sm font-medium">Kamera belum menyala</p>
-                                    <p class="text-xs">Izinkan akses kamera di browser Anda</p>
-                                </div>
-
-                                <div x-show="loading" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/50 text-white">
-                                    <svg class="mb-2 h-8 w-8 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <span x-text="loadingText" class="text-sm font-medium"></span>
-                                </div>
-
-                                <div x-show="errorMessage"
-                                    class="absolute bottom-3 left-3 right-3 rounded-xl bg-red-500/90 px-3 py-2 text-center text-xs text-white"
-                                    x-text="errorMessage"></div>
+                    <div x-show="errorMessage" class="rounded-xl border border-red-200 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-800/50">
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-red-600 dark:text-red-400">error</span>
+                            <div>
+                                <h3 class="text-sm font-bold text-red-800 dark:text-red-300">Akses Kamera Gagal</h3>
+                                <p class="mt-1 text-sm text-red-700 dark:text-red-400" x-text="errorMessage"></p>
+                                <button @click="retryCapture" class="mt-3 rounded-lg bg-red-100 dark:bg-red-800/50 px-4 py-2 text-xs font-bold text-red-800 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800">Coba Lagi</button>
                             </div>
+                        </div>
+                    </div>
 
-                            <button @click="takePicture" :disabled="loading || !stream"
-                                class="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-200 px-4 py-3.5 text-sm font-bold text-slate-800 transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50">
-                                <span class="material-icons-round">camera_alt</span>
-                                Ambil Absensi
+                    <div x-show="!loading && !errorMessage" class="relative">
+                        <div class="camera-container bg-slate-100 dark:bg-slate-900">
+                            <video id="camera-feed" autoplay playsinline></video>
+                            <div class="face-overlay"></div>
+                            <p class="camera-overlay-text text-sm">Posisikan wajah Anda dalam area lingkaran</p>
+                        </div>
+                        <div class="mt-4 flex justify-center">
+                            <button @click="takeSnapshot" class="flex items-center gap-2 rounded-full bg-primary px-8 py-3 font-bold text-white shadow-lg hover:bg-emerald-600 transition-colors">
+                                <span class="material-symbols-outlined">photo_camera</span>
+                                Ambil Foto
                             </button>
                         </div>
-
-                        <div class="flex flex-col gap-4">
-                            <div>
-                                <label for="kegiatan-modal" class="mb-2 block text-sm font-semibold text-slate-700">Kegiatan Hari Ini</label>
-                                <textarea id="kegiatan-modal" x-model="kegiatanText" rows="7"
-                                    placeholder="Tuliskan rencana kegiatan atau target Anda hari ini..."
-                                    class="w-full resize-none rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"></textarea>
-                                <p class="mt-1 text-right text-[10px] font-semibold uppercase tracking-wider text-slate-400">Opsional</p>
-                            </div>
-
-                            <div class="flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4">
-                                <span class="material-icons-round text-sky-600">info</span>
-                                <div class="text-sm">
-                                    <p class="font-semibold text-slate-800">Informasi Penting</p>
-                                    <p class="mt-1 text-slate-600">Pastikan wajah tidak tertutup masker atau objek lain saat mengambil absensi.</p>
-                                </div>
-                            </div>
-
-                            <div class="mt-auto grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                <button type="button" @click="$dispatch('close-modal', 'camera-modal')"
-                                    class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
-                                    Batal
-                                </button>
-                                <button type="button" @click="saveAttendance" :disabled="loading || !capturedBlob"
-                                    class="flex items-center justify-center gap-2 rounded-2xl bg-sky-200 px-4 py-3 text-sm font-bold text-slate-800 transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50">
-                                    <span class="material-icons-round text-base">save</span>
-                                    Simpan Kehadiran
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
-                        <div class="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3">
-                            <span class="material-icons-round text-amber-600">location_on</span>
-                            <div>
-                                <p class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Lokasi</p>
-                                <p class="text-xs font-semibold text-slate-700">{{ $officeName }}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-3">
-                            <span class="material-icons-round text-violet-600">verified_user</span>
-                            <div>
-                                <p class="text-[10px] font-bold uppercase tracking-wider text-violet-700">Verifikasi</p>
-                                <p class="text-xs font-semibold text-slate-700">Biometric Face Recognition</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
-                            <span class="material-icons-round text-emerald-600">history</span>
-                            <div>
-                                <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Status Hari Ini</p>
-                                <p class="text-xs font-semibold text-slate-700"
-                                    x-text="attendanceType === 'pulang' ? 'Proses Absen Pulang' : 'Belum Melakukan Absen Masuk'"></p>
-                            </div>
-                        </div>
                     </div>
                 </div>
-            </template>
 
-            <template x-if="step === 'result'">
-                <div class="space-y-4">
-                    <div class="rounded-2xl border border-slate-200 bg-slate-100 p-4">
-                        <div class="mx-auto w-full max-w-2xl rounded-xl border border-slate-200 bg-white shadow-sm">
-                            <div class="border-b border-slate-200 px-4 py-3 text-center text-lg font-bold text-slate-800"
-                                x-text="attendanceType === 'pulang' ? 'Absen Pulang' : 'Absen Masuk'"></div>
+                <!-- Step 2: Processing/Result -->
+                <div x-show="step === 'result'" class="space-y-6">
+                    <div x-show="loading" class="flex flex-col items-center justify-center py-12">
+                        <svg class="h-10 w-10 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400" x-text="loadingText"></p>
+                    </div>
 
-                            <div class="space-y-4 p-4">
-                                <div class="relative h-56 overflow-hidden rounded-lg bg-slate-700">
-                                    <img x-show="capturedPreview" :src="capturedPreview" alt="Capture result" class="h-full w-full object-cover opacity-70" />
-                                    <div class="absolute inset-0 flex items-center justify-center">
-                                        <div class="relative h-36 w-36 rounded-2xl border-4"
-                                            :class="attendanceResult?.success ? 'border-emerald-400' : 'border-red-400'">
-                                            <div class="absolute -left-1 -top-1 h-4 w-4 border-l-4 border-t-4"
-                                                :class="attendanceResult?.success ? 'border-emerald-400' : 'border-red-400'"></div>
-                                            <div class="absolute -right-1 -top-1 h-4 w-4 border-r-4 border-t-4"
-                                                :class="attendanceResult?.success ? 'border-emerald-400' : 'border-red-400'"></div>
-                                            <div class="absolute -bottom-1 -left-1 h-4 w-4 border-b-4 border-l-4"
-                                                :class="attendanceResult?.success ? 'border-emerald-400' : 'border-red-400'"></div>
-                                            <div class="absolute -bottom-1 -right-1 h-4 w-4 border-b-4 border-r-4"
-                                                :class="attendanceResult?.success ? 'border-emerald-400' : 'border-red-400'"></div>
-                                            <div class="absolute -top-10 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-semibold text-white"
-                                                :class="attendanceResult?.success ? 'bg-emerald-500' : 'bg-red-500'">
-                                                <span x-text="(attendanceResult?.data?.user_name || '{{ $user->name }}') + (attendanceResult?.success ? ' - Dikenali' : ' - Tidak dikenali')"></span>
-                                            </div>
-                                        </div>
-                                    </div>
+                    <div x-show="!loading">
+                        <template x-if="attendanceResult && attendanceResult.success">
+                            <div class="flex flex-col items-center py-6 text-center">
+                                <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shadow-inner">
+                                    <span class="material-symbols-outlined !text-4xl">check_circle</span>
                                 </div>
-
-                                <div class="flex items-center gap-3 rounded-lg border bg-slate-100 px-4 py-3"
-                                    :class="attendanceResult?.success ? 'border-emerald-200' : 'border-red-200'">
-                                    <div class="flex h-11 w-11 items-center justify-center rounded-full border-2 border-slate-800 bg-white">
-                                        <span class="material-icons-round text-lg" x-text="attendanceResult?.success ? 'check' : 'close'"></span>
-                                    </div>
-                                    <div>
-                                        <p class="font-bold text-slate-900" x-text="attendanceResult?.success ? 'Wajah dikenali' : 'Wajah tidak dikenali'"></p>
-                                        <p class="text-sm text-slate-600">Nama: <span class="font-semibold" x-text="attendanceResult?.data?.user_name || '{{ $user->name }}'"></span></p>
-                                    </div>
-                                </div>
-
-                                <div class="rounded-lg border border-slate-200 p-3 text-sm text-slate-700">
-                                    <div class="flex items-center gap-2">
-                                        <span class="material-icons-round text-base">schedule</span>
-                                        <span x-text="capturedAt"></span>
-                                    </div>
-                                    <div class="mt-2 flex items-center gap-2">
-                                        <span class="material-icons-round text-base">location_on</span>
-                                        <span x-text="locationStatus"></span>
-                                    </div>
-                                </div>
-
-                                <div class="rounded-lg border border-slate-200 p-3">
-                                    <div class="flex items-center gap-3 text-sm text-slate-700">
-                                        <div class="flex h-7 w-7 items-center justify-center rounded-full border border-slate-800">
-                                            <span class="material-icons-round text-sm">check</span>
+                                <h3 class="mb-2 text-2xl font-bold text-slate-800 dark:text-white">Absensi Berhasil!</h3>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6" x-text="attendanceResult.message"></p>
+                                
+                                <div class="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 p-4 text-left">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold">Waktu</p>
+                                            <p class="font-medium text-slate-900 dark:text-white" x-text="capturedAt"></p>
                                         </div>
                                         <div>
-                                            <p class="font-semibold" x-text="attendanceType === 'pulang' ? 'Jam Pulang Tercatat' : 'Jam Masuk Tercatat'"></p>
-                                            <p x-text="resultStatusLabel()"></p>
+                                            <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold">Status</p>
+                                            <p class="font-medium text-emerald-600 dark:text-emerald-400" x-text="resultStatusLabel()"></p>
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <button @click="closeAndRefresh" class="mt-8 w-full rounded-xl bg-slate-900 dark:bg-white py-3 text-sm font-bold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors">
+                                    Tutup & Refresh Halaman
+                                </button>
+                            </div>
+                        </template>
 
-                                <div x-show="attendanceResult?.success && attendanceType === 'masuk' && attendanceResult?.data?.status_masuk === 'terlambat'"
-                                    class="flex items-start gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs text-red-700">
-                                    <span class="material-icons-round text-sm">warning</span>
-                                    <p>Absen terlambat. Mohon tingkatkan ketepatan waktu.</p>
+                        <template x-if="attendanceResult && !attendanceResult.success">
+                            <div class="flex flex-col items-center py-6 text-center">
+                                <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-inner">
+                                    <span class="material-symbols-outlined !text-4xl">cancel</span>
                                 </div>
-
-                                <div x-show="attendanceResult && !attendanceResult.success"
-                                    class="flex items-start gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs text-red-700">
-                                    <span class="material-icons-round text-sm">error</span>
-                                    <p x-text="attendanceResult?.message"></p>
+                                <h3 class="mb-2 text-2xl font-bold text-slate-800 dark:text-white">Absensi Gagal</h3>
+                                <p class="text-sm text-red-600 dark:text-red-400 mb-6" x-text="attendanceResult.message"></p>
+                                
+                                <div class="flex w-full gap-3 mt-4">
+                                    <button @click="$dispatch('close-modal', 'camera-modal')" class="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-3 text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
+                                        Batal
+                                    </button>
+                                    <button @click="retryCapture" class="flex-1 rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-emerald-600">
+                                        Coba Lagi
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <button type="button" @click="closeAndRefresh" x-show="attendanceResult?.success"
-                            class="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 sm:col-span-2">
-                            Kembali ke Dashboard
-                        </button>
-                        <button type="button" @click="retryCapture" x-show="attendanceResult && !attendanceResult.success"
-                            class="rounded-2xl bg-sky-200 px-4 py-3 text-sm font-bold text-slate-800 transition hover:brightness-95">
-                            Coba Lagi
-                        </button>
-                        <button type="button" @click="$dispatch('close-modal', 'camera-modal')" x-show="attendanceResult && !attendanceResult.success"
-                            class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
-                            Tutup
-                        </button>
+                        </template>
                     </div>
                 </div>
-            </template>
+            </div>
         </div>
-    </x-pastel-modal>
+    </div>
+@endsection
 
+@push('scripts')
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('cameraHandler', () => ({
-                stream: null,
-                loading: false,
-                loadingText: 'Menyiapkan kamera...',
-                errorMessage: '',
+            Alpine.data('cameraModal', () => ({
+                show: false,
                 step: 'capture',
-                attendanceType: '',
+                loading: false,
+                loadingText: '',
+                errorMessage: '',
+                stream: null,
+                attendanceType: 'masuk',
                 capturedBlob: null,
                 capturedPreview: '',
                 kegiatanText: '',
@@ -569,201 +373,169 @@
                 capturedAt: '',
                 locationStatus: '',
 
-                async initCamera(type) {
-                    this.attendanceType = type;
-                    this.resetState(false);
-                    this.step = 'capture';
-                    this.loading = true;
-                    this.loadingText = 'Menyalakan kamera...';
-                    this.errorMessage = '';
-
-                    try {
-                        this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-                        this.$refs.video.srcObject = this.stream;
-                        this.loading = false;
-                    } catch (err) {
-                        this.loading = false;
-                        this.errorMessage = 'Gagal akses kamera: ' + err.message;
-                    }
+                init() {
+                    this.$watch('show', value => {
+                        if (!value) {
+                            this.resetState(true);
+                        }
+                    });
                 },
 
-                takePicture() {
+                async initCamera(type) {
+                    this.resetState(false);
+                    this.attendanceType = type;
+                    this.step = 'capture';
                     this.loading = true;
-                    this.loadingText = 'Mengambil foto...';
-                    this.errorMessage = '';
+                    this.loadingText = 'Menyiapkan kamera...';
+                    
+                    const kegiatanInput = document.getElementById('kegiatan-input');
+                    this.kegiatanText = kegiatanInput ? kegiatanInput.value.trim() : '';
 
-                    const video = this.$refs.video;
-                    const canvas = this.$refs.canvas;
-
-                    if (!video.videoWidth || !video.videoHeight) {
+                    if (this.attendanceType === 'masuk' && !this.kegiatanText) {
                         this.loading = false;
-                        this.errorMessage = 'Kamera belum siap. Silakan coba lagi.';
+                        this.errorMessage = 'Silahkan isi kolom Kegiatan Hari Ini terlebih dahulu sebelum melakukan absen masuk.';
                         return;
                     }
 
+                    try {
+                        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                            this.stream = await navigator.mediaDevices.getUserMedia({ 
+                                video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
+                            });
+                            
+                            setTimeout(() => {
+                                const videoEl = document.getElementById('camera-feed');
+                                if (videoEl) {
+                                    videoEl.srcObject = this.stream;
+                                    videoEl.onloadedmetadata = () => {
+                                        videoEl.play();
+                                        this.loading = false;
+                                    };
+                                }
+                            }, 100);
+                        } else {
+                            throw new Error('Browser tidak mendukung akses kamera.');
+                        }
+                    } catch (error) {
+                        console.error('Camera error:', error);
+                        this.loading = false;
+                        this.errorMessage = error.name === 'NotAllowedError' 
+                            ? 'Izin kamera ditolak. Silahkan izinkan akses kamera di browser Anda.' 
+                            : 'Gagal mengakses kamera. Pastikan perangkat Anda memiliki kamera yang berfungsi.';
+                    }
+                },
+
+                takeSnapshot() {
+                    const video = document.getElementById('camera-feed');
+                    if (!video) return;
+
+                    const canvas = document.createElement('canvas');
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     const ctx = canvas.getContext('2d');
+                    
+                    // Mirror image if facing user
+                    ctx.translate(canvas.width, 0);
+                    ctx.scale(-1, 1);
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
                     canvas.toBlob((blob) => {
-                        if (!blob) {
-                            this.loading = false;
-                            this.errorMessage = 'Gagal mengambil gambar.';
-                            return;
-                        }
-
                         this.capturedBlob = blob;
-                        if (this.capturedPreview) {
-                            URL.revokeObjectURL(this.capturedPreview);
-                        }
                         this.capturedPreview = URL.createObjectURL(blob);
-                        this.loading = false;
-                    }, 'image/jpeg', 0.8);
+                        this.stopCamera();
+                        this.submitAttendance();
+                    }, 'image/jpeg', 0.85);
                 },
 
-                saveAttendance() {
-                    if (!this.capturedBlob) {
-                        this.errorMessage = 'Ambil foto absensi terlebih dahulu.';
-                        return;
+                async submitAttendance() {
+                    this.step = 'result';
+                    this.loading = true;
+                    this.loadingText = 'Memverifikasi wajah dan mencatat presensi...';
+                    
+                    const formData = new FormData();
+                    formData.append('photo', this.capturedBlob, 'attendance.jpg');
+                    formData.append('type', this.attendanceType);
+                    
+                    if (this.attendanceType === 'masuk') {
+                        formData.append('kegiatan', this.kegiatanText);
                     }
 
-                    this.loading = true;
-                    this.loadingText = 'Mengambil lokasi...';
-                    this.errorMessage = '';
-
-                        if (!navigator.geolocation) {
-                            this.loading = false;
-                            this.errorMessage = 'Browser tidak support Geolocation.';
-                            return;
-                        }
-
-                        navigator.geolocation.getCurrentPosition(
-                            async (position) => {
-                                this.capturedAt = new Date().toLocaleString('id-ID', {
-                                    weekday: 'long',
-                                    day: '2-digit',
-                                    month: 'long',
-                                    year: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                }) + ' WIB';
-                                this.locationStatus = `Lokasi terekam (${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)})`;
-                                await this.submitAttendance(this.capturedBlob, position.coords.latitude, position.coords.longitude);
-                            },
-                            (err) => {
-                                this.loading = false;
-                                this.errorMessage = 'Gagal dapat lokasi: ' + err.message;
-                            },
-                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                        );
-                },
-
-                async submitAttendance(photoBlob, lat, long) {
-                    this.loadingText = 'Memproses Absensi...';
-
-                    const formData = new FormData();
-                    formData.append('photo', photoBlob, 'selfie.jpg');
-                    formData.append('type', this.attendanceType);
-                    formData.append('latitude', lat);
-                    formData.append('longitude', long);
-
                     try {
-                        const token = document.querySelector('meta[name="csrf-token"]').content;
-
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                        
                         const response = await fetch('/api/attendance/auto', {
                             method: 'POST',
+                            body: formData,
                             headers: {
-                                'X-CSRF-TOKEN': token,
-                                Accept: 'application/json'
-                            },
-                            body: formData
+                                'X-Requested-With': 'XMLHttpRequest',
+                                ...(csrfToken ? {'X-CSRF-TOKEN': csrfToken} : {})
+                            }
                         });
 
                         const result = await response.json();
-
-                        this.loading = false;
-                        this.stopCamera();
-                        this.step = 'result';
-                        this.attendanceResult = {
-                            success: response.ok,
-                            message: result?.message || 'Terjadi kesalahan sistem.',
-                            data: result?.data || {}
-                        };
-
-                        if (!response.ok) {
-                            this.errorMessage = '';
+                        
+                        if (response.ok) {
+                            this.attendanceResult = {
+                                success: true,
+                                message: result.message || 'Presensi berhasil dicatat.',
+                                data: result.data || {}
+                            };
+                            
+                            const now = new Date();
+                            this.capturedAt = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+                            
+                            // Emit global event to trigger toast (optional, handled by API anyway but good for UX)
+                            window.dispatchEvent(new CustomEvent('attendance-success', { detail: result }));
+                        } else {
+                            throw new Error(result.message || 'Gagal memverifikasi wajah.');
                         }
                     } catch (error) {
-                        this.loading = false;
-                        this.stopCamera();
-                        this.step = 'result';
                         this.attendanceResult = {
                             success: false,
-                            message: error.message || 'Terjadi kesalahan jaringan.',
+                            message: error.message || 'Terjadi kesalahan jaringan atau server tidak merespon.',
                             data: {}
                         };
-                        this.errorMessage = '';
+                    } finally {
+                        this.loading = false;
                     }
                 },
 
                 resultStatusLabel() {
-                    if (!this.attendanceResult) {
-                        return '-';
-                    }
-
-                    if (!this.attendanceResult.success) {
-                        return 'Status: Gagal diverifikasi';
-                    }
+                    if (!this.attendanceResult) return '-';
+                    if (!this.attendanceResult.success) return 'Gagal diverifikasi';
 
                     if (this.attendanceType === 'pulang') {
                         const pulang = this.attendanceResult.data?.status_pulang;
-                        if (pulang === 'lembur') {
-                            return 'Status: Lembur';
-                        }
-
-                        return 'Status: Pulang tercatat';
+                        if (pulang === 'lembur') return 'Lembur';
+                        if (pulang === 'pulang_cepat') return 'Pulang Cepat';
+                        return 'Pulang tercatat';
                     }
 
                     const masuk = this.attendanceResult.data?.status_masuk;
-                    if (masuk === 'tepat_waktu') {
-                        return 'Status: Tepat waktu';
-                    }
-                    if (masuk === 'terlambat') {
-                        return 'Status: Terlambat';
-                    }
-
-                    return 'Status: Berhasil tercatat';
+                    if (masuk === 'tepat_waktu') return 'Tepat waktu';
+                    if (masuk === 'terlambat') return 'Terlambat';
+                    return 'Berhasil tercatat';
                 },
 
                 closeAndRefresh() {
                     this.$dispatch('close-modal', 'camera-modal');
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 150);
+                    setTimeout(() => { window.location.reload(); }, 300);
                 },
 
                 async retryCapture() {
-                    await this.initCamera(this.attendanceType || 'masuk');
+                    this.attendanceResult = null;
+                    await this.initCamera(this.attendanceType);
                 },
 
                 resetState(stopStream = true) {
                     this.loading = false;
-                    this.loadingText = 'Menyiapkan kamera...';
                     this.errorMessage = '';
                     this.step = 'capture';
                     this.capturedBlob = null;
-                    if (this.capturedPreview) {
-                        URL.revokeObjectURL(this.capturedPreview);
-                    }
+                    if (this.capturedPreview) { URL.revokeObjectURL(this.capturedPreview); }
                     this.capturedPreview = '';
-                    this.kegiatanText = '';
                     this.attendanceResult = null;
-                    this.capturedAt = '';
-                    this.locationStatus = '';
-                    if (stopStream) {
-                        this.stopCamera();
-                    }
+                    if (stopStream) { this.stopCamera(); }
                 },
 
                 stopCamera() {
@@ -782,4 +554,4 @@
             }, 100);
         }
     </script>
-@endsection
+@endpush
