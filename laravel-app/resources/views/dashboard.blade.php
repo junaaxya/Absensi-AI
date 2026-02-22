@@ -9,8 +9,11 @@
         .employee-dashboard {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
+    </style>
+@endpush
 
 
+@section('content')
         <!-- ANNOUNCEMENTS SECTION -->
         @if(isset($activeAnnouncements) && $activeAnnouncements->count() > 0)
             <div class="mb-6 space-y-4">
@@ -77,7 +80,6 @@
         </div>
 
 
-@section('content')
     <div x-data="{}" class="employee-dashboard space-y-6 pb-16">
         <header class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <div class="relative z-10 flex flex-col gap-2">
@@ -553,7 +555,10 @@
         </div>
     </x-pastel-modal>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        const officeGpsTolerance = {{ $officeGpsTolerance ?? 150 }};
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('cameraHandler', () => ({
                 stream: null,
@@ -640,6 +645,23 @@
 
                         navigator.geolocation.getCurrentPosition(
                             async (position) => {
+                                const accuracy = position.coords.accuracy;
+                                
+                                if (accuracy > officeGpsTolerance) {
+                                    this.loading = false;
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Lokasi Tidak Akurat',
+                                        html: `Akurasi GPS perangkat Anda: <strong>${Math.round(accuracy)} meter</strong>.<br>` +
+                                              `Batas toleransi: <strong>${officeGpsTolerance} meter</strong>.<br><br>` +
+                                              `Sistem mendeteksi lokasi dari internet/provider, bukan GPS asli.<br>` +
+                                              `<strong>Solusi:</strong> Aktifkan GPS (High Accuracy) di HP dan pastikan berada di area terbuka.`,
+                                        confirmButtonText: 'Mengerti',
+                                        confirmButtonColor: '#64748b'
+                                    });
+                                    return;
+                                }
+
                                 this.capturedAt = new Date().toLocaleString('id-ID', {
                                     weekday: 'long',
                                     day: '2-digit',
@@ -649,7 +671,7 @@
                                     minute: '2-digit'
                                 }) + ' WIB';
                                 this.locationStatus = `Lokasi terekam (${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)})`;
-                                await this.submitAttendance(this.capturedBlob, position.coords.latitude, position.coords.longitude);
+                                await this.submitAttendance(this.capturedBlob, position.coords.latitude, position.coords.longitude, accuracy);
                             },
                             (err) => {
                                 this.loading = false;
@@ -659,7 +681,7 @@
                         );
                 },
 
-                async submitAttendance(photoBlob, lat, long) {
+                async submitAttendance(photoBlob, lat, long, accuracy) {
                     this.loadingText = 'Memproses Absensi...';
 
                     const formData = new FormData();
@@ -667,6 +689,7 @@
                     formData.append('type', this.attendanceType);
                     formData.append('latitude', lat);
                     formData.append('longitude', long);
+                    formData.append('accuracy', accuracy);
 
                     try {
                         const token = document.querySelector('meta[name="csrf-token"]').content;
