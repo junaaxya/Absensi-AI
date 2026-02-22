@@ -108,7 +108,7 @@
                                 {{ \Carbon\Carbon::parse($attendanceToday->jam_masuk)->format('H:i') }} WIB
                             </p>
                         @else
-                            <p class="mt-2 flex items-center gap-2 text-sm italic text-slate-500">
+                            <p class="mt-2 flex items-center gap-2 text-sm italic text-slate-500 dark:text-slate-400">
                                 <span class="material-icons-round text-base">warning_amber</span>
                                 Absen masuk belum dilakukan
                             </p>
@@ -117,7 +117,7 @@
 
                     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
                         <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Makan Siang</p>
-                        <p class="mt-2 text-sm italic text-slate-500">Belum dilakukan</p>
+                        <p class="mt-2 text-sm italic text-slate-500 dark:text-slate-400">Belum dilakukan</p>
                     </div>
 
                     <div class="rounded-2xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-900/20 p-4">
