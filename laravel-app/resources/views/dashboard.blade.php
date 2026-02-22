@@ -43,9 +43,9 @@
                             <span class="material-icons-round {{ $iconColor }}">{{ $icon }}</span>
                         </div>
                         <div class="flex-1 z-10">
-                            <h4 class="font-bold text-sm mb-1">{{ $announcement->title }}</h4>
-                            <p class="text-xs opacity-90 leading-relaxed">{{ $announcement->content }}</p>
-                            <p class="text-[10px] mt-2 opacity-70 font-medium">
+                            <h4 class="font-bold text-sm mb-1 dark:text-white">{{ $announcement->title }}</h4>
+                            <p class="text-xs opacity-90 leading-relaxed dark:text-slate-300">{{ $announcement->content }}</p>
+                            <p class="text-[10px] mt-2 opacity-70 font-medium dark:text-slate-400">
                                 {{ \Carbon\Carbon::parse($announcement->start_date)->format('d M Y') }}
                             </p>
                         </div>
