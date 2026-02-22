@@ -50,6 +50,7 @@ class AttendanceController extends Controller
             'type'  => 'required|in:masuk,pulang',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'accuracy' => 'nullable|numeric|min:0',
         ]);
 
         // =========================
@@ -80,6 +81,17 @@ class AttendanceController extends Controller
                     $settings->office_radius
                 )
             ], 422);
+        }
+
+        // GPS Accuracy validation
+        $accuracy = $request->input('accuracy');
+        if ($accuracy !== null && $settings->office_gps_tolerance) {
+            if ($accuracy > $settings->office_gps_tolerance) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akurasi GPS tidak memadai. Akurasi perangkat: ' . round($accuracy) . ' meter, batas toleransi: ' . $settings->office_gps_tolerance . ' meter. Aktifkan GPS (High Accuracy) dan pastikan berada di area terbuka.',
+                ], 422);
+            }
         }
 
         // =========================
