@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\SystemSetting;
+use App\Models\Announcement;
+use App\Models\Izin;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -54,21 +56,59 @@ class AttendanceController extends Controller
 
         $settings = SystemSetting::first();
         $officeName = $settings?->office_name ?? 'Kantor Pusat';
-        $workStartTime = $settings?->work_start_time ?? '08:00:00';
-        $workEndTime = $settings?->work_end_time ?? '17:00:00';
+
+        $userWithShift = $user->load('shift');
+        if ($userWithShift->shift && $userWithShift->shift->is_active) {
+            $workStartTime = $userWithShift->shift->start_time;
+            $workEndTime = $userWithShift->shift->end_time;
+        } else {
+            $workStartTime = $settings?->work_start_time ?? '08:00:00';
+            $workEndTime = $settings?->work_end_time ?? '17:00:00';
+        }
+
+        $activeAnnouncements = Announcement::active()
+            ->whereIn('target_role', ['all', 'user'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
+        $hadir_count = Attendance::where('user_id', auth()->id())
+            ->whereMonth('tanggal', $currentMonth)
+            ->whereYear('tanggal', $currentYear)
+            ->whereNotNull('jam_masuk')
+            ->count();
+
+        $late_count = Attendance::where('user_id', auth()->id())
+            ->whereMonth('tanggal', $currentMonth)
+            ->whereYear('tanggal', $currentYear)
+            ->where('status', 'terlambat')
+            ->count();
+
+        $izin_count = Izin::where('user_id', auth()->id())
+            ->whereMonth('created_at', $currentMonth)
+            ->whereYear('created_at', $currentYear)
+            ->where('status', 'approved')
+            ->count();
 
         return view('dashboard', [
             'user' => $user,
             'attendanceToday' => $attendanceToday,
             'attendanceHistory' => $attendanceHistory,
+            'hadir_count' => $hadir_count,
+            'late_count' => $late_count,
+            'izin_count' => $izin_count,
             'bulan' => $bulan,
             'tahun' => $tahun,
             'startDate' => $startDate,
             'endDate' => $endDate,
             'search' => $search,
             'officeName' => $officeName,
+            'officeGpsTolerance' => $settings?->office_gps_tolerance ?? 150,
             'workStartTime' => $workStartTime,
             'workEndTime' => $workEndTime,
+            'activeAnnouncements' => $activeAnnouncements,
         ]);
 
     }

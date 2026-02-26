@@ -9,8 +9,11 @@
         .employee-dashboard {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
+    </style>
+@endpush
 
 
+@section('content')
         <!-- ANNOUNCEMENTS SECTION -->
         @if(isset($activeAnnouncements) && $activeAnnouncements->count() > 0)
             <div class="mb-6 space-y-4">
@@ -35,40 +38,40 @@
                             default => 'text-slate-500',
                         };
                     @endphp
-                    <div class="{{ $bgColor }} border rounded-2xl p-4 flex items-start gap-3 shadow-sm relative overflow-hidden">
+                    <div class="{{ $bgColor }} dark:bg-slate-800 dark:border-slate-700 border rounded-2xl p-4 flex items-start gap-3 shadow-sm relative overflow-hidden">
                         <div class="flex-shrink-0 mt-0.5">
                             <span class="material-icons-round {{ $iconColor }}">{{ $icon }}</span>
                         </div>
                         <div class="flex-1 z-10">
-                            <h4 class="font-bold text-sm mb-1">{{ $announcement->title }}</h4>
-                            <p class="text-xs opacity-90 leading-relaxed">{{ $announcement->content }}</p>
-                            <p class="text-[10px] mt-2 opacity-70 font-medium">
+                            <h4 class="font-bold text-sm mb-1 dark:text-white">{{ $announcement->title }}</h4>
+                            <p class="text-xs opacity-90 leading-relaxed dark:text-slate-300">{{ $announcement->content }}</p>
+                            <p class="text-[10px] mt-2 opacity-70 font-medium dark:text-slate-400">
                                 {{ \Carbon\Carbon::parse($announcement->start_date)->format('d M Y') }}
                             </p>
                         </div>
                         <!-- Decorative Circle -->
-                        <div class="absolute -right-4 -bottom-4 w-16 h-16 rounded-full bg-white opacity-20 z-0"></div>
+                        <div class="absolute -right-4 -bottom-4 w-16 h-16 rounded-full bg-white dark:bg-slate-600 opacity-20 z-0"></div>
                     </div>
                 @endforeach
             </div>
         @endif
 
         <!-- COMPACT PROFILE HEADER (Gojek/Shopee Style) -->
-        <div class="md:hidden flex items-center justify-between mb-6 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+        <div class="md:hidden flex items-center justify-between mb-6 bg-white dark:bg-card-dark p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold border border-emerald-200">
+                <div class="w-10 h-10 rounded-full bg-primary/30 dark:bg-primary/20 flex items-center justify-center text-slate-900 dark:text-white font-bold border border-primary">
                     {{ substr(Auth::user()->name, 0, 1) }}
                 </div>
                 <div class="leading-tight">
-                    <p class="text-xs text-gray-500 font-medium">Selamat Pagi,</p>
-                    <h2 class="text-sm font-bold text-gray-800">{{ explode(' ', $user->name)[0] }}</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Selamat Pagi,</p>
+                    <h2 class="text-sm font-bold text-slate-800 dark:text-white">{{ explode(' ', $user->name)[0] }}</h2>
                 </div>
             </div>
             <div class="flex items-center gap-2">
                  <div class="text-right hidden sm:block">
-                    <p class="text-xs text-gray-400">{{ \Carbon\Carbon::now()->translatedFormat('l, d M') }}</p>
+                    <p class="text-xs text-slate-400 dark:text-slate-500">{{ \Carbon\Carbon::now()->translatedFormat('l, d M') }}</p>
                 </div>
-                <button class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200">
+                <button class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
@@ -77,56 +80,55 @@
         </div>
 
 
-@section('content')
     <div x-data="{}" class="employee-dashboard space-y-6 pb-16">
-        <header class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <header class="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark p-6 shadow-sm md:p-8">
             <div class="relative z-10 flex flex-col gap-2">
-                <p class="text-sm font-semibold uppercase tracking-wider text-slate-500">Employee Dashboard</p>
-                <h1 class="text-2xl font-bold text-slate-900 md:text-3xl">Halo, {{ $user->name }} 👋</h1>
-                <p class="text-sm text-slate-500 md:text-base">
+                <p class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Employee Dashboard</p>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white md:text-3xl">Halo, {{ $user->name }} 👋</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 md:text-base">
                     Ringkasan absensi Anda hari ini, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}.
                 </p>
             </div>
-            <div class="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-emerald-200/30 blur-2xl"></div>
+            <div class="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-primary/30 dark:bg-primary/20 blur-2xl"></div>
         </header>
 
         <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
-            <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm xl:col-span-5">
-                <h2 class="mb-5 flex items-center gap-2 text-lg font-bold text-slate-900">
-                    <span class="material-icons-round text-emerald-600">history</span>
+            <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark p-6 shadow-sm xl:col-span-5">
+                <h2 class="mb-5 flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
+                    <span class="material-icons-round text-emerald-600 dark:text-primary">history</span>
                     Aktivitas Hari Ini
                 </h2>
 
                 <div class="space-y-4">
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Absensi Masuk</p>
+                    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Absensi Masuk</p>
                         @if($attendanceToday && $attendanceToday->jam_masuk)
-                            <p class="mt-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                            <p class="mt-2 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
                                 <span class="material-icons-round text-base">check_circle</span>
                                 {{ \Carbon\Carbon::parse($attendanceToday->jam_masuk)->format('H:i') }} WIB
                             </p>
                         @else
-                            <p class="mt-2 flex items-center gap-2 text-sm italic text-slate-500">
+                            <p class="mt-2 flex items-center gap-2 text-sm italic text-slate-500 dark:text-slate-400">
                                 <span class="material-icons-round text-base">warning_amber</span>
                                 Absen masuk belum dilakukan
                             </p>
                         @endif
                     </div>
 
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Makan Siang</p>
-                        <p class="mt-2 text-sm italic text-slate-500">Belum dilakukan</p>
+                    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Makan Siang</p>
+                        <p class="mt-2 text-sm italic text-slate-500 dark:text-slate-400">Belum dilakukan</p>
                     </div>
 
-                    <div class="rounded-2xl border border-sky-200 bg-sky-50 p-4">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-sky-700">Absen Keluar</p>
+                    <div class="rounded-2xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-900/20 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-400">Absen Keluar</p>
                         @if($attendanceToday && $attendanceToday->jam_keluar)
-                            <p class="mt-2 flex items-center gap-2 text-sm font-semibold text-sky-700">
+                            <p class="mt-2 flex items-center gap-2 text-sm font-semibold text-sky-700 dark:text-sky-400">
                                 <span class="material-icons-round text-base">check_circle</span>
                                 {{ \Carbon\Carbon::parse($attendanceToday->jam_keluar)->format('H:i') }} WIB
                             </p>
                         @else
-                            <p class="mt-2 flex items-center gap-2 text-sm text-sky-700">
+                            <p class="mt-2 flex items-center gap-2 text-sm text-sky-700 dark:text-sky-400">
                                 <span class="material-icons-round text-base">hourglass_empty</span>
                                 Belum dilakukan
                             </p>
@@ -137,47 +139,47 @@
 
             <section class="space-y-4 xl:col-span-7">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jam Masuk Kerja</p>
-                        <p class="mt-2 text-xl font-bold text-slate-900">
+                    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark p-5 shadow-sm">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Jam Masuk Kerja</p>
+                        <p class="mt-2 text-xl font-bold text-slate-900 dark:text-white">
                             {{ \Carbon\Carbon::parse($workStartTime)->format('H.i') }} WIB
                         </p>
                     </div>
-                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jam Pulang Kerja</p>
-                        <p class="mt-2 text-xl font-bold text-slate-900">
+                    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark p-5 shadow-sm">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Jam Pulang Kerja</p>
+                        <p class="mt-2 text-xl font-bold text-slate-900 dark:text-white">
                             {{ \Carbon\Carbon::parse($workEndTime)->format('H.i') }} WIB
                         </p>
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <h2 class="mb-3 text-sm font-bold text-slate-900">Kegiatan Hari Ini</h2>
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark p-5 shadow-sm">
+                    <h2 class="mb-3 text-sm font-bold text-slate-900 dark:text-white">Kegiatan Hari Ini</h2>
                     <textarea
-                        class="h-32 w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500"
+                        class="h-32 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4 text-sm text-slate-500 dark:text-slate-300"
                         placeholder="Tuliskan laporan singkat kegiatan hari ini..."
                         >{{ $attendanceToday?->kegiatan && !in_array($attendanceToday->kegiatan, ['hadir', 'hadir_lembur']) ? $attendanceToday->kegiatan : '' }}</textarea>
-                    <p class="mt-2 text-xs text-slate-400">Kolom ini siap dipakai saat fitur simpan kegiatan diaktifkan.</p>
+                    <p class="mt-2 text-xs text-slate-400 dark:text-slate-500">Kolom ini siap dipakai saat fitur simpan kegiatan diaktifkan.</p>
                 </div>
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <button
                         @click="startAttendance('masuk')"
-                        class="flex items-center justify-center gap-2 rounded-2xl bg-emerald-200 px-4 py-4 text-sm font-bold text-slate-800 transition hover:brightness-95">
+                        class="flex items-center justify-center gap-2 rounded-2xl bg-sage px-4 py-4 text-sm font-bold text-slate-900 transition hover:brightness-95">
                         <span class="material-icons-round">login</span>
                         Absen Masuk
                     </button>
 
                     <button
                         @click="startAttendance('pulang')"
-                        class="flex items-center justify-center gap-2 rounded-2xl bg-rose-200 px-4 py-4 text-sm font-bold text-slate-800 transition hover:brightness-95">
+                        class="flex items-center justify-center gap-2 rounded-2xl bg-peach px-4 py-4 text-sm font-bold text-slate-900 transition hover:brightness-95">
                         <span class="material-icons-round">logout</span>
                         Absen Keluar
                     </button>
 
                     <button
                         @click="$dispatch('open-modal', 'izin')"
-                        class="md:col-span-2 flex items-center justify-center gap-2 rounded-2xl bg-violet-200 px-4 py-4 text-sm font-bold text-slate-800 transition hover:brightness-95">
+                        class="md:col-span-2 flex items-center justify-center gap-2 rounded-2xl bg-lavender px-4 py-4 text-sm font-bold text-slate-900 transition hover:brightness-95">
                         <span class="material-icons-round">event_busy</span>
                         Pengajuan Ketidakhadiran
                     </button>
@@ -185,8 +187,8 @@
             </section>
         </div>
 
-        <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div class="flex flex-col gap-3 border-b border-slate-100 p-4 md:flex-row md:items-center md:justify-between md:p-6">
+        <section class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark shadow-sm">
+            <div class="flex flex-col gap-3 border-b border-slate-100 dark:border-slate-700 p-4 md:flex-row md:items-center md:justify-between md:p-6">
                 <form method="GET" action="{{ route('dashboard') }}" class="flex w-full flex-col gap-3 md:flex-row md:items-center">
                     <div class="relative w-full md:max-w-sm">
                         <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -195,7 +197,7 @@
                             type="text"
                             value="{{ $search }}"
                             placeholder="Cari status, kegiatan, atau jam..."
-                            class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 dark:text-white py-2 pl-10 pr-4 text-sm focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage/20" />
                     </div>
 
                     <div class="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
@@ -203,19 +205,19 @@
                             name="start_date"
                             type="date"
                             value="{{ $startDate }}"
-                            class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                            class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 dark:text-white px-3 py-2 text-sm focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage/20" />
                         <input
                             name="end_date"
                             type="date"
                             value="{{ $endDate }}"
-                            class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                            class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 dark:text-white px-3 py-2 text-sm focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage/20" />
                     </div>
 
                     <div class="flex items-center gap-2 md:ml-auto">
-                        <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                        <button type="submit" class="rounded-xl bg-sage px-4 py-2 text-sm font-semibold text-slate-900 hover:brightness-95">
                             Filter
                         </button>
-                        <a href="{{ route('dashboard') }}" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                        <a href="{{ route('dashboard') }}" class="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">
                             Reset
                         </a>
                     </div>
@@ -224,7 +226,7 @@
 
             <div class="overflow-x-auto">
                 <table class="min-w-full text-left text-sm">
-                    <thead class="bg-slate-50 text-[11px] uppercase tracking-widest text-slate-500">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50 text-[11px] uppercase tracking-widest text-slate-500 dark:text-slate-400">
                         <tr>
                             <th class="px-6 py-4">No</th>
                             <th class="px-6 py-4">Nama</th>
@@ -236,7 +238,7 @@
                             <th class="px-6 py-4">Keterangan</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                         @forelse($attendanceHistory as $row)
                             @php
                                 $durationLabel = '-';
@@ -247,23 +249,23 @@
                                     $durationLabel = $remainingMinutes > 0 ? "{$hours}j {$remainingMinutes}m" : "{$hours}j";
                                 }
                             @endphp
-                            <tr class="transition hover:bg-slate-50">
+                            <tr class="transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                 <td class="px-6 py-4">{{ ($attendanceHistory->firstItem() ?? 0) + $loop->index }}</td>
-                                <td class="px-6 py-4 font-semibold text-slate-800">{{ $user->name }}</td>
+                                <td class="px-6 py-4 font-semibold text-slate-800 dark:text-white">{{ $user->name }}</td>
                                 <td class="px-6 py-4">{{ \Carbon\Carbon::parse($row->tanggal)->translatedFormat('d M Y') }}</td>
                                 <td class="px-6 py-4">{{ $row->jam_masuk ? \Carbon\Carbon::parse($row->jam_masuk)->format('H:i') . ' WIB' : '-' }}</td>
                                 <td class="px-6 py-4">{{ $row->jam_keluar ? \Carbon\Carbon::parse($row->jam_keluar)->format('H:i') . ' WIB' : '-' }}</td>
                                 <td class="px-6 py-4">{{ $durationLabel }}</td>
                                 <td class="px-6 py-4">
                                     @if($row->status === 'tepat_waktu')
-                                        <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Tepat Waktu</span>
+                                        <span class="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-400">Tepat Waktu</span>
                                     @elseif($row->status === 'terlambat')
-                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">Terlambat</span>
+                                        <span class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-400">Terlambat</span>
                                     @else
-                                        <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{{ ucfirst(str_replace('_', ' ', $row->status ?? '-')) }}</span>
+                                        <span class="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-slate-600 dark:text-slate-300">{{ ucfirst(str_replace('_', ' ', $row->status ?? '-')) }}</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-slate-500">
+                                <td class="px-6 py-4 text-slate-500 dark:text-slate-400">
                                     @if($row->kegiatan === 'hadir_lembur')
                                         Lembur
                                     @elseif($row->kegiatan === 'hadir')
@@ -275,14 +277,14 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-10 text-center italic text-slate-500">Belum ada riwayat absensi pada filter ini.</td>
+                                <td colspan="8" class="px-6 py-10 text-center italic text-slate-500 dark:text-slate-400">Belum ada riwayat absensi pada filter ini.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <div class="border-t border-slate-100 p-4 md:p-5">
+            <div class="border-t border-slate-100 dark:border-slate-700 p-4 md:p-5">
                 {{ $attendanceHistory->links() }}
             </div>
         </section>
@@ -292,9 +294,9 @@
                 @csrf
 
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-text-secondary">Jenis Pengajuan</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-400">Jenis Pengajuan</label>
                     <select name="jenis" required
-                        class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20">
+                        class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white px-4 py-2 transition focus:border-sage focus:ring-4 focus:ring-sage/20">
                         <option value="izin">Izin</option>
                         <option value="sakit">Sakit</option>
                         <option value="cuti">Cuti</option>
@@ -304,37 +306,37 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-text-secondary">Tanggal Mulai</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-400">Tanggal Mulai</label>
                         <input type="date" name="tanggal_mulai" required
-                            class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20">
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white px-4 py-2 transition focus:border-sage focus:ring-4 focus:ring-sage/20">
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-text-secondary">Tanggal Selesai</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-400">Tanggal Selesai</label>
                         <input type="date" name="tanggal_selesai" required
-                            class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20">
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white px-4 py-2 transition focus:border-sage focus:ring-4 focus:ring-sage/20">
                     </div>
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-text-secondary">Alasan</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-400">Alasan</label>
                     <textarea name="alasan" required rows="3"
-                        class="w-full rounded-xl border border-neutral-stone bg-white px-4 py-2 transition focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20"></textarea>
+                        class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white px-4 py-2 transition focus:border-sage focus:ring-4 focus:ring-sage/20"></textarea>
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-text-secondary">Lampirkan Foto atau Dokumen</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-400">Lampirkan Foto atau Dokumen</label>
                     <input type="file" name="dokumen" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                        class="w-full text-sm text-text-secondary file:mr-4 file:rounded-xl file:border-0 file:bg-pastel-sage/20 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-pastel-sage-dark hover:file:bg-pastel-sage/30">
-                    <p class="mt-1 text-xs text-text-secondary">Format: PDF, JPG, PNG, DOCX (Max 5MB)</p>
+                        class="w-full text-sm text-slate-600 dark:text-slate-400 file:mr-4 file:rounded-xl file:border-0 file:bg-sage/20 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-slate-700 dark:file:text-slate-300 hover:file:bg-sage/30">
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Format: PDF, JPG, PNG, DOCX (Max 5MB)</p>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4">
                     <button type="button" @click="show = false"
-                        class="rounded-lg px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-neutral-stone/30">
+                        class="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 transition hover:bg-slate-100 dark:hover:bg-slate-800">
                         Batal
                     </button>
                     <button type="submit"
-                        class="rounded-lg bg-pastel-sage px-4 py-2 text-sm font-medium text-text-primary shadow-soft transition hover:bg-pastel-sage-dark">
+                        class="rounded-lg bg-sage px-4 py-2 text-sm font-medium text-slate-900 shadow-sm transition hover:brightness-95">
                         Ajukan
                     </button>
                 </div>
@@ -347,18 +349,18 @@
             @open-camera.window="initCamera($event.detail.type)"
             @modal-closed.window="if ($event.detail === 'camera-modal') resetState()"
             class="glass-attendance rounded-3xl p-2 md:p-4">
-            <div class="mb-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
+            <div class="mb-4 flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark px-4 py-3">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400">
                         <span class="material-icons-round">fingerprint</span>
                     </div>
                     <div>
-                        <h3 class="font-bold text-slate-900" x-text="attendanceType === 'pulang' ? 'Absen Pulang' : 'Absen Masuk'"></h3>
-                        <p class="text-xs text-slate-500"
+                        <h3 class="font-bold text-slate-900 dark:text-white" x-text="attendanceType === 'pulang' ? 'Absen Pulang' : 'Absen Masuk'"></h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400"
                             x-text="step === 'result' ? 'Konfirmasi hasil verifikasi absensi.' : 'Pastikan wajah terlihat jelas saat pengambilan foto.'"></p>
                     </div>
                 </div>
-                <div class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 md:block"
+                <div class="hidden rounded-full bg-slate-100 dark:bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 md:block"
                     x-text="new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'"></div>
             </div>
 
@@ -366,13 +368,13 @@
                 <div>
                     <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
                         <div class="space-y-4">
-                            <div class="relative aspect-square overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-100">
+                            <div class="relative aspect-square overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800">
                                 <video x-show="!capturedPreview" x-ref="video" class="h-full w-full scale-x-[-1] object-cover" autoplay playsinline muted></video>
                                 <img x-show="capturedPreview" :src="capturedPreview" alt="Hasil foto absensi" class="h-full w-full object-cover" />
                                 <canvas x-ref="canvas" class="hidden"></canvas>
 
                                 <div x-show="!stream && !loading && !capturedPreview"
-                                    class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-500">
+                                    class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-500 dark:text-slate-400">
                                     <span class="material-icons-round text-4xl text-slate-400">photo_camera</span>
                                     <p class="text-sm font-medium">Kamera belum menyala</p>
                                     <p class="text-xs">Izinkan akses kamera di browser Anda</p>
@@ -392,7 +394,7 @@
                             </div>
 
                             <button @click="takePicture" :disabled="loading || !stream"
-                                class="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-200 px-4 py-3.5 text-sm font-bold text-slate-800 transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50">
+                                class="flex w-full items-center justify-center gap-2 rounded-2xl bg-sage px-4 py-3.5 text-sm font-bold text-slate-900 transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50">
                                 <span class="material-icons-round">camera_alt</span>
                                 Ambil Absensi
                             </button>
@@ -403,25 +405,25 @@
                                 <label for="kegiatan-modal" class="mb-2 block text-sm font-semibold text-slate-700">Kegiatan Hari Ini</label>
                                 <textarea id="kegiatan-modal" x-model="kegiatanText" rows="7"
                                     placeholder="Tuliskan rencana kegiatan atau target Anda hari ini..."
-                                    class="w-full resize-none rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"></textarea>
+                                    class="w-full resize-none rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage/20"></textarea>
                                 <p class="mt-1 text-right text-[10px] font-semibold uppercase tracking-wider text-slate-400">Opsional</p>
                             </div>
 
-                            <div class="flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4">
+                            <div class="flex items-start gap-3 rounded-2xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-900/20 p-4">
                                 <span class="material-icons-round text-sky-600">info</span>
                                 <div class="text-sm">
-                                    <p class="font-semibold text-slate-800">Informasi Penting</p>
-                                    <p class="mt-1 text-slate-600">Pastikan wajah tidak tertutup masker atau objek lain saat mengambil absensi.</p>
+                                    <p class="font-semibold text-slate-800 dark:text-white">Informasi Penting</p>
+                                    <p class="mt-1 text-slate-600 dark:text-slate-300">Pastikan wajah tidak tertutup masker atau objek lain saat mengambil absensi.</p>
                                 </div>
                             </div>
 
                             <div class="mt-auto grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <button type="button" @click="$dispatch('close-modal', 'camera-modal')"
-                                    class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                                    class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                     Batal
                                 </button>
                                 <button type="button" @click="saveAttendance" :disabled="loading || !capturedBlob"
-                                    class="flex items-center justify-center gap-2 rounded-2xl bg-sky-200 px-4 py-3 text-sm font-bold text-slate-800 transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50">
+                                    class="flex items-center justify-center gap-2 rounded-2xl bg-sky px-4 py-3 text-sm font-bold text-slate-900 transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50">
                                     <span class="material-icons-round text-base">save</span>
                                     Simpan Kehadiran
                                 </button>
@@ -430,22 +432,22 @@
                     </div>
 
                     <div class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
-                        <div class="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3">
+                        <div class="flex items-center gap-3 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3">
                             <span class="material-icons-round text-amber-600">location_on</span>
                             <div>
                                 <p class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Lokasi</p>
                                 <p class="text-xs font-semibold text-slate-700">{{ $officeName }}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-3">
+                        <div class="flex items-center gap-3 rounded-2xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 p-3">
                             <span class="material-icons-round text-violet-600">verified_user</span>
                             <div>
                                 <p class="text-[10px] font-bold uppercase tracking-wider text-violet-700">Verifikasi</p>
                                 <p class="text-xs font-semibold text-slate-700">Biometric Face Recognition</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
-                            <span class="material-icons-round text-emerald-600">history</span>
+                        <div class="flex items-center gap-3 rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 p-3">
+                            <span class="material-icons-round text-emerald-600 dark:text-primary">history</span>
                             <div>
                                 <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Status Hari Ini</p>
                                 <p class="text-xs font-semibold text-slate-700"
@@ -458,9 +460,9 @@
 
             <template x-if="step === 'result'">
                 <div class="space-y-4">
-                    <div class="rounded-2xl border border-slate-200 bg-slate-100 p-4">
-                        <div class="mx-auto w-full max-w-2xl rounded-xl border border-slate-200 bg-white shadow-sm">
-                            <div class="border-b border-slate-200 px-4 py-3 text-center text-lg font-bold text-slate-800"
+                    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-4">
+                        <div class="mx-auto w-full max-w-2xl rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark shadow-sm">
+                            <div class="border-b border-slate-200 dark:border-slate-700 px-4 py-3 text-center text-lg font-bold text-slate-800 dark:text-white"
                                 x-text="attendanceType === 'pulang' ? 'Absen Pulang' : 'Absen Masuk'"></div>
 
                             <div class="space-y-4 p-4">
@@ -540,11 +542,11 @@
                             Kembali ke Dashboard
                         </button>
                         <button type="button" @click="retryCapture" x-show="attendanceResult && !attendanceResult.success"
-                            class="rounded-2xl bg-sky-200 px-4 py-3 text-sm font-bold text-slate-800 transition hover:brightness-95">
+                            class="rounded-2xl bg-sky px-4 py-3 text-sm font-bold text-slate-900 transition hover:brightness-95">
                             Coba Lagi
                         </button>
                         <button type="button" @click="$dispatch('close-modal', 'camera-modal')" x-show="attendanceResult && !attendanceResult.success"
-                            class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                            class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
                             Tutup
                         </button>
                     </div>
@@ -553,7 +555,10 @@
         </div>
     </x-pastel-modal>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        const officeGpsTolerance = {{ $officeGpsTolerance ?? 150 }};
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('cameraHandler', () => ({
                 stream: null,
@@ -640,6 +645,23 @@
 
                         navigator.geolocation.getCurrentPosition(
                             async (position) => {
+                                const accuracy = position.coords.accuracy;
+                                
+                                if (accuracy > officeGpsTolerance) {
+                                    this.loading = false;
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Lokasi Tidak Akurat',
+                                        html: `Akurasi GPS perangkat Anda: <strong>${Math.round(accuracy)} meter</strong>.<br>` +
+                                              `Batas toleransi: <strong>${officeGpsTolerance} meter</strong>.<br><br>` +
+                                              `Sistem mendeteksi lokasi dari internet/provider, bukan GPS asli.<br>` +
+                                              `<strong>Solusi:</strong> Aktifkan GPS (High Accuracy) di HP dan pastikan berada di area terbuka.`,
+                                        confirmButtonText: 'Mengerti',
+                                        confirmButtonColor: '#64748b'
+                                    });
+                                    return;
+                                }
+
                                 this.capturedAt = new Date().toLocaleString('id-ID', {
                                     weekday: 'long',
                                     day: '2-digit',
@@ -649,7 +671,7 @@
                                     minute: '2-digit'
                                 }) + ' WIB';
                                 this.locationStatus = `Lokasi terekam (${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)})`;
-                                await this.submitAttendance(this.capturedBlob, position.coords.latitude, position.coords.longitude);
+                                await this.submitAttendance(this.capturedBlob, position.coords.latitude, position.coords.longitude, accuracy);
                             },
                             (err) => {
                                 this.loading = false;
@@ -659,7 +681,7 @@
                         );
                 },
 
-                async submitAttendance(photoBlob, lat, long) {
+                async submitAttendance(photoBlob, lat, long, accuracy) {
                     this.loadingText = 'Memproses Absensi...';
 
                     const formData = new FormData();
@@ -667,6 +689,7 @@
                     formData.append('type', this.attendanceType);
                     formData.append('latitude', lat);
                     formData.append('longitude', long);
+                    formData.append('accuracy', accuracy);
 
                     try {
                         const token = document.querySelector('meta[name="csrf-token"]').content;

@@ -136,6 +136,13 @@
                     <span class="text-sm">Data Karyawan</span>
                 </a>
 
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.announcements.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.announcements.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.announcements.*') ? 'filled-icon' : '' }}">campaign</span>
+                    <span class="text-sm">Pengumuman</span>
+                </a>
+
                 <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-6 mb-2">Pengaturan</p>
 
                 <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.settings.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
