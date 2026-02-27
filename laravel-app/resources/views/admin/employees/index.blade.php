@@ -61,14 +61,8 @@
 
                     <div class="relative mb-6">
                         <div class="mx-auto h-20 w-20 overflow-hidden rounded-2xl bg-slate-100 shadow-md">
-                            @if($employee->foto)
-                                <img src="{{ asset('storage/' . $employee->foto) }}" alt="{{ $employee->name }}"
+                            <img src="{{ $employee->profile_photo_url }}" alt="{{ $employee->name }}"
                                     class="h-full w-full object-cover">
-                            @else
-                                <div class="flex h-full w-full items-center justify-center bg-slate-200 text-slate-400">
-                                    <span class="material-icons-round text-4xl">person</span>
-                                </div>
-                            @endif
                         </div>
                     </div>
 
@@ -104,7 +98,7 @@
                             data-role="{{ $employee->role }}"
                             data-jabatan="{{ $employee->jabatan }}"
                             data-username="{{ $employee->username }}"
-                            data-foto-url="{{ $employee->foto ? asset('storage/' . $employee->foto) : '' }}"
+                            data-foto-url="{{ $employee->profile_photo_url }}"
                             @click="openFaceModalFromDataset($el.dataset)"
                             class="flex w-full items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/15 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-primary/30 dark:text-slate-100">
                             <span class="material-icons-round text-base">face_retouching_natural</span>

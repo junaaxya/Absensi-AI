@@ -88,12 +88,8 @@
                 class="mb-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center gap-3">
                 <div
                     class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
-                    @if(Auth::user()->foto)
-                        <img alt="Profile" class="w-full h-full object-cover"
-                            src="{{ asset('storage/' . Auth::user()->foto) }}" />
-                    @else
-                        <span class="material-icons-round text-slate-500">person</span>
-                    @endif
+                    <img alt="Profile" class="w-full h-full object-cover"
+                            src="{{ Auth::user()->profile_photo_url }}" />
                 </div>
                 <div class="overflow-hidden">
                     <h3 class="font-bold text-slate-900 dark:text-white text-sm truncate uppercase">

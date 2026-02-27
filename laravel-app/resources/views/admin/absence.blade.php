@@ -86,11 +86,7 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                                             @if($izin->user->foto)
-                                                <img src="{{ asset('storage/' . $izin->user->foto) }}" class="w-full h-full object-cover">
-                                            @else
-                                                <span class="material-icons-round text-gray-400">person</span>
-                                            @endif
+                                             <img src="{{ $izin->user->profile_photo_url }}" class="w-full h-full object-cover">
                                         </div>
                                         <div>
                                             <p class="font-bold text-sm text-gray-900 dark:text-white">{{ $izin->user->name }}</p>

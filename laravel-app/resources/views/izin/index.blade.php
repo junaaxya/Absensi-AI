@@ -1,7 +1,7 @@
 @extends('layouts.absensi')
 
 @section('content')
-    <div class="space-y-6">
+    <div x-data class="space-y-6">
         <!-- HEADER -->
         <div class="flex justify-between items-center">
             <div>

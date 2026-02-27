@@ -32,7 +32,7 @@
                     <div class="flex w-full flex-col items-center gap-3 md:w-auto">
                         <div class="relative">
                             <div class="h-40 w-40 overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-100">
-                                <img src="{{ $user->foto ? asset('storage/' . $user->foto) : asset('img/default.png') }}" alt="Foto Profil"
+                                <img src="{{ $user->profile_photo_url }}" alt="Foto Profil"
                                     class="h-full w-full object-cover">
                             </div>
 
