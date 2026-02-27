@@ -63,4 +63,23 @@ class User extends Authenticatable
     {
         return $this->belongsTo(WorkShift::class);
     }
+
+    /**
+     * Get the profile photo URL with hybrid fallback:
+     * 1. Manual upload (foto column)
+     * 2. Face dataset proxy (self-caching)
+     * 3. Default SVG avatar
+     */
+    public function getProfilePhotoUrlAttribute(): string
+    {
+        if ($this->foto) {
+            return asset('storage/' . $this->foto);
+        }
+
+        if ($this->has_face_data && $this->username) {
+            return route('profile.photo');
+        }
+
+        return asset('img/default-avatar.svg');
+    }
 }

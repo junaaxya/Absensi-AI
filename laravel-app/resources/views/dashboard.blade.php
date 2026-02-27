@@ -331,7 +331,7 @@
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" @click="show = false"
+                    <button type="button" @click="closeModal()"
                         class="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 transition hover:bg-slate-100 dark:hover:bg-slate-800">
                         Batal
                     </button>
@@ -364,13 +364,12 @@
                     x-text="new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'"></div>
             </div>
 
-            <template x-if="step === 'capture'">
-                <div>
+            <div x-show="step === 'capture'">
                     <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
                         <div class="space-y-4">
                             <div class="relative aspect-square overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800">
                                 <video x-show="!capturedPreview" x-ref="video" class="h-full w-full scale-x-[-1] object-cover" autoplay playsinline muted></video>
-                                <img x-show="capturedPreview" :src="capturedPreview" alt="Hasil foto absensi" class="h-full w-full object-cover" />
+                                <img x-show="capturedPreview" :src="capturedPreview" alt="Hasil foto absensi" class="h-full w-full scale-x-[-1] object-cover" />
                                 <canvas x-ref="canvas" class="hidden"></canvas>
 
                                 <div x-show="!stream && !loading && !capturedPreview"
@@ -455,11 +454,9 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </template>
+            </div>
 
-            <template x-if="step === 'result'">
-                <div class="space-y-4">
+            <div x-show="step === 'result'" class="space-y-4">
                     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-4">
                         <div class="mx-auto w-full max-w-2xl rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark shadow-sm">
                             <div class="border-b border-slate-200 dark:border-slate-700 px-4 py-3 text-center text-lg font-bold text-slate-800 dark:text-white"
@@ -467,7 +464,7 @@
 
                             <div class="space-y-4 p-4">
                                 <div class="relative h-56 overflow-hidden rounded-lg bg-slate-700">
-                                    <img x-show="capturedPreview" :src="capturedPreview" alt="Capture result" class="h-full w-full object-cover opacity-70" />
+                                    <img x-show="capturedPreview" :src="capturedPreview" alt="Capture result" class="h-full w-full scale-x-[-1] object-cover opacity-70" />
                                     <div class="absolute inset-0 flex items-center justify-center">
                                         <div class="relative h-36 w-36 rounded-2xl border-4"
                                             :class="attendanceResult?.success ? 'border-emerald-400' : 'border-red-400'">
@@ -550,8 +547,7 @@
                             Tutup
                         </button>
                     </div>
-                </div>
-            </template>
+            </div>
         </div>
     </x-pastel-modal>
 
