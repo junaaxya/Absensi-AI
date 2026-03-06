@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SystemSetting extends Model
 {
-    use HasFactory, \App\Traits\Auditable;
+    use HasFactory;
 
     protected $table = 'system_settings';
 

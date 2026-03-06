@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class LeaveType extends Model
 {
-    use HasFactory, \App\Traits\Auditable;
+    use HasFactory;
 
     protected $fillable = [
         'name',
