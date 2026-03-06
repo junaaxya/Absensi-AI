@@ -1,0 +1,89 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+
+class RoleAndPermissionSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // Reset cached roles and permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        $permissions = [
+            'view_all_attendance',
+            'view_department_attendance',
+            'view_team_attendance',
+            'view_self_attendance',
+            'approve_department_izin',
+            'approve_team_izin',
+            'request_izin',
+            'request_izin_limited',
+            'manage_employees',
+            'manage_departments',
+            'manage_shifts',
+            'manage_holidays',
+            'manage_leave_types',
+            'manage_announcements',
+            'manage_system_settings',
+            'view_audit_logs',
+            'manage_backups',
+            'export_data',
+            'manage_face_data',
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+        }
+
+        // Define roles and assign permissions
+        $roleDirektur = Role::firstOrCreate(['name' => 'Direktur', 'guard_name' => 'web']);
+        $roleDirektur->syncPermissions(array_diff($permissions, ['request_izin_limited']));
+
+        $roleVP = Role::firstOrCreate(['name' => 'Vice President', 'guard_name' => 'web']);
+        $roleVP->syncPermissions(array_diff($permissions, ['request_izin_limited', 'manage_system_settings', 'manage_backups']));
+
+        $roleManager = Role::firstOrCreate(['name' => 'Manager', 'guard_name' => 'web']);
+        $roleManager->syncPermissions([
+            'view_department_attendance',
+            'view_team_attendance',
+            'view_self_attendance',
+            'approve_department_izin',
+            'approve_team_izin',
+            'request_izin',
+            'manage_announcements',
+            'export_data',
+        ]);
+
+        $roleSupervisor = Role::firstOrCreate(['name' => 'Supervisor', 'guard_name' => 'web']);
+        $roleSupervisor->syncPermissions([
+            'view_team_attendance',
+            'view_self_attendance',
+            'approve_team_izin',
+            'request_izin',
+        ]);
+
+        $roleTeamLeader = Role::firstOrCreate(['name' => 'Team Leader', 'guard_name' => 'web']);
+        $roleTeamLeader->syncPermissions([
+            'view_team_attendance',
+            'view_self_attendance',
+            'approve_team_izin',
+            'request_izin',
+        ]);
+
+        $roleStaf = Role::firstOrCreate(['name' => 'Staf', 'guard_name' => 'web']);
+        $roleStaf->syncPermissions([
+            'view_self_attendance',
+            'request_izin',
+        ]);
+
+        $roleMagang = Role::firstOrCreate(['name' => 'Magang', 'guard_name' => 'web']);
+        $roleMagang->syncPermissions([
+            'view_self_attendance',
+            'request_izin_limited',
+        ]);
+    }
+}
