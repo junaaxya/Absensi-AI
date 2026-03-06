@@ -69,8 +69,8 @@ class AdminSystemSettingController extends Controller
         $categoryTabs = $this->categoryTabs();
 
         $activeCategory = $category ?? 'umum';
-        $userRole = (string) ($request->user()?->role ?? '');
-        $roleAllowedTabs = $this->roleAllowedTabs($userRole);
+        $user = $request->user();
+        $roleAllowedTabs = $this->roleAllowedTabs($user);
         $categoryAllowedTabs = $categoryTabs[$activeCategory] ?? $categoryTabs['umum'];
         $allowedTabs = array_values(array_intersect($categoryAllowedTabs, $roleAllowedTabs));
 

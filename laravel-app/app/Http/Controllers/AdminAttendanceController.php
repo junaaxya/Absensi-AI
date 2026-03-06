@@ -14,6 +14,7 @@ class AdminAttendanceController extends Controller
     public function index(Request $request)
     {
         $query = Attendance::with('user');
+        \App\Services\RoleBasedScope::scopeAttendance($query, auth()->user());
 
         // Filter: Tanggal
         if ($request->filled('start_date') && $request->filled('end_date')) {
@@ -94,6 +95,7 @@ class AdminAttendanceController extends Controller
         if ((!$request->filled('status') || in_array(strtolower($request->status), ['izin', 'sakit', 'cuti', 'dinas']))) {
              $izinQuery = Izin::with('user')
                 ->where('status', 'approved');
+             \App\Services\RoleBasedScope::scopeIzin($izinQuery, auth()->user());
                 
              if ($request->filled('start_date') && $request->filled('end_date')) {
                 $izinQuery->whereDate('tanggal_mulai', '<=', $request->end_date)

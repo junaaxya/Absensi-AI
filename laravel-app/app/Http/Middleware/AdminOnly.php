@@ -10,7 +10,7 @@ class AdminOnly
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user() || $request->user()->role !== 'admin') {
+        if (! $request->user() || ! $request->user()->hasAnyRole(['Direktur', 'Vice President', 'Manager', 'Supervisor', 'Team Leader'])) {
             return new Response('Forbidden', 403);
         }
 

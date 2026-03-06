@@ -17,6 +17,9 @@ use App\Http\Controllers\AdminAnnouncementController;
 use App\Http\Controllers\AdminExportController;
 use App\Http\Controllers\AdminBackupController;
 use App\Http\Middleware\AdminOnly;
+use App\Http\Controllers\AdminAttendanceController;
+use App\Http\Controllers\AdminAbsenceController;
+use App\Http\Controllers\AdminSystemSettingController;
 
 
 Route::get('/', function () {
@@ -61,142 +64,157 @@ Route::middleware(['auth'])->group(function () {
 
     // ADMIN ONLY
     Route::middleware(AdminOnly::class)->group(function () {
+
+        // DASHBOARD - accessible to ALL admin-level roles (no extra permission needed)
         Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
             ->name('admin.dashboard');
 
-        Route::get('/admin/attendance', [App\Http\Controllers\AdminAttendanceController::class, 'index'])
-            ->name('admin.attendance');
+        // ATTENDANCE & ABSENCE VIEWING - requires at least team-level viewing
+        Route::middleware(['permission:view_team_attendance'])->group(function () {
+            Route::get('/admin/attendance', [AdminAttendanceController::class, 'index'])
+                ->name('admin.attendance');
+            Route::get('/admin/attendance/index', [AdminAttendanceController::class, 'index'])
+                ->name('admin.attendance.index');
+            Route::get('/admin/absence-management', [AdminAbsenceController::class, 'index'])
+                ->name('admin.absence.index');
+            Route::get('/admin/izin', [AdminAbsenceController::class, 'index'])
+                ->name('admin.izin.index');
+        });
 
-        Route::get('/admin/attendance/index', [App\Http\Controllers\AdminAttendanceController::class, 'index'])
-            ->name('admin.attendance.index');
+        // IZIN APPROVAL - requires at least team-level approval
+        Route::middleware(['permission:approve_team_izin'])->group(function () {
+            Route::patch('/admin/izin/{izin}/approve', [IzinController::class, 'approve'])
+                ->name('admin.izin.approve');
+            Route::patch('/admin/izin/{izin}/reject', [IzinController::class, 'reject'])
+                ->name('admin.izin.reject');
+            Route::patch('/admin/absence-management/{izin}/status', [AdminAbsenceController::class, 'updateStatus'])
+                ->name('admin.absence.updateStatus');
+        });
 
-        Route::get('/admin/absence-management', [App\Http\Controllers\AdminAbsenceController::class, 'index'])
-            ->name('admin.absence.index');
+        // EMPLOYEE MANAGEMENT - requires manage_employees permission
+        Route::middleware(['permission:manage_employees'])->group(function () {
+            Route::resource('employees', EmployeeController::class);
+        });
 
-        Route::get('/admin/izin', [App\Http\Controllers\AdminAbsenceController::class, 'index'])
-            ->name('admin.izin.index');
+        // FACE DATA MANAGEMENT - requires manage_face_data permission
+        Route::middleware(['permission:manage_face_data'])->group(function () {
+            Route::get('/admin/employees/{employee}/face-data', [AdminEmployeeFaceController::class, 'show'])
+                ->name('admin.employees.face-data.show');
+            Route::delete('/admin/employees/{employee}/face-data', [AdminEmployeeFaceController::class, 'destroy'])
+                ->name('admin.employees.face-data.destroy');
+            Route::delete('/admin/employees/{employee}/face-data/photos/{photo}', [AdminEmployeeFaceController::class, 'destroyPhoto'])
+                ->where('photo', '.*')
+                ->name('admin.employees.face-data.photos.destroy');
+        });
 
-        Route::patch('/admin/izin/{izin}/approve', [IzinController::class, 'approve'])
-            ->name('admin.izin.approve');
+        // SYSTEM SETTINGS - requires manage_system_settings (Direktur only)
+        Route::middleware(['permission:manage_system_settings'])->group(function () {
+            Route::get('/admin/settings', [AdminSystemSettingController::class, 'index'])
+                ->name('admin.settings.index');
+            Route::get('/admin/settings/category/{category}', [AdminSystemSettingController::class, 'index'])
+                ->whereIn('category', ['umum', 'kehadiran', 'organisasi', 'data'])
+                ->name('admin.settings.category');
+            Route::patch('/admin/settings/work-hours', [AdminSystemSettingController::class, 'updateWorkHours'])
+                ->name('admin.settings.work-hours.update');
+            Route::post('/admin/settings/work-hours/reset', [AdminSystemSettingController::class, 'resetWorkHours'])
+                ->name('admin.settings.work-hours.reset');
+            Route::patch('/admin/settings/location', [AdminSystemSettingController::class, 'updateLocation'])
+                ->name('admin.settings.location.update');
+            Route::post('/admin/settings/location/reset', [AdminSystemSettingController::class, 'resetLocation'])
+                ->name('admin.settings.location.reset');
+            Route::patch('/admin/settings/company-profile', [AdminSystemSettingController::class, 'updateCompanyProfile'])
+                ->name('admin.settings.company-profile.update');
+            Route::post('/admin/settings/company-profile/reset', [AdminSystemSettingController::class, 'resetCompanyProfile'])
+                ->name('admin.settings.company-profile.reset');
+            Route::patch('/admin/settings/attendance-policy', [AdminSystemSettingController::class, 'updateAttendancePolicy'])
+                ->name('admin.settings.attendance-policy.update');
+            Route::post('/admin/settings/attendance-policy/reset', [AdminSystemSettingController::class, 'resetAttendancePolicy'])
+                ->name('admin.settings.attendance-policy.reset');
+            Route::patch('/admin/settings/face-recognition', [AdminSystemSettingController::class, 'updateFaceRecognition'])
+                ->name('admin.settings.face-recognition.update');
+            Route::post('/admin/settings/face-recognition/reset', [AdminSystemSettingController::class, 'resetFaceRecognition'])
+                ->name('admin.settings.face-recognition.reset');
+            Route::post('/admin/settings/face-recognition/test', [AdminSystemSettingController::class, 'testFaceService'])
+                ->name('admin.settings.face-recognition.test');
+            Route::patch('/admin/settings/notifications', [AdminSystemSettingController::class, 'updateNotificationSettings'])
+                ->name('admin.settings.notifications.update');
+            Route::patch('/admin/settings/retention', [AdminSystemSettingController::class, 'updateRetention'])
+                ->name('admin.settings.backup-config.update');
+        });
 
-        Route::patch('/admin/izin/{izin}/reject', [IzinController::class, 'reject'])
-            ->name('admin.izin.reject');
+        // DEPARTMENT MANAGEMENT - requires manage_departments
+        Route::middleware(['permission:manage_departments'])->group(function () {
+            Route::post('/admin/settings/departments', [AdminDepartmentController::class, 'store'])
+                ->name('admin.settings.departments.store');
+            Route::patch('/admin/settings/departments/{department}', [AdminDepartmentController::class, 'update'])
+                ->name('admin.settings.departments.update');
+            Route::delete('/admin/settings/departments/{department}', [AdminDepartmentController::class, 'destroy'])
+                ->name('admin.settings.departments.destroy');
+        });
 
-        Route::patch('/admin/absence-management/{izin}/status', [App\Http\Controllers\AdminAbsenceController::class, 'updateStatus'])
-            ->name('admin.absence.updateStatus');
-            
-        Route::resource('employees', EmployeeController::class);
+        // SHIFT MANAGEMENT - requires manage_shifts
+        Route::middleware(['permission:manage_shifts'])->group(function () {
+            Route::post('/admin/settings/shifts', [AdminShiftController::class, 'store'])
+                ->name('admin.settings.shifts.store');
+            Route::patch('/admin/settings/shifts/{shift}', [AdminShiftController::class, 'update'])
+                ->name('admin.settings.shifts.update');
+            Route::delete('/admin/settings/shifts/{shift}', [AdminShiftController::class, 'destroy'])
+                ->name('admin.settings.shifts.destroy');
+        });
 
-        Route::get('/admin/employees/{employee}/face-data', [AdminEmployeeFaceController::class, 'show'])
-            ->name('admin.employees.face-data.show');
+        // HOLIDAY MANAGEMENT - requires manage_holidays
+        Route::middleware(['permission:manage_holidays'])->group(function () {
+            Route::post('/admin/settings/holidays/import', [AdminHolidayController::class, 'import'])
+                ->name('admin.settings.holidays.import');
+            Route::post('/admin/settings/holidays', [AdminHolidayController::class, 'store'])
+                ->name('admin.settings.holidays.store');
+            Route::patch('/admin/settings/holidays/{holiday}', [AdminHolidayController::class, 'update'])
+                ->name('admin.settings.holidays.update');
+            Route::delete('/admin/settings/holidays/{holiday}', [AdminHolidayController::class, 'destroy'])
+                ->name('admin.settings.holidays.destroy');
+        });
 
-        Route::delete('/admin/employees/{employee}/face-data', [AdminEmployeeFaceController::class, 'destroy'])
-            ->name('admin.employees.face-data.destroy');
+        // LEAVE TYPE MANAGEMENT - requires manage_leave_types
+        Route::middleware(['permission:manage_leave_types'])->group(function () {
+            Route::post('/admin/settings/leave-types', [AdminLeaveTypeController::class, 'store'])
+                ->name('admin.settings.leave-types.store');
+            Route::patch('/admin/settings/leave-types/{leaveType}', [AdminLeaveTypeController::class, 'update'])
+                ->name('admin.settings.leave-types.update');
+            Route::delete('/admin/settings/leave-types/{leaveType}', [AdminLeaveTypeController::class, 'destroy'])
+                ->name('admin.settings.leave-types.destroy');
+        });
 
-        Route::delete('/admin/employees/{employee}/face-data/photos/{photo}', [AdminEmployeeFaceController::class, 'destroyPhoto'])
-            ->where('photo', '.*')
-            ->name('admin.employees.face-data.photos.destroy');
+        // AUDIT LOGS - requires view_audit_logs
+        Route::middleware(['permission:view_audit_logs'])->group(function () {
+            Route::get('/admin/audit-logs', [AdminAuditLogController::class, 'index'])
+                ->name('admin.audit-logs.index');
+        });
 
-        // SETTINGS
-        Route::get('/admin/settings', [App\Http\Controllers\AdminSystemSettingController::class, 'index'])
-            ->name('admin.settings.index');
+        // ANNOUNCEMENTS - requires manage_announcements
+        Route::middleware(['permission:manage_announcements'])->group(function () {
+            Route::resource('admin/announcements', AdminAnnouncementController::class)
+                ->names('admin.announcements');
+        });
 
-        Route::get('/admin/settings/category/{category}', [App\Http\Controllers\AdminSystemSettingController::class, 'index'])
-            ->whereIn('category', ['umum', 'kehadiran', 'organisasi', 'data'])
-            ->name('admin.settings.category');
-        
-        Route::patch('/admin/settings/work-hours', [App\Http\Controllers\AdminSystemSettingController::class, 'updateWorkHours'])
-            ->name('admin.settings.work-hours.update');
+        // EXPORT - requires export_data
+        Route::middleware(['permission:export_data'])->group(function () {
+            Route::get('/admin/export/attendance', [AdminExportController::class, 'exportAttendance'])
+                ->name('admin.export.attendance');
+            Route::get('/admin/export/employees', [AdminExportController::class, 'exportEmployees'])
+                ->name('admin.export.employees');
+        });
 
-        Route::post('/admin/settings/work-hours/reset', [App\Http\Controllers\AdminSystemSettingController::class, 'resetWorkHours'])
-            ->name('admin.settings.work-hours.reset');
-
-        Route::patch('/admin/settings/location', [App\Http\Controllers\AdminSystemSettingController::class, 'updateLocation'])
-            ->name('admin.settings.location.update');
-
-        Route::post('/admin/settings/location/reset', [App\Http\Controllers\AdminSystemSettingController::class, 'resetLocation'])
-            ->name('admin.settings.location.reset');
-
-        Route::patch('/admin/settings/company-profile', [App\Http\Controllers\AdminSystemSettingController::class, 'updateCompanyProfile'])
-            ->name('admin.settings.company-profile.update');
-        Route::post('/admin/settings/company-profile/reset', [App\Http\Controllers\AdminSystemSettingController::class, 'resetCompanyProfile'])
-            ->name('admin.settings.company-profile.reset');
-
-        Route::patch('/admin/settings/attendance-policy', [App\Http\Controllers\AdminSystemSettingController::class, 'updateAttendancePolicy'])
-            ->name('admin.settings.attendance-policy.update');
-        Route::post('/admin/settings/attendance-policy/reset', [App\Http\Controllers\AdminSystemSettingController::class, 'resetAttendancePolicy'])
-            ->name('admin.settings.attendance-policy.reset');
-
-        Route::patch('/admin/settings/face-recognition', [App\Http\Controllers\AdminSystemSettingController::class, 'updateFaceRecognition'])
-            ->name('admin.settings.face-recognition.update');
-        Route::post('/admin/settings/face-recognition/reset', [App\Http\Controllers\AdminSystemSettingController::class, 'resetFaceRecognition'])
-            ->name('admin.settings.face-recognition.reset');
-        Route::post('/admin/settings/face-recognition/test', [App\Http\Controllers\AdminSystemSettingController::class, 'testFaceService'])
-            ->name('admin.settings.face-recognition.test');
-
-        Route::post('/admin/settings/departments', [AdminDepartmentController::class, 'store'])
-            ->name('admin.settings.departments.store');
-        Route::patch('/admin/settings/departments/{department}', [AdminDepartmentController::class, 'update'])
-            ->name('admin.settings.departments.update');
-        Route::delete('/admin/settings/departments/{department}', [AdminDepartmentController::class, 'destroy'])
-            ->name('admin.settings.departments.destroy');
-
-        // SHIFTS
-        Route::post('/admin/settings/shifts', [AdminShiftController::class, 'store'])
-            ->name('admin.settings.shifts.store');
-        Route::patch('/admin/settings/shifts/{shift}', [AdminShiftController::class, 'update'])
-            ->name('admin.settings.shifts.update');
-        Route::delete('/admin/settings/shifts/{shift}', [AdminShiftController::class, 'destroy'])
-            ->name('admin.settings.shifts.destroy');
-
-        // HOLIDAYS
-        Route::post('/admin/settings/holidays/import', [AdminHolidayController::class, 'import'])
-            ->name('admin.settings.holidays.import');
-        Route::post('/admin/settings/holidays', [AdminHolidayController::class, 'store'])
-            ->name('admin.settings.holidays.store');
-        Route::patch('/admin/settings/holidays/{holiday}', [AdminHolidayController::class, 'update'])
-            ->name('admin.settings.holidays.update');
-        Route::delete('/admin/settings/holidays/{holiday}', [AdminHolidayController::class, 'destroy'])
-            ->name('admin.settings.holidays.destroy');
-
-        // LEAVE TYPES
-        Route::post('/admin/settings/leave-types', [AdminLeaveTypeController::class, 'store'])
-            ->name('admin.settings.leave-types.store');
-        Route::patch('/admin/settings/leave-types/{leaveType}', [AdminLeaveTypeController::class, 'update'])
-            ->name('admin.settings.leave-types.update');
-        Route::delete('/admin/settings/leave-types/{leaveType}', [AdminLeaveTypeController::class, 'destroy'])
-            ->name('admin.settings.leave-types.destroy');
-
-        Route::patch('/admin/settings/notifications', [App\Http\Controllers\AdminSystemSettingController::class, 'updateNotificationSettings'])
-            ->name('admin.settings.notifications.update');
-
-        // AUDIT LOGS
-        Route::get('/admin/audit-logs', [AdminAuditLogController::class, 'index'])
-            ->name('admin.audit-logs.index');
-
-        // ANNOUNCEMENTS
-        Route::resource('admin/announcements', AdminAnnouncementController::class)
-            ->names('admin.announcements');
-
-        // RETENTION
-        Route::patch('/admin/settings/retention', [App\Http\Controllers\AdminSystemSettingController::class, 'updateRetention'])
-            ->name('admin.settings.backup-config.update');
-
-        // EXPORT
-        Route::get('/admin/export/attendance', [AdminExportController::class, 'exportAttendance'])
-            ->name('admin.export.attendance');
-        Route::get('/admin/export/employees', [AdminExportController::class, 'exportEmployees'])
-            ->name('admin.export.employees');
-
-        // BACKUPS
-        Route::post('/admin/backups', [AdminBackupController::class, 'store'])
-            ->name('admin.backups.create');
-        Route::delete('/admin/backups/{filename}', [AdminBackupController::class, 'destroy'])
-            ->name('admin.backups.destroy');
-        Route::get('/admin/backups/{filename}', [AdminBackupController::class, 'download'])
-            ->name('admin.backups.download');
-        Route::post('/admin/cleanup', [AdminBackupController::class, 'cleanup'])
-            ->name('admin.cleanup');
+        // BACKUPS - requires manage_backups (Direktur only)
+        Route::middleware(['permission:manage_backups'])->group(function () {
+            Route::post('/admin/backups', [AdminBackupController::class, 'store'])
+                ->name('admin.backups.create');
+            Route::delete('/admin/backups/{filename}', [AdminBackupController::class, 'destroy'])
+                ->name('admin.backups.destroy');
+            Route::get('/admin/backups/{filename}', [AdminBackupController::class, 'download'])
+                ->name('admin.backups.download');
+            Route::post('/admin/cleanup', [AdminBackupController::class, 'cleanup'])
+                ->name('admin.cleanup');
+        });
     });
 });
 

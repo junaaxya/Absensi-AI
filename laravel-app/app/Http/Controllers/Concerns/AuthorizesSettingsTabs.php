@@ -9,31 +9,34 @@ trait AuthorizesSettingsTabs
     protected function categoryTabs(): array
     {
         return [
-            'umum' => ['jam_kerja', 'lokasi', 'profil_perusahaan'],
-            'kehadiran' => ['kebijakan_absensi', 'shift_kerja', 'hari_libur', 'tipe_cuti'],
-            'organisasi' => ['departemen'],
-            'data' => ['face_recognition', 'notifikasi', 'export', 'backup'],
+            "umum" => ["jam_kerja", "lokasi", "profil_perusahaan"],
+            "kehadiran" => ["kebijakan_absensi", "shift_kerja", "hari_libur", "tipe_cuti"],
+            "organisasi" => ["departemen"],
+            "data" => ["face_recognition", "notifikasi", "export", "backup"],
         ];
     }
 
-    protected function roleAllowedTabs(string $role): array
+    protected function roleAllowedTabs($user): array
     {
-        $allTabs = array_values(array_unique(array_merge(...array_values($this->categoryTabs()))));
-
-        $roleTabMatrix = [
-            'admin' => $allTabs,
-            'manager' => ['jam_kerja', 'lokasi', 'kebijakan_absensi', 'notifikasi', 'export'],
-            'staf' => ['jam_kerja', 'lokasi', 'notifikasi'],
-            'karyawan' => [],
-        ];
-
-        return $roleTabMatrix[$role] ?? [];
+        if (!$user) return [];
+        
+        $allowed = [];
+        if ($user->can("manage_system_settings")) {
+            $allowed = array_merge($allowed, ["jam_kerja", "lokasi", "profil_perusahaan", "kebijakan_absensi", "face_recognition", "notifikasi"]);
+        }
+        if ($user->can("manage_departments")) { $allowed[] = "departemen"; }
+        if ($user->can("manage_shifts")) { $allowed[] = "shift_kerja"; }
+        if ($user->can("manage_holidays")) { $allowed[] = "hari_libur"; }
+        if ($user->can("manage_leave_types")) { $allowed[] = "tipe_cuti"; }
+        if ($user->can("export_data")) { $allowed[] = "export"; }
+        if ($user->can("manage_backups")) { $allowed[] = "backup"; }
+        
+        return $allowed;
     }
 
     protected function authorizeTabAccess(Request $request, string $tab): void
     {
-        $userRole = (string) ($request->user()?->role ?? '');
-        $allowedTabs = $this->roleAllowedTabs($userRole);
+        $allowedTabs = $this->roleAllowedTabs($request->user());
 
         if (! in_array($tab, $allowedTabs, true)) {
             abort(403);
