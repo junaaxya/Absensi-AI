@@ -32,8 +32,15 @@
 @section('content')
 
     <section class="mb-8">
-        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-1">Selamat Datang, Admin</h2>
-        <p class="text-slate-500 dark:text-slate-400">Ringkasan Absensi Perangkat Desa Hari Ini</p>
+        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-1">
+            Selamat Datang, {{ Auth::user()->name }}
+        </h2>
+        <p class="text-slate-500 dark:text-slate-400">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/20 text-slate-700 dark:text-slate-300 mr-2">
+                {{ Auth::user()->getRoleNames()->first() ?? 'No Role' }}
+            </span>
+            Ringkasan Absensi Hari Ini
+        </p>
     </section>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -181,6 +188,7 @@
 
         <!-- Sidebar Widgets -->
         <div class="flex flex-col gap-6">
+            @can('approve_team_izin')
             <div
                 class="bg-white dark:bg-card-dark p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 relative">
                 <div class="flex items-center gap-4 mb-2">
@@ -204,6 +212,7 @@
                     Lihat Pengajuan
                 </button>
             </div>
+            @endcan
 
             <div class="bg-sky p-6 rounded-2xl shadow-sm border border-sky">
                 <p class="text-sm text-slate-700 italic">
