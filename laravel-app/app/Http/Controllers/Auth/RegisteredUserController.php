@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -36,7 +37,9 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'photo' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+            'foto' => ['nullable', 'image', 'max:2048'],
+            'face_photos.*' => ['nullable', 'image', 'max:2048'],
+            'base64_faces' => ['nullable', 'array'],
         ]);
 
         DB::beginTransaction();
@@ -53,34 +56,74 @@ class RegisteredUserController extends Controller
                 $counter++;
             }
 
+            $fotoPath = null;
+            if ($request->hasFile('foto')) {
+                $fotoPath = $request->file('foto')->store('foto', 'public');
+            }
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'username' => $username,
                 'password' => Hash::make($request->password),
+                'foto' => $fotoPath,
             ]);
 
-            // Send photo to Face Service for registration
-            $flaskUrl = config('services.flask.url', env('FLASK_SERVICE_URL', 'http://face-service:5000'));
-            $photo = $request->file('photo');
+            $user->assignRole('Staf');
 
-            $response = Http::attach(
-                'file',
-                file_get_contents($photo->getRealPath()),
-                $photo->getClientOriginalName()
-            )->post("{$flaskUrl}/register", [
-                        'name' => $username,
-                    ]);
+            $flaskUrl = config('services.flask.url', env('FLASK_INTERNAL_URL', env('FLASK_SERVICE_URL', 'http://face-service:5000')));
+            $savedPaths = [];
+            $pendingRequest = Http::asMultipart();
+            $hasFaces = false;
 
-            if (!$response->successful()) {
-                DB::rollBack();
-                $errorMessage = $response->json('message', 'Face registration failed');
-                Log::error("Face registration failed during user registration: " . $errorMessage);
-                return back()->withInput()->withErrors(['photo' => 'Face registration failed: ' . $errorMessage]);
+            // Handle Base64 from Camera
+            if ($request->has('base64_faces') && is_array($request->base64_faces)) {
+                foreach ($request->base64_faces as $index => $base64) {
+                    if (preg_match('/^data:image\/(\w+);base64,/', $base64, $type)) {
+                        $data = substr($base64, strpos($base64, ',') + 1);
+                        $data = base64_decode($data);
+                        $filename = "{$user->username}_" . time() . "_{$index}.jpg";
+                        Storage::disk('local')->put("temp_faces/{$filename}", $data);
+                        $savedPaths[] = "temp_faces/{$filename}";
+                        $absolutePath = Storage::disk('local')->path("temp_faces/{$filename}");
+                        $pendingRequest->attach('photos', fopen($absolutePath, 'r'), $filename);
+                        $hasFaces = true;
+                    }
+                }
             }
 
-            // Update user to indicate face data is registered
-            $user->update(['has_face_data' => true]);
+            // Handle File Uploads
+            if ($request->hasFile('face_photos')) {
+                foreach ($request->file('face_photos') as $index => $photo) {
+                    $filename = "{$user->username}_" . time() . "_file_{$index}." . $photo->getClientOriginalExtension();
+                    $path = $photo->storeAs('temp_faces', $filename, 'local');
+                    $savedPaths[] = $path;
+                    $absolutePath = Storage::disk('local')->path($path);
+                    $pendingRequest->attach('photos', fopen($absolutePath, 'r'), $filename);
+                    $hasFaces = true;
+                }
+            }
+
+            // Send to Flask
+            if ($hasFaces) {
+                try {
+                    $response = $pendingRequest->post("{$flaskUrl}/register-face", [
+                        'username' => $user->username,
+                    ]);
+
+                    if ($response->successful()) {
+                        $user->update(['has_face_data' => true]);
+                    } else {
+                        Log::error("Flask Error: " . $response->body());
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Face Registration Error: " . $e->getMessage());
+                } finally {
+                    foreach ($savedPaths as $path) {
+                        Storage::delete($path);
+                    }
+                }
+            }
 
             DB::commit();
 
@@ -93,7 +136,7 @@ class RegisteredUserController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Registration error: " . $e->getMessage());
-            return back()->withInput()->withErrors(['photo' => 'Registration failed: ' . $e->getMessage()]);
+            return back()->withInput()->withErrors(['foto' => 'Registration failed: ' . $e->getMessage()]);
         }
-    }
+}
 }
