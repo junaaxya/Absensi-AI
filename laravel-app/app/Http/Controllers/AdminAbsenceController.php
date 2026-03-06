@@ -12,6 +12,7 @@ class AdminAbsenceController extends Controller
     public function index(Request $request)
     {
         $query = Izin::with('user');
+        \App\Services\RoleBasedScope::scopeIzin($query, auth()->user());
 
         // Search
         if ($request->filled('q')) {

@@ -139,17 +139,59 @@
                     x-data="{ submitting: false }" @submit="submitting = true">
                     @csrf
 
-                    <!-- Photo Upload -->
-                    <div>
-                        <label for="photo" class="block text-sm font-medium text-text-secondary mb-1.5 ml-1">Foto
-                            Wajah</label>
-                        <input id="photo" type="file" name="photo" required accept="image/jpeg,image/png,image/jpg"
-                            class="w-full px-4 py-3 rounded-xl bg-white border border-neutral-stone text-text-primary focus:border-pastel-sage focus:ring-4 focus:ring-pastel-sage/20 transition duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-pastel-sage file:text-text-primary hover:file:bg-pastel-sage-dark">
-                        <p class="text-xs text-neutral-muted mt-1 ml-1">Unggah foto wajah Anda untuk verifikasi
-                            (JPEG/PNG, max 2MB)</p>
-                        @error('photo')
-                            <p class="text-pastel-rose-dark text-sm mt-1 font-medium ml-1">{{ $message }}</p>
-                        @enderror
+                    <!-- Face Recognition Section -->
+                    <div class="mb-6" x-data="faceCapture()">
+                        <h4 class="font-bold text-lg text-text-primary mb-4">Data Wajah (Face Recognition)</h4>
+                        
+                        <div class="flex gap-4 mb-4">
+                            <button type="button" @click="mode = 'camera'; startCamera()"
+                                :class="mode === 'camera' ? 'bg-pastel-sage text-text-primary' : 'bg-neutral-stone/20 text-text-secondary'"
+                                class="px-4 py-2 rounded-xl font-bold transition-colors">
+                                Ambil dari Kamera
+                            </button>
+                            <button type="button" @click="mode = 'upload'; stopCamera()"
+                                :class="mode === 'upload' ? 'bg-pastel-sage text-text-primary' : 'bg-neutral-stone/20 text-text-secondary'"
+                                class="px-4 py-2 rounded-xl font-bold transition-colors">
+                                Upload File
+                            </button>
+                        </div>
+
+                        <!-- Upload Mode -->
+                        <div x-show="mode === 'upload'" class="p-6 border-2 border-dashed border-neutral-stone rounded-2xl bg-white/50">
+                            <input type="file" name="face_photos[]" multiple accept="image/*"
+                                class="w-full text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pastel-sage/20 file:text-pastel-sage-dark hover:file:bg-pastel-sage/30" />
+                            <p class="text-sm text-text-secondary mt-2">Pilih beberapa foto wajah untuk akurasi yang lebih baik.</p>
+                        </div>
+
+                        <!-- Camera Mode -->
+                        <div x-show="mode === 'camera'" class="space-y-4">
+                            <div class="relative rounded-2xl overflow-hidden bg-black aspect-video max-w-md mx-auto">
+                                <video x-ref="video" autoplay playsinline class="w-full h-full object-cover"></video>
+                                <canvas x-ref="canvas" style="display:none"></canvas>
+                            </div>
+                            
+                            <div class="flex justify-center">
+                                <button type="button" @click="takePhoto"
+                                    class="px-6 py-3 rounded-xl bg-pastel-sage text-text-primary font-bold hover:opacity-90 transition-all shadow-lg shadow-pastel-sage/20 active:scale-95 flex items-center gap-2">
+                                    <span class="material-icons-round">photo_camera</span>
+                                    Ambil Foto
+                                </button>
+                            </div>
+
+                            <!-- Thumbnails -->
+                            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 mt-4" x-show="photos.length > 0">
+                                <template x-for="(photo, index) in photos" :key="index">
+                                    <div class="relative aspect-square rounded-xl overflow-hidden border-2 border-pastel-sage">
+                                        <img :src="photo" class="w-full h-full object-cover" />
+                                        <button type="button" @click="removePhoto(index)"
+                                            class="absolute top-1 right-1 w-6 h-6 bg-pastel-rose-dark text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
+                                            <span class="material-icons-round text-sm">close</span>
+                                        </button>
+                                        <input type="hidden" name="base64_faces[]" :value="photo">
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Name -->
@@ -366,6 +408,57 @@
         </div>
 
     </div>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('faceCapture', () => ({
+                mode: 'camera',
+                stream: null,
+                photos: [],
+                
+                init() {
+                    this.startCamera();
+                },
+                
+                async startCamera() {
+                    if (this.mode !== 'camera') return;
+                    try {
+                        this.stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        this.$refs.video.srcObject = this.stream;
+                    } catch (err) {
+                        console.error("Error accessing camera:", err);
+                        alert("Tidak dapat mengakses kamera. Pastikan izin diberikan.");
+                    }
+                },
+                
+                stopCamera() {
+                    if (this.stream) {
+                        this.stream.getTracks().forEach(track => track.stop());
+                        this.stream = null;
+                    }
+                },
+                
+                takePhoto() {
+                    const video = this.$refs.video;
+                    const canvas = this.$refs.canvas;
+                    
+                    if (!video.videoWidth) return;
+                    
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    
+                    const context = canvas.getContext('2d');
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    this.photos.push(dataUrl);
+                },
+                
+                removePhoto(index) {
+                    this.photos.splice(index, 1);
+                }
+            }));
+        });
+    </script>
 </body>
 
 </html>

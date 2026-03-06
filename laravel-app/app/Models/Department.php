@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Department extends Model
 {
-    use HasFactory, \App\Traits\Auditable;
+    use HasFactory;
 
     protected $fillable = [
         'name', 'code', 'description', 'head_user_id',

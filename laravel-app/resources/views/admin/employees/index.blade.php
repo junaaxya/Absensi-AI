@@ -95,7 +95,7 @@
                             data-name="{{ $employee->name }}"
                             data-nip="{{ $employee->nip }}"
                             data-email="{{ $employee->email }}"
-                            data-role="{{ $employee->role }}"
+                            data-role="{{ $employee->getRoleNames()->first() ?? "" }}"
                             data-jabatan="{{ $employee->jabatan }}"
                             data-username="{{ $employee->username }}"
                             data-foto-url="{{ $employee->profile_photo_url }}"

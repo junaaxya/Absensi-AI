@@ -91,7 +91,7 @@
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             <!-- Admin -->
                             <label class="cursor-pointer relative">
-                                <input type="radio" name="role" value="admin" class="peer sr-only" {{ old('role', $employee->role) == 'admin' ? 'checked' : '' }}>
+                                <input type="radio" name="role" value="Direktur" class="peer sr-only" {{ old('role', $employee->role) == 'admin' ? 'checked' : '' }}>
                                 <div
                                     class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 peer-checked:border-sage peer-checked:bg-sage/10 transition-all flex items-center justify-center gap-2">
                                     <div
@@ -102,7 +102,7 @@
                             </label>
                             <!-- Manager -->
                             <label class="cursor-pointer relative">
-                                <input type="radio" name="role" value="manager" class="peer sr-only" {{ old('role', $employee->role) == 'manager' ? 'checked' : '' }}>
+                                <input type="radio" name="role" value="Manager" class="peer sr-only" {{ old('role', $employee->role) == 'manager' ? 'checked' : '' }}>
                                 <div
                                     class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 peer-checked:border-sage peer-checked:bg-sage/10 transition-all flex items-center justify-center gap-2">
                                     <div
@@ -113,7 +113,7 @@
                             </label>
                             <!-- Staf -->
                             <label class="cursor-pointer relative">
-                                <input type="radio" name="role" value="staf" class="peer sr-only" {{ old('role', $employee->role) == 'staf' ? 'checked' : '' }}>
+                                <input type="radio" name="role" value="Staf" class="peer sr-only" {{ old('role', $employee->role) == 'staf' ? 'checked' : '' }}>
                                 <div
                                     class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 peer-checked:border-sage peer-checked:bg-sage/10 transition-all flex items-center justify-center gap-2">
                                     <div
@@ -124,7 +124,7 @@
                             </label>
                             <!-- Karyawan -->
                             <label class="cursor-pointer relative">
-                                <input type="radio" name="role" value="karyawan" class="peer sr-only" {{ old('role', $employee->role) == 'karyawan' ? 'checked' : '' }}>
+                                <input type="radio" name="role" value="Staf" class="peer sr-only" {{ old('role', $employee->role) == 'karyawan' ? 'checked' : '' }}>
                                 <div
                                     class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 peer-checked:border-sage peer-checked:bg-sage/10 transition-all flex items-center justify-center gap-2">
                                     <div

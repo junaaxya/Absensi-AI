@@ -14,22 +14,26 @@ class AdminDashboardController extends Controller
     {
         $today = Carbon::today();
         
-        // 1. Total Karyawan (exclude admin)
-        $totalKaryawan = User::where('role', '!=', 'admin')->count();
+        // 1. Total Karyawan
+        $userQuery = User::query();
+        \App\Services\RoleBasedScope::scopeUsers($userQuery, auth()->user());
+        $totalKaryawan = $userQuery->count();
 
         // 2. Kehadiran Hari Ini
-        $attendances = Attendance::whereDate('tanggal', $today)->get();
+        $attendanceQuery = Attendance::whereDate('tanggal', $today);
+        \App\Services\RoleBasedScope::scopeAttendance($attendanceQuery, auth()->user());
+        $attendances = $attendanceQuery->get();
         
         $hadirTepatWaktu = $attendances->where('status', 'tepat_waktu')->count();
         $hadirTerlambat  = $attendances->where('status', 'terlambat')->count();
         $totalHadir      = $hadirTepatWaktu + $hadirTerlambat;
 
-        // 3. Izin / Sakit / Cuti / Dinas (Approved/Pending logic could apply, assume all active for now or filtered by date)
-        // Kita ambil yang statusnya disetujui atau pending untuk hari ini
-        $izins = Izin::whereDate('tanggal_mulai', '<=', $today)
+        // 3. Izin / Sakit / Cuti / Dinas
+        $izinQuery = Izin::whereDate('tanggal_mulai', '<=', $today)
                      ->whereDate('tanggal_selesai', '>=', $today)
-                     ->where('status', 'approved') // Hanya yang disetujui yang dianggap tidak hadir sah
-                     ->get();
+                     ->where('status', 'approved');
+        \App\Services\RoleBasedScope::scopeIzin($izinQuery, auth()->user());
+        $izins = $izinQuery->get();
 
         $sakit = $izins->where('jenis', 'sakit')->count();
         $izin  = $izins->where('jenis', 'izin')->count();
@@ -43,7 +47,9 @@ class AdminDashboardController extends Controller
         $alpha = max(0, $totalKaryawan - ($totalHadir + $totalIzin));
 
         // 5. Pending Request
-        $pendingRequest = Izin::where('status', 'pending')->count();
+        $pendingQuery = Izin::where('status', 'pending');
+        \App\Services\RoleBasedScope::scopeIzin($pendingQuery, auth()->user());
+        $pendingRequest = $pendingQuery->count();
 
         // 6. Persentase Kehadiran
         $persentaseHadir = $totalKaryawan > 0 ? round(($totalHadir / $totalKaryawan) * 100) : 0;

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class WorkShift extends Model
 {
-    use HasFactory, \App\Traits\Auditable;
+    use HasFactory;
 
     protected $fillable = [
         'name',
