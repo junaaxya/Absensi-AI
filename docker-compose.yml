@@ -59,6 +59,8 @@ services:
       - ./laravel-app/resources:/var/www/html/resources
       - ./laravel-app/public:/var/www/html/public
       - ./laravel-app/database:/var/www/html/database
+      # Persist uploaded files (profile photos, etc.) across container restarts
+      - ./laravel-app/storage:/var/www/html/storage
       # Config files
       - ./laravel-app/package.json:/var/www/html/package.json
       - ./laravel-app/vite.config.js:/var/www/html/vite.config.js

@@ -45,7 +45,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
-    Route::get('/profile/photo', [ProfileController::class, 'photo'])
+    Route::get('/profile/photo/{user?}', [ProfileController::class, 'photo'])
         ->name('profile.photo');
 
     Route::get('/profile/password', [PasswordController::class, 'edit'])
