@@ -205,10 +205,9 @@
         <!-- Sidebar Footer -->
         <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
             <div class="flex items-center gap-3 mb-3">
-                <div
-                    class="w-10 h-10 rounded-full bg-primary/30 dark:bg-primary/20 flex items-center justify-center text-slate-900 dark:text-white font-bold">
-                    {{ substr(Auth::user()->name, 0, 1) }}
-                </div>
+                <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}"
+                     class="w-10 h-10 rounded-full object-cover"
+                     onerror="this.onerror=null;this.src='{{ asset('img/default-avatar.svg') }}'">
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ Auth::user()->name }}</p>
                     <p class="text-xs text-slate-500 dark:text-slate-400 truncate capitalize">{{ Auth::user()->role }}</p>

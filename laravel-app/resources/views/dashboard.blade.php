@@ -59,9 +59,9 @@
         <!-- COMPACT PROFILE HEADER (Gojek/Shopee Style) -->
         <div class="md:hidden flex items-center justify-between mb-6 bg-white dark:bg-card-dark p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-primary/30 dark:bg-primary/20 flex items-center justify-center text-slate-900 dark:text-white font-bold border border-primary">
-                    {{ substr(Auth::user()->name, 0, 1) }}
-                </div>
+                <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}"
+                     class="w-10 h-10 rounded-full object-cover border border-primary"
+                     onerror="this.onerror=null;this.src='{{ asset('img/default-avatar.svg') }}'">
                 <div class="leading-tight">
                     <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Selamat Pagi,</p>
                     <h2 class="text-sm font-bold text-slate-800 dark:text-white">{{ explode(' ', $user->name)[0] }}</h2>
