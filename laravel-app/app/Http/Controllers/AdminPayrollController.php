@@ -30,10 +30,18 @@ class AdminPayrollController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'period_month' => 'required|date_format:Y-m|unique:payroll_periods,period_month',
+            'month' => 'required|string|in:01,02,03,04,05,06,07,08,09,10,11,12',
+            'year' => 'required|integer|min:2020|max:2099',
         ]);
 
-        $period = $this->payrollService->createPeriod($request->period_month);
+        $periodMonth = $request->year . '-' . $request->month;
+
+        // Check uniqueness manually
+        if (PayrollPeriod::where('period_month', $periodMonth)->exists()) {
+            return back()->withErrors(['month' => 'Periode ' . $periodMonth . ' sudah ada.'])->withInput();
+        }
+
+        $period = $this->payrollService->createPeriod($periodMonth);
 
         return redirect()
             ->route('admin.payroll.show', $period)

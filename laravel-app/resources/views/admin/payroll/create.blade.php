@@ -42,9 +42,10 @@
                 </div>
             </div>
 
-            <input type="hidden" name="period_month" id="period_month">
-
-            @error('period_month')
+            @error('month')
+                <div class="mb-4 text-sm text-red-600 dark:text-red-400 font-medium">{{ $message }}</div>
+            @enderror
+            @error('year')
                 <div class="mb-4 text-sm text-red-600 dark:text-red-400 font-medium">{{ $message }}</div>
             @enderror
 
@@ -62,13 +63,4 @@
     </div>
 </div>
 
-@push('scripts')
-<script>
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const year = document.querySelector('select[name="year"]').value;
-        const month = document.querySelector('select[name="month"]').value;
-        document.getElementById('period_month').value = year + '-' + month;
-    });
-</script>
-@endpush
 @endsection
