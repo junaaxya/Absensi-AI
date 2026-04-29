@@ -21,6 +21,7 @@ EMBEDDING_DIR = os.path.join(BASE_DIR, "embeddings")
 MODEL_PATH = os.path.join(BASE_DIR, "yolov8n.pt")
 
 SIMILARITY_THRESHOLD = 0.5
+LIVENESS_THRESHOLD = 0.5
 
 # =========================
 # LOAD MODELS
@@ -270,6 +271,94 @@ def index():
     return render_template("test_camera.html")
 
 # =========================
+# LIVENESS DETECTION
+# =========================
+def check_liveness(image):
+    """
+    Perform liveness detection using texture, color, and sharpness analysis.
+    Returns (liveness_score, is_live) tuple.
+    """
+    scores = []
+    weights = []
+
+    # 1. LBP Texture Analysis (25% weight)
+    try:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # Compute LBP-like texture using Laplacian of Gaussian
+        # Real faces have richer texture variation
+        lbp_kernel = np.array([[1, 1, 1], [1, -8, 1], [1, 1, 1]], dtype=np.float32)
+        lbp_response = cv2.filter2D(gray, cv2.CV_32F, lbp_kernel)
+        lbp_variance = float(np.var(lbp_response))
+        # Normalize: real faces typically have variance > 100
+        # Printed/screen faces tend to have lower variance
+        lbp_score = min(1.0, lbp_variance / 500.0)
+        scores.append(lbp_score)
+        weights.append(0.25)
+    except Exception as e:
+        print(f"  [Liveness] LBP analysis error: {e}")
+        scores.append(0.5)
+        weights.append(0.25)
+
+    # 2. Color Distribution in YCrCb (15% weight)
+    try:
+        ycrcb = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
+        # Real skin has specific Cr/Cb distribution
+        cr_channel = ycrcb[:, :, 1].astype(float)
+        cb_channel = ycrcb[:, :, 2].astype(float)
+        cr_std = float(np.std(cr_channel))
+        cb_std = float(np.std(cb_channel))
+        # Real faces have moderate Cr/Cb std deviation (10-30 range)
+        # Printed photos tend to have different distributions
+        cr_score = 1.0 if 8.0 < cr_std < 40.0 else 0.3
+        cb_score = 1.0 if 5.0 < cb_std < 35.0 else 0.3
+        color_score = (cr_score + cb_score) / 2.0
+        scores.append(color_score)
+        weights.append(0.15)
+    except Exception as e:
+        print(f"  [Liveness] Color analysis error: {e}")
+        scores.append(0.5)
+        weights.append(0.15)
+
+    # 3. Laplacian Variance for blur/sharpness (60% weight)
+    try:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if len(image.shape) == 3 else image
+        laplacian = cv2.Laplacian(gray, cv2.CV_64F)
+        lap_variance = float(laplacian.var())
+        # Real faces captured by camera have specific sharpness patterns
+        # Screen captures tend to have different sharpness (either too sharp or too blurry)
+        # Typical real face: variance 50-500
+        # Screen/print: often < 30 or unnaturally high
+        if lap_variance < 15.0:
+            sharp_score = 0.1  # Too blurry - likely printed
+        elif lap_variance < 50.0:
+            sharp_score = 0.4  # Somewhat blurry
+        elif lap_variance > 1500.0:
+            sharp_score = 0.3  # Unnaturally sharp - possible screen
+        else:
+            sharp_score = min(1.0, lap_variance / 300.0)
+        scores.append(sharp_score)
+        weights.append(0.60)
+    except Exception as e:
+        print(f"  [Liveness] Sharpness analysis error: {e}")
+        scores.append(0.5)
+        weights.append(0.60)
+
+    # Weighted average
+    total_weight = sum(weights)
+    if total_weight > 0:
+        liveness_score = sum(s * w for s, w in zip(scores, weights)) / total_weight
+    else:
+        liveness_score = 0.0
+
+    is_live = liveness_score >= LIVENESS_THRESHOLD
+
+    print(f"  [Liveness] Score: {liveness_score:.3f}, Live: {is_live}, "
+          f"LBP: {scores[0]:.3f}, Color: {scores[1]:.3f}, Sharp: {scores[2]:.3f}")
+
+    return liveness_score, is_live
+
+
+# =========================
 # ROUTE: RECOGNIZE FRAME
 # =========================
 @app.route("/recognize_frame", methods=["POST"])
@@ -321,15 +410,45 @@ def recognize_frame():
     if best_score >= SIMILARITY_THRESHOLD:
         status = "accepted"
 
+    anti_spoofing = request.form.get("anti_spoofing_enabled", "true").lower() != "false"
+
+    liveness_score = None
+    if anti_spoofing and best_score >= SIMILARITY_THRESHOLD:
+        liveness_score, is_live = check_liveness(frame)
+        if not is_live:
+            print("🚫 Liveness check FAILED:", liveness_score)
+            return jsonify({
+                "status": "rejected",
+                "message": "Liveness check failed",
+                "liveness_score": float(liveness_score),
+                "name": result_name,
+                "score": float(best_score),
+                "bbox": best_bbox
+            })
+
     print("🏁 FINAL RESULT:", result_name, best_score, status)
 
-    return jsonify({
+    response_data = {
         "name": result_name,
         "score": float(best_score),
         "status": status,
         "bbox": best_bbox
-    })
+    }
+    if liveness_score is not None:
+        response_data["liveness_score"] = float(liveness_score)
 
+    return jsonify(response_data)
+
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    models_loaded = yolo is not None and face_app is not None
+    return jsonify({
+        "status": "ok",
+        "models_loaded": models_loaded,
+        "users_loaded": len(embeddings),
+    })
 
 
 # =========================
