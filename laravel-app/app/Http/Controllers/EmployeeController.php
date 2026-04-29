@@ -2,52 +2,53 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreEmployeeRequest;
+use App\Http\Requests\UpdateEmployeeRequest;
+use App\Models\Company;
+use App\Models\CompanyBranch;
 use App\Models\Department;
 use App\Models\User;
+use App\Models\WorkShift;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-
 use App\Models\SystemSetting;
 
 class EmployeeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $query = User::query();
 
-
-        // 1. Filter Role: Default hide main admin if not explicitly filtering
-        // Logic: if role filter is set, use it. If not, hide 'admin' unless we want to see other admins.
-        // Generally good to hide current user or super admin, but let's keep it simple based on request.
-        // Let's filter out current user to avoid self-delete issues, or just basic role filter.
-
         if ($request->filled('role') && $request->role !== 'Semua') {
-            $query->whereHas('roles', function($q) use ($request) { $q->where('name', $request->role); });
+            $query->whereHas('roles', function ($q) use ($request) {
+                $q->where('name', $request->role);
+            });
         }
 
-        // 2. Filter Jabatan
         if ($request->filled('jabatan') && $request->jabatan !== 'Semua') {
             $query->where('jabatan', $request->jabatan);
         }
 
-        // 3. Search (Name or NIP/Username)
+        if ($request->filled('status_karyawan') && $request->status_karyawan !== 'Semua') {
+            $query->where('status_karyawan', $request->status_karyawan);
+        }
+
+        if ($request->filled('department_id') && $request->department_id !== 'Semua') {
+            $query->where('department_id', $request->department_id);
+        }
+
         if ($request->filled('q')) {
             $search = $request->q;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('username', 'like', "%{$search}%");
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%");
             });
         }
 
-        // 4. Face data status filter
         if ($request->filled('face_status')) {
             if ($request->face_status === 'registered') {
                 $query->where('has_face_data', true);
@@ -62,37 +63,22 @@ class EmployeeController extends Controller
             ->paginate(10)
             ->withQueryString();
         $settings = SystemSetting::first();
+        $departments = Department::active()->orderBy('name')->get();
 
-        return view('admin.employees.index', compact('employees', 'settings'));
+        return view('admin.employees.index', compact('employees', 'settings', 'departments'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $departments = Department::active()->orderBy('name')->get();
-        return view('admin.employees.create', compact('departments'));
+        $shifts = WorkShift::active()->orderBy('name')->get();
+        $companies = Company::active()->orderBy('name')->get();
+
+        return view('admin.employees.create', compact('departments', 'shifts', 'companies'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreEmployeeRequest $request)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:' . User::class],
-            'username' => ['required', 'string', 'max:255', 'unique:' . User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'jabatan' => ['nullable', 'string', 'max:255'],
-            'role' => ['required', 'string', 'exists:roles,name'],
-            'department_id' => ['nullable', 'exists:departments,id'],
-            'foto' => ['nullable', 'image', 'max:2048'],
-            'face_photos.*' => ['nullable', 'image', 'max:2048'],
-            'base64_faces' => ['nullable', 'array'],
-        ]);
-
         $fotoPath = null;
         if ($request->hasFile('foto')) {
             $fotoPath = $request->file('foto')->store('foto', 'public');
@@ -105,7 +91,29 @@ class EmployeeController extends Controller
             'password' => Hash::make($request->password),
             'jabatan' => $request->jabatan,
             'department_id' => $request->department_id,
+            'shift_id' => $request->shift_id,
+            'company_id' => $request->company_id,
+            'branch_id' => $request->branch_id,
             'foto' => $fotoPath,
+            'nik' => $request->nik,
+            'tempat_lahir' => $request->tempat_lahir,
+            'tanggal_lahir' => $request->tanggal_lahir,
+            'jenis_kelamin' => $request->jenis_kelamin,
+            'alamat' => $request->alamat,
+            'no_telepon' => $request->no_telepon,
+            'no_rekening' => $request->no_rekening,
+            'nama_bank' => $request->nama_bank,
+            'npwp' => $request->npwp,
+            'status_pernikahan' => $request->status_pernikahan,
+            'jumlah_tanggungan' => $request->jumlah_tanggungan ?? 0,
+            'tanggal_masuk' => $request->tanggal_masuk,
+            'tanggal_keluar' => $request->tanggal_keluar,
+            'status_karyawan' => $request->status_karyawan ?? 'tetap',
+            'gaji_pokok' => $request->gaji_pokok ?? 0,
+            'no_bpjs_kesehatan' => $request->no_bpjs_kesehatan,
+            'no_bpjs_ketenagakerjaan' => $request->no_bpjs_ketenagakerjaan,
+            'emergency_contact_name' => $request->emergency_contact_name,
+            'emergency_contact_phone' => $request->emergency_contact_phone,
         ]);
 
         $user->assignRole($request->role);
@@ -115,7 +123,6 @@ class EmployeeController extends Controller
         $pendingRequest = Http::asMultipart();
         $hasFaces = false;
 
-        // Handle Base64 from Camera
         if ($request->has('base64_faces') && is_array($request->base64_faces)) {
             foreach ($request->base64_faces as $index => $base64) {
                 if (preg_match('/^data:image\/(\w+);base64,/', $base64, $type)) {
@@ -131,7 +138,6 @@ class EmployeeController extends Controller
             }
         }
 
-        // Handle File Uploads
         if ($request->hasFile('face_photos')) {
             foreach ($request->file('face_photos') as $index => $photo) {
                 $filename = "{$user->username}_" . time() . "_file_{$index}." . $photo->getClientOriginalExtension();
@@ -143,7 +149,6 @@ class EmployeeController extends Controller
             }
         }
 
-        // Send to Flask
         if ($hasFaces) {
             try {
                 $response = $pendingRequest->post("{$flaskUrl}/register-face", [
@@ -167,60 +172,65 @@ class EmployeeController extends Controller
         return redirect()->route('employees.index')->with('success', 'Karyawan berhasil ditambahkan.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(User $employee)
     {
         $departments = Department::active()->orderBy('name')->get();
-        return view('admin.employees.edit', compact('employee', 'departments'));
+        $shifts = WorkShift::active()->orderBy('name')->get();
+        $companies = Company::active()->orderBy('name')->get();
+        $branches = $employee->company_id
+            ? CompanyBranch::where('company_id', $employee->company_id)->active()->orderBy('name')->get()
+            : collect();
+
+        return view('admin.employees.edit', compact('employee', 'departments', 'shifts', 'companies', 'branches'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, User $employee)
+    public function update(UpdateEmployeeRequest $request, User $employee)
     {
-
-        $request->validate([
-
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $employee->id],
-            'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $employee->id],
-            'jabatan' => ['nullable', 'string', 'max:255'],
-            'role' => ['required', 'string', 'exists:roles,name'],
-            'department_id' => ['nullable', 'exists:departments,id'],
-        ]);
-
         $employee->update([
             'name' => $request->name,
             'email' => $request->email,
             'username' => $request->username,
             'jabatan' => $request->jabatan,
             'department_id' => $request->department_id,
+            'shift_id' => $request->shift_id,
+            'company_id' => $request->company_id,
+            'branch_id' => $request->branch_id,
+            'nik' => $request->nik,
+            'tempat_lahir' => $request->tempat_lahir,
+            'tanggal_lahir' => $request->tanggal_lahir,
+            'jenis_kelamin' => $request->jenis_kelamin,
+            'alamat' => $request->alamat,
+            'no_telepon' => $request->no_telepon,
+            'no_rekening' => $request->no_rekening,
+            'nama_bank' => $request->nama_bank,
+            'npwp' => $request->npwp,
+            'status_pernikahan' => $request->status_pernikahan,
+            'jumlah_tanggungan' => $request->jumlah_tanggungan ?? 0,
+            'tanggal_masuk' => $request->tanggal_masuk,
+            'tanggal_keluar' => $request->tanggal_keluar,
+            'status_karyawan' => $request->status_karyawan ?? 'tetap',
+            'gaji_pokok' => $request->gaji_pokok ?? 0,
+            'no_bpjs_kesehatan' => $request->no_bpjs_kesehatan,
+            'no_bpjs_ketenagakerjaan' => $request->no_bpjs_ketenagakerjaan,
+            'emergency_contact_name' => $request->emergency_contact_name,
+            'emergency_contact_phone' => $request->emergency_contact_phone,
         ]);
+
         $employee->syncRoles([$request->role]);
 
         if ($request->filled('password')) {
-            $request->validate([
-                'password' => ['confirmed', Rules\Password::defaults()],
-            ]);
             $employee->update([
                 'password' => Hash::make($request->password),
             ]);
         }
 
-        $user->assignRole($request->role);
         return redirect()->route('employees.index')->with('success', 'Data karyawan berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(User $employee)
     {
         $employee->delete();
-        $user->assignRole($request->role);
+
         return redirect()->route('employees.index')->with('success', 'Karyawan berhasil dihapus.');
     }
 }

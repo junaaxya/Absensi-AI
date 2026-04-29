@@ -3,8 +3,12 @@
 namespace App\Services;
 
 use App\Models\Attendance;
+use App\Models\Department;
+use App\Models\SystemSetting;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportService
@@ -74,7 +78,9 @@ class ExportService
             $query->where('department_id', $deptId);
         }
 
-        if ($status === 'active') {
+        if ($status && in_array($status, ['tetap', 'kontrak', 'magang'])) {
+            $query->where('status_karyawan', $status);
+        } elseif ($status === 'active') {
             $query->where('has_face_data', true);
         } elseif ($status === 'inactive') {
             $query->where('has_face_data', false);
@@ -96,6 +102,16 @@ class ExportService
                 'Departemen',
                 'Shift',
                 'Role',
+                'NIK',
+                'Status Karyawan',
+                'Tanggal Masuk',
+                'No. Telepon',
+                'Jenis Kelamin',
+                'Gaji Pokok',
+                'Status Pernikahan',
+                'Jumlah Tanggungan',
+                'BPJS Kesehatan',
+                'BPJS Ketenagakerjaan',
                 'Data Wajah Terdaftar',
             ]);
 
@@ -107,7 +123,17 @@ class ExportService
                     $emp->jabatan ?? '-',
                     $emp->department->name ?? '-',
                     $emp->shift->name ?? '-',
-                    $emp->role ?? 'user',
+                    $emp->getRoleNames()->first() ?? '-',
+                    $emp->nik ?? '-',
+                    $emp->status_karyawan ? ucfirst($emp->status_karyawan) : '-',
+                    $emp->tanggal_masuk ? $emp->tanggal_masuk->format('Y-m-d') : '-',
+                    $emp->no_telepon ?? '-',
+                    $emp->jenis_kelamin === 'L' ? 'Laki-laki' : ($emp->jenis_kelamin === 'P' ? 'Perempuan' : '-'),
+                    $emp->gaji_pokok ? number_format($emp->gaji_pokok, 0, ',', '.') : '0',
+                    $emp->status_pernikahan === 'TK' ? 'Tidak Kawin' : ($emp->status_pernikahan === 'K' ? 'Kawin' : '-'),
+                    $emp->jumlah_tanggungan ?? 0,
+                    $emp->no_bpjs_kesehatan ?? '-',
+                    $emp->no_bpjs_ketenagakerjaan ?? '-',
                     $emp->has_face_data ? 'Ya' : 'Tidak',
                 ]);
             }
@@ -117,5 +143,95 @@ class ExportService
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="employees-' . now()->format('Y-m-d') . '.csv"',
         ]);
+    }
+
+    /**
+     * Export attendance report as PDF.
+     *
+     * @param  array{date_from?: string, date_to?: string, department_id?: int|null, user_id?: int|null}  $filters
+     */
+    public function exportAttendancePdf(array $filters): string
+    {
+        $dateFrom = $filters['date_from'] ?? now()->startOfMonth()->toDateString();
+        $dateTo = $filters['date_to'] ?? now()->endOfMonth()->toDateString();
+        $departmentId = $filters['department_id'] ?? null;
+        $userId = $filters['user_id'] ?? null;
+
+        $query = Attendance::with(['user', 'user.department'])
+            ->whereBetween('tanggal', [$dateFrom, $dateTo])
+            ->orderBy('tanggal')
+            ->orderBy('jam_masuk');
+
+        if ($departmentId) {
+            $query->whereHas('user', fn ($q) => $q->where('department_id', $departmentId));
+        }
+
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+
+        $attendances = $query->get();
+        $summary = $this->buildAttendanceSummary($attendances);
+
+        $settings = SystemSetting::first();
+        $department = $departmentId ? Department::find($departmentId) : null;
+
+        $pdf = Pdf::loadView('pdf.attendance-report', [
+            'attendances' => $attendances,
+            'summary' => $summary,
+            'settings' => $settings,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'department' => $department,
+        ]);
+
+        $pdf->setPaper('a4', 'landscape');
+
+        $filename = 'laporan-absensi-' . $dateFrom . '-' . $dateTo . '.pdf';
+        $path = storage_path('app/exports/' . $filename);
+
+        if (! is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+
+        $pdf->save($path);
+
+        return $path;
+    }
+
+    /**
+     * Build per-employee attendance summary statistics.
+     *
+     * @return Collection<int, array{name: string, nik: string|null, department: string, hadir: int, terlambat: int, alpha: int, izin: int, total_jam: float}>
+     */
+    private function buildAttendanceSummary(Collection $attendances): Collection
+    {
+        return $attendances->groupBy('user_id')->map(function (Collection $records) {
+            $user = $records->first()->user;
+            $hadir = $records->filter(fn ($a) => $a->jam_masuk !== null)->count();
+            $terlambat = $records->filter(fn ($a) => $a->status === 'terlambat')->count();
+            $alpha = $records->filter(fn ($a) => $a->status === 'alpha')->count();
+            $izin = $records->filter(fn ($a) => in_array($a->status, ['izin', 'sakit', 'cuti']))->count();
+
+            $totalJam = $records->reduce(function (float $carry, $att) {
+                if ($att->jam_masuk && $att->jam_keluar) {
+                    $masuk = Carbon::parse($att->jam_masuk);
+                    $keluar = Carbon::parse($att->jam_keluar);
+                    $carry += $masuk->diffInMinutes($keluar) / 60;
+                }
+                return $carry;
+            }, 0.0);
+
+            return [
+                'name' => $user->name ?? '-',
+                'nik' => $user->nik ?? null,
+                'department' => $user->department->name ?? '-',
+                'hadir' => $hadir,
+                'terlambat' => $terlambat,
+                'alpha' => $alpha,
+                'izin' => $izin,
+                'total_jam' => round($totalJam, 1),
+            ];
+        })->values();
     }
 }

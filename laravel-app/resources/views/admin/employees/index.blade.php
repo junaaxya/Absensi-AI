@@ -23,6 +23,12 @@
                 @if(request()->filled('jabatan'))
                     <input type="hidden" name="jabatan" value="{{ request('jabatan') }}">
                 @endif
+                @if(request()->filled('status_karyawan'))
+                    <input type="hidden" name="status_karyawan" value="{{ request('status_karyawan') }}">
+                @endif
+                @if(request()->filled('department_id'))
+                    <input type="hidden" name="department_id" value="{{ request('department_id') }}">
+                @endif
             </form>
 
             <div class="flex w-full gap-2 md:w-auto">
@@ -31,26 +37,52 @@
                     <span class="material-icons-round text-lg">add</span>
                     Tambah
                 </a>
+                <a href="{{ route('admin.export.employees') }}"
+                    class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-sky/20 text-sky-700 dark:text-sky-300 border border-sky/20 px-4 py-2.5 font-bold hover:bg-sky/30 transition-all shadow-sm active:scale-95 md:flex-none">
+                    <span class="material-icons-round text-lg">download</span>
+                    Export
+                </a>
+                <div x-data="{ showFilter: false }" class="relative flex-1 md:flex-none">
+                    <button @click="showFilter = !showFilter" type="button"
+                        class="flex w-full items-center justify-center gap-2 rounded-xl bg-white dark:bg-card-dark text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 px-4 py-2.5 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95">
+                        <span class="material-icons-round text-lg">filter_list</span>
+                        Filter
+                    </button>
+                    <div x-show="showFilter" @click.outside="showFilter = false" x-transition
+                        class="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-card-dark rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-4 z-50">
+                        <form action="{{ route('employees.index') }}" method="GET" class="space-y-3">
+                            @if(request('q'))<input type="hidden" name="q" value="{{ request('q') }}">@endif
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Status Karyawan</label>
+                                <select name="status_karyawan" class="w-full text-sm rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-sage focus:border-sage py-2 px-3">
+                                    <option value="Semua">Semua</option>
+                                    <option value="tetap" {{ request('status_karyawan') == 'tetap' ? 'selected' : '' }}>Tetap</option>
+                                    <option value="kontrak" {{ request('status_karyawan') == 'kontrak' ? 'selected' : '' }}>Kontrak</option>
+                                    <option value="magang" {{ request('status_karyawan') == 'magang' ? 'selected' : '' }}>Magang</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Departemen</label>
+                                <select name="department_id" class="w-full text-sm rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-sage focus:border-sage py-2 px-3">
+                                    <option value="Semua">Semua</option>
+                                    @foreach($departments as $dept)
+                                        <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Data Wajah</label>
+                                <select name="face_status" class="w-full text-sm rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-sage focus:border-sage py-2 px-3">
+                                    <option value="">Semua</option>
+                                    <option value="registered" {{ request('face_status') == 'registered' ? 'selected' : '' }}>Terdaftar</option>
+                                    <option value="unregistered" {{ request('face_status') == 'unregistered' ? 'selected' : '' }}>Belum</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-sage text-white rounded-xl py-2 font-bold text-sm hover:opacity-90 transition-all">Terapkan Filter</button>
+                        </form>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <div class="flex gap-2 w-full md:w-auto">
-            <button onclick="window.location='{{ route('employees.create') }}'"
-                class="flex-1 md:flex-none bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-slate-900/20 active:scale-95">
-                <span class="material-icons-round text-lg">add</span>
-                Tambah
-            </button>
-            <button onclick="window.location='{{ route('admin.export.employees') }}'"
-                class="flex-1 md:flex-none bg-sky/20 text-sky-700 dark:text-sky-300 border border-sky/20 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-sky/30 transition-all shadow-sm active:scale-95">
-                <span class="material-icons-round text-lg">download</span>
-                Export
-            </button>
-            <button
-                class="flex-1 md:flex-none bg-white dark:bg-card-dark text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95">
-                <span class="material-icons-round text-lg">filter_list</span>
-                Filter
-            </button>
-
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -69,6 +101,13 @@
                     <div class="mb-6 text-center">
                         <h3 class="mb-1 text-lg font-bold text-slate-900 dark:text-white">{{ $employee->name }}</h3>
                         <p class="text-sm font-medium uppercase tracking-wide text-sage">{{ $employee->jabatan }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">NIK: {{ $employee->nik ?? '-' }}</p>
+                        @if($employee->status_karyawan)
+                        <span class="mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold {{ $employee->status_karyawan === 'tetap' ? 'bg-sage/20 text-sage-700' : ($employee->status_karyawan === 'kontrak' ? 'bg-sky/20 text-sky-700' : 'bg-peach/20 text-peach-700') }}">
+                            {{ ucfirst($employee->status_karyawan) }}
+                        </span>
+                        @endif
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Masuk: {{ $employee->tanggal_masuk?->format('d M Y') ?? '-' }}</p>
                         <span class="mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold"
                             x-bind:class="faceStatus[{{ $employee->id }}] ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-200'"
                             x-text="faceStatus[{{ $employee->id }}] ? 'Face: Terdaftar' : 'Face: Belum'"></span>
@@ -81,11 +120,11 @@
                         </div>
                         <div class="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
                             <span class="material-icons-round text-lg text-slate-300">phone</span>
-                            <span>{{ $employee->no_hp }}</span>
+                            <span>{{ $employee->no_telepon ?? '-' }}</span>
                         </div>
                         <div class="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
                             <span class="material-icons-round text-lg text-slate-300">badge</span>
-                            <span>NIP: {{ $employee->nip ?? '-' }}</span>
+                            <span>NIK: {{ $employee->nik ?? '-' }}</span>
                         </div>
                     </div>
 
@@ -93,7 +132,7 @@
                         <button type="button"
                             data-id="{{ $employee->id }}"
                             data-name="{{ $employee->name }}"
-                            data-nip="{{ $employee->nip }}"
+                            data-nik="{{ $employee->nik }}"
                             data-email="{{ $employee->email }}"
                             data-role="{{ $employee->getRoleNames()->first() ?? "" }}"
                             data-jabatan="{{ $employee->jabatan }}"
@@ -107,7 +146,7 @@
 
                         <div class="flex gap-2">
                             <a href="{{ route('employees.edit', $employee->id) }}"
-                                class="flex-1 rounded-xl bg-slate-50 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+                                class="flex-1 rounded-xl bg-slate-50 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 text-center">
                                 Edit
                             </a>
                             <button type="button" onclick="confirmDelete('{{ $employee->id }}', '{{ $employee->name }}')"
@@ -162,8 +201,8 @@
                                     <p class="font-semibold text-slate-700 dark:text-slate-200" x-text="selectedEmployee?.name || '-'"></p>
                                 </div>
                                 <div>
-                                    <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">NIP / Karyawan</p>
-                                    <p class="font-semibold text-slate-700 dark:text-slate-200" x-text="selectedEmployee?.nip || '-'"></p>
+                                    <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">NIK</p>
+                                    <p class="font-semibold text-slate-700 dark:text-slate-200" x-text="selectedEmployee?.nik || '-'"></p>
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Email</p>
@@ -338,7 +377,7 @@
                     this.openFaceModal({
                         id: Number(dataset.id || 0),
                         name: dataset.name || '',
-                        nip: dataset.nip || '',
+                        nik: dataset.nik || '',
                         email: dataset.email || '',
                         role: dataset.role || '',
                         jabatan: dataset.jabatan || '',
