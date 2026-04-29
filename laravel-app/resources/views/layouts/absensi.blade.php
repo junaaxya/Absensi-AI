@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Sistem Presensi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
     <style>
@@ -159,6 +160,33 @@
                 <span>Izin & Cuti</span>
             </a>
 
+            <a href="{{ route('tickets.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('tickets.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                </svg>
+                <span>Tiket Saya</span>
+            </a>
+
+            <a href="{{ route('forms.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('forms.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Form</span>
+            </a>
+
+            <a href="{{ route('training.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('training.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span>Training</span>
+            </a>
+
             <a href="{{ route('profile.edit') }}"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('profile.edit') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -277,6 +305,18 @@
                 </svg>
             </div>
             <span class="text-[10px] font-medium">Izin</span>
+        </a>
+
+        <a href="{{ route('tickets.index') }}"
+            class="flex flex-col items-center justify-center w-full h-full gap-1 pt-2 transition-all {{ request()->routeIs('tickets.*') ? 'text-emerald-600 dark:text-primary' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300' }}">
+            <div
+                class="{{ request()->routeIs('tickets.*') ? 'bg-emerald-50 dark:bg-primary/20' : 'bg-transparent' }} p-1.5 rounded-xl transition-all">
+                <svg class="w-6 h-6 stroke-[2px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                </svg>
+            </div>
+            <span class="text-[10px] font-medium">Tiket</span>
         </a>
 
         @if(Auth::user()->role === 'admin')
