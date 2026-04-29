@@ -7,7 +7,11 @@ use App\Models\Attendance;
 use App\Models\SystemSetting;
 use App\Models\Announcement;
 use App\Models\Izin;
+use App\Models\VisitAttendance;
+use App\Models\LeaveType;
 use Carbon\Carbon;
+use App\Models\Violation;
+use App\Models\WarningLetter;
 use Illuminate\Support\Facades\Auth;
 
 class AttendanceController extends Controller
@@ -92,6 +96,36 @@ class AttendanceController extends Controller
             ->where('status', 'approved')
             ->count();
 
+        $currentYearMonth = now()->format('Y-m');
+
+        $monthlyViolationPoints = (int) Violation::where('user_id', $user->id)
+            ->where('tanggal', 'like', $currentYearMonth . '%')
+            ->sum('points');
+
+        $activeWarningLetter = WarningLetter::where('user_id', $user->id)
+            ->where('period_month', $currentYearMonth)
+            ->orderByDesc('type')
+            ->first();
+
+        $recentViolations = Violation::where('user_id', $user->id)
+            ->with('violationType')
+            ->orderByDesc('tanggal')
+            ->limit(5)
+            ->get();
+
+        $activeVisit = VisitAttendance::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->latest('check_in_time')
+            ->first();
+
+        $visitHistory = VisitAttendance::where('user_id', $user->id)
+            ->orderByDesc('tanggal')
+            ->orderByDesc('check_in_time')
+            ->limit(10)
+            ->get();
+
+        $leaveTypes = LeaveType::active()->get();
+
         return view('dashboard', [
             'user' => $user,
             'attendanceToday' => $attendanceToday,
@@ -109,6 +143,12 @@ class AttendanceController extends Controller
             'workStartTime' => $workStartTime,
             'workEndTime' => $workEndTime,
             'activeAnnouncements' => $activeAnnouncements,
+            'monthlyViolationPoints' => $monthlyViolationPoints,
+            'activeWarningLetter' => $activeWarningLetter,
+            'recentViolations' => $recentViolations,
+            'activeVisit' => $activeVisit,
+            'visitHistory' => $visitHistory,
+            'leaveTypes' => $leaveTypes,
         ]);
 
     }

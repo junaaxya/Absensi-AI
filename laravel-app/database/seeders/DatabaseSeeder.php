@@ -17,15 +17,22 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $admin = User::factory()->create([
+            'name' => 'Admin Direktur',
+            'email' => 'admin@absensi.test',
+            'username' => 'admin',
+            'password' => bcrypt('password'),
         ]);
 
         $this->call([
             RoleAndPermissionSeeder::class,
             SystemSettingSeeder::class,
             HolidaySeeder::class,
+            ViolationTypeSeeder::class,
+            PayrollSeeder::class,
         ]);
+
+        // Assign Direktur role to admin user (after roles are seeded)
+        $admin->assignRole('Direktur');
     }
 }

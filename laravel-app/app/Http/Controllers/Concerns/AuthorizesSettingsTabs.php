@@ -10,7 +10,7 @@ trait AuthorizesSettingsTabs
     {
         return [
             "umum" => ["jam_kerja", "lokasi", "profil_perusahaan"],
-            "kehadiran" => ["kebijakan_absensi", "shift_kerja", "hari_libur", "tipe_cuti"],
+            "kehadiran" => ["kebijakan_absensi", "shift_kerja", "hari_libur", "tipe_cuti", "poin_pelanggaran", "anti_cheat"],
             "organisasi" => ["departemen"],
             "data" => ["face_recognition", "notifikasi", "export", "backup"],
         ];
@@ -22,7 +22,7 @@ trait AuthorizesSettingsTabs
         
         $allowed = [];
         if ($user->can("manage_system_settings")) {
-            $allowed = array_merge($allowed, ["jam_kerja", "lokasi", "profil_perusahaan", "kebijakan_absensi", "face_recognition", "notifikasi"]);
+            $allowed = array_merge($allowed, ["jam_kerja", "lokasi", "profil_perusahaan", "kebijakan_absensi", "face_recognition", "notifikasi", "poin_pelanggaran", "anti_cheat"]);
         }
         if ($user->can("manage_departments")) { $allowed[] = "departemen"; }
         if ($user->can("manage_shifts")) { $allowed[] = "shift_kerja"; }

@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\Client\ConnectionException;
 use App\Notifications\LateCheckinNotification;
+use App\Services\ViolationService;
+use App\Services\AntiCheatService;
+use App\Models\EmployeeDevice;
 
 class AttendanceController extends Controller
 {
@@ -51,6 +54,10 @@ class AttendanceController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'accuracy' => 'nullable|numeric|min:0',
+            'gps_readings' => 'nullable|string',
+            'device_fingerprint' => 'nullable|string|max:255',
+            'timezone_client' => 'nullable|string|max:100',
+            'mock_location_detected' => 'nullable',
         ]);
 
         // =========================
@@ -93,6 +100,68 @@ class AttendanceController extends Controller
                 ], 422);
             }
         }
+
+        // =========================
+        // ANTI-CHEAT VALIDATION
+        // =========================
+        $gpsReadings = json_decode($request->input('gps_readings', '[]'), true) ?: [];
+        $deviceFingerprint = $request->input('device_fingerprint');
+        $timezoneClient = $request->input('timezone_client');
+        $mockLocationDetected = filter_var($request->input('mock_location_detected', false), FILTER_VALIDATE_BOOLEAN);
+
+        $antiCheatResult = null;
+        $authUser = auth()->user();
+
+        if ($settings->enable_anti_cheat && $authUser) {
+            $antiCheatService = new AntiCheatService([
+                'gps_readings' => $gpsReadings,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'accuracy' => $accuracy,
+                'device_fingerprint' => $deviceFingerprint,
+                'timezone_client' => $timezoneClient,
+                'mock_location_detected' => $mockLocationDetected,
+            ], $authUser, $settings);
+
+            $antiCheatResult = $antiCheatService->validate();
+
+            if (!$antiCheatResult->passed) {
+                Log::warning('Anti-cheat rejected attendance', [
+                    'user_id' => $authUser->id,
+                    'score' => $antiCheatResult->score,
+                    'flags' => $antiCheatResult->flags,
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terdeteksi anomali lokasi. Hubungi admin.',
+                ], 403);
+            }
+        }
+
+        // Register/update device
+        if ($deviceFingerprint && $authUser) {
+            EmployeeDevice::updateOrCreate(
+                ['device_fingerprint' => $deviceFingerprint, 'user_id' => $authUser->id],
+                [
+                    'device_name' => $request->userAgent(),
+                    'platform' => php_uname('s'),
+                    'browser' => $request->header('User-Agent'),
+                    'screen_resolution' => null,
+                    'last_used_at' => now(),
+                ]
+            );
+        }
+
+        // Anti-cheat data to save with attendance
+        $antiCheatData = [
+            'device_fingerprint' => $deviceFingerprint,
+            'gps_readings' => !empty($gpsReadings) ? $gpsReadings : null,
+            'ip_address' => $request->ip(),
+            'timezone_client' => $timezoneClient,
+            'anomaly_score' => $antiCheatResult ? $antiCheatResult->score : 0,
+            'anomaly_flags' => $antiCheatResult && !empty($antiCheatResult->flags) ? $antiCheatResult->flags : null,
+        ];
 
         // =========================
         // AI FACE RECOGNITION
@@ -147,6 +216,19 @@ class AttendanceController extends Controller
                     'success' => false,
                     'message' => "Face recognized as {$recognizedName}, but user not found in database."
                 ], 422);
+            }
+
+            // Verify face matches authenticated user (prevent user A using user B's face)
+            if ($authUser && $recognizedName !== $authUser->username) {
+                Log::warning('Face identity mismatch', [
+                    'auth_user' => $authUser->username,
+                    'recognized_as' => $recognizedName,
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Wajah tidak sesuai dengan akun Anda.',
+                ], 403);
             }
 
         } catch (ConnectionException $e) {
@@ -219,14 +301,14 @@ class AttendanceController extends Controller
                     'user_id' => $user->id,
                     'tanggal' => $today,
                 ],
-                [
+                array_merge([
                     'jam_masuk' => $jamMasuk,
                     'status'    => $statusMasuk,
                     'kegiatan'  => null,
                     'lat_in'    => $request->latitude,
                     'long_in'   => $request->longitude,
                     'similarity_score_in' => $similarityScore,
-                ]
+                ], $antiCheatData)
             );
 
             Log::info("ABSEN MASUK OK", [
@@ -238,6 +320,15 @@ class AttendanceController extends Controller
                 'is_holiday'  => $isHoliday,
                 'batas_masuk' => $batasMasuk->toTimeString(),
             ]);
+
+            if ($statusMasuk === 'terlambat') {
+                $violationService = app(ViolationService::class);
+                $violation = $violationService->generateFromAttendance($attendance);
+                if ($violation) {
+                    $yearMonth = $now->format('Y-m');
+                    $violationService->checkWarningThreshold($user, $yearMonth);
+                }
+            }
 
             if ($statusMasuk === 'terlambat' && $settings->notify_late_checkin) {
                 $this->sendLateCheckinNotification($settings, $user, $jamMasuk, $today);
@@ -295,13 +386,13 @@ class AttendanceController extends Controller
 
         $isLembur = $now->gte($batasLembur);
 
-        $attendance->update([
+        $attendance->update(array_merge([
             'jam_keluar' => $jamKeluar,
             'lat_out'    => $request->latitude,
             'long_out'   => $request->longitude,
             'similarity_score_out' => $similarityScore,
             'kegiatan'   => $isLembur ? 'hadir_lembur' : 'hadir',
-        ]);
+        ], $antiCheatData));
 
         Log::info("ABSEN PULANG OK", [
             'user_id'    => $user->id,

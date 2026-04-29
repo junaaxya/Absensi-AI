@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use App\Services\BackupService;
 use GuzzleHttp\Promise\PromiseInterface;
+use Illuminate\Support\Facades\Artisan;
 
 class AdminSystemSettingController extends Controller
 {
@@ -399,6 +400,32 @@ class AdminSystemSettingController extends Controller
         return back()->with('success', 'Pengaturan notifikasi berhasil disimpan.');
     }
 
+    public function updateViolationSettings(Request $request)
+    {
+        $this->authorizeTabAccess($request, 'poin_pelanggaran');
+
+        $request->validate([
+            'violation_deduction_type' => 'required|in:per_point,percentage',
+            'violation_deduction_per_point' => 'required|numeric|min:0',
+            'violation_deduction_percentage' => 'required|numeric|min:0|max:100',
+            'sp1_threshold' => 'required|integer|min:1',
+            'sp2_threshold' => 'required|integer|min:1',
+            'sp3_threshold' => 'required|integer|min:1',
+        ]);
+
+        $settings = SystemSetting::first();
+        $settings->update($request->only([
+            'violation_deduction_type',
+            'violation_deduction_per_point',
+            'violation_deduction_percentage',
+            'sp1_threshold',
+            'sp2_threshold',
+            'sp3_threshold',
+        ]));
+
+        return back()->with('success', 'Pengaturan poin pelanggaran berhasil disimpan.');
+    }
+
     public function updateRetention(Request $request)
     {
         $this->authorizeTabAccess($request, 'backup');
@@ -415,5 +442,47 @@ class AdminSystemSettingController extends Controller
         ]);
 
         return back()->with('success', 'Pengaturan retensi data berhasil disimpan.');
+    }
+
+    public function updateAntiCheat(Request $request)
+    {
+        $this->authorizeTabAccess($request, 'anti_cheat');
+
+        $request->validate([
+            'enable_anti_cheat' => 'required|boolean',
+            'max_devices_per_user' => 'required|integer|min:1|max:10',
+            'anomaly_score_warning_threshold' => 'required|integer|min:1|max:100',
+            'anomaly_score_reject_threshold' => 'required|integer|min:1|max:100',
+        ]);
+
+        $settings = SystemSetting::first();
+        $settings->update($request->only([
+            'enable_anti_cheat',
+            'max_devices_per_user',
+            'anomaly_score_warning_threshold',
+            'anomaly_score_reject_threshold',
+        ]));
+
+        return back()->with('success', 'Pengaturan anti-cheat berhasil disimpan.');
+    }
+
+    public function triggerAutoCheckout(Request $request)
+    {
+        $this->authorizeTabAccess($request, 'kebijakan_absensi');
+
+        try {
+            Artisan::call('attendance:auto-checkout');
+            $output = Artisan::output();
+
+            return response()->json([
+                'success' => true,
+                'message' => trim($output),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menjalankan auto-checkout: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

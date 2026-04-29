@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Sistem Absensi - Admin Portal</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined|Material+Icons+Round"
         rel="stylesheet" />
@@ -138,12 +139,120 @@
                 </a>
                 @endcan
 
+                @can('manage_violations')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.violations.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.violations.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.violations.*') ? 'filled-icon' : '' }}">gavel</span>
+                    <span class="text-sm">Poin Pelanggaran</span>
+                </a>
+                @endcan
+
+                @can('view_anomaly_attendance')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.anomaly.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.anomaly.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.anomaly.*') ? 'filled-icon' : '' }}">gps_off</span>
+                    <span class="text-sm">Anomali GPS</span>
+                </a>
+                @endcan
+
+                @can('view_visit_attendance')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.visits.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.visits.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.visits.*') ? 'filled-icon' : '' }}">location_on</span>
+                    <span class="text-sm">Kunjungan</span>
+                </a>
+                @endcan
+
+                @can('manage_leave_balances')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.leave-balances.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.leave-balances.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.leave-balances.*') ? 'filled-icon' : '' }}">event_available</span>
+                    <span class="text-sm">Saldo Cuti</span>
+                </a>
+                @endcan
+
+                @can('manage_payroll')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.payroll.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.payroll.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.payroll.*') ? 'filled-icon' : '' }}">payments</span>
+                    <span class="text-sm">Payroll</span>
+                </a>
+                @endcan
+
+                @can('manage_recruitment')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.recruitment.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.recruitment.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.recruitment.*') ? 'filled-icon' : '' }}">person_search</span>
+                    <span class="text-sm">Rekrutmen</span>
+                </a>
+                @endcan
+
+                @can('manage_projects')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.projects.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.projects.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.projects.*') ? 'filled-icon' : '' }}">assignment</span>
+                    <span class="text-sm">Project</span>
+                </a>
+                @endcan
+
+                @can('manage_assets')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.assets.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.assets.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.assets.*') ? 'filled-icon' : '' }}">inventory_2</span>
+                    <span class="text-sm">Aset</span>
+                </a>
+                @endcan
+
+                @can('manage_tickets')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.tickets.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.tickets.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.tickets.*') ? 'filled-icon' : '' }}">confirmation_number</span>
+                    <span class="text-sm">Tiket Layanan</span>
+                </a>
+                @endcan
+
+                @can('manage_forms')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.forms.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.forms.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.forms.*') ? 'filled-icon' : '' }}">dynamic_form</span>
+                    <span class="text-sm">Form Internal</span>
+                </a>
+                @endcan
+
+                @can('manage_training')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.training.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.training.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.training.*') ? 'filled-icon' : '' }}">school</span>
+                    <span class="text-sm">Training</span>
+                </a>
+                @endcan
+
                 @can('manage_announcements')
                 <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.announcements.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
                     href="{{ route('admin.announcements.index') }}">
                     <span
                         class="material-icons-round text-[20px] {{ request()->routeIs('admin.announcements.*') ? 'filled-icon' : '' }}">campaign</span>
                     <span class="text-sm">Pengumuman</span>
+                </a>
+                @endcan
+
+                @can('manage_companies')
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.companies.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                    href="{{ route('admin.companies.index') }}">
+                    <span
+                        class="material-icons-round text-[20px] {{ request()->routeIs('admin.companies.*') ? 'filled-icon' : '' }}">business</span>
+                    <span class="text-sm">Perusahaan</span>
                 </a>
                 @endcan
 

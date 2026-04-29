@@ -33,6 +33,20 @@ class RoleAndPermissionSeeder extends Seeder
             'manage_backups',
             'export_data',
             'manage_face_data',
+            'manage_violations',
+            'view_anomaly_attendance',
+            'manage_payroll',
+            'view_payroll',
+            'view_visit_attendance',
+            'manage_leave_balances',
+            'manage_recruitment',
+            'manage_projects',
+            'manage_assets',
+            'manage_tickets',
+            'create_tickets',
+            'manage_forms',
+            'manage_training',
+            'manage_companies',
         ];
 
         foreach ($permissions as $permission) {
@@ -56,6 +70,18 @@ class RoleAndPermissionSeeder extends Seeder
             'request_izin',
             'manage_announcements',
             'export_data',
+            'manage_violations',
+            'view_anomaly_attendance',
+            'view_payroll',
+            'view_visit_attendance',
+            'manage_leave_balances',
+            'manage_recruitment',
+            'manage_projects',
+            'manage_assets',
+            'manage_tickets',
+            'create_tickets',
+            'manage_forms',
+            'manage_training',
         ]);
 
         $roleSupervisor = Role::firstOrCreate(['name' => 'Supervisor', 'guard_name' => 'web']);
@@ -64,6 +90,10 @@ class RoleAndPermissionSeeder extends Seeder
             'view_self_attendance',
             'approve_team_izin',
             'request_izin',
+            'view_visit_attendance',
+            'manage_projects',
+            'manage_tickets',
+            'create_tickets',
         ]);
 
         $roleTeamLeader = Role::firstOrCreate(['name' => 'Team Leader', 'guard_name' => 'web']);
@@ -72,18 +102,22 @@ class RoleAndPermissionSeeder extends Seeder
             'view_self_attendance',
             'approve_team_izin',
             'request_izin',
+            'manage_projects',
+            'create_tickets',
         ]);
 
         $roleStaf = Role::firstOrCreate(['name' => 'Staf', 'guard_name' => 'web']);
         $roleStaf->syncPermissions([
             'view_self_attendance',
             'request_izin',
+            'create_tickets',
         ]);
 
         $roleMagang = Role::firstOrCreate(['name' => 'Magang', 'guard_name' => 'web']);
         $roleMagang->syncPermissions([
             'view_self_attendance',
             'request_izin_limited',
+            'create_tickets',
         ]);
     }
 }

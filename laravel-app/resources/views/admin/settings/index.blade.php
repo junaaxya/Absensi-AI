@@ -19,6 +19,8 @@
             'notifikasi' => 'Notifikasi',
             'export' => 'Export & Laporan',
             'backup' => 'Backup & Maintenance',
+            'poin_pelanggaran' => 'Poin Pelanggaran',
+            'anti_cheat' => 'Anti-Cheat GPS',
         ];
     @endphp
 
