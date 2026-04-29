@@ -9,7 +9,11 @@ test('login screen can be rendered', function () {
 });
 
 test('users can authenticate using the login screen', function () {
+    // Create Staf role for the test user
+    \Spatie\Permission\Models\Role::findOrCreate('Staf', 'web');
+
     $user = User::factory()->create();
+    $user->assignRole('Staf');
 
     $response = $this->post('/login', [
         'email' => $user->email,
@@ -32,7 +36,9 @@ test('users can not authenticate with invalid password', function () {
 });
 
 test('users can logout', function () {
+    \Spatie\Permission\Models\Role::findOrCreate('Staf', 'web');
     $user = User::factory()->create();
+    $user->assignRole('Staf');
 
     $response = $this->actingAs($user)->post('/logout');
 

@@ -59,6 +59,11 @@ services:
       - ./laravel-app/resources:/var/www/html/resources
       - ./laravel-app/public:/var/www/html/public
       - ./laravel-app/database:/var/www/html/database
+      - ./laravel-app/tests:/var/www/html/tests
+      - ./laravel-app/bootstrap:/var/www/html/bootstrap
+      - ./laravel-app/composer.json:/var/www/html/composer.json
+      - ./laravel-app/phpunit.xml:/var/www/html/phpunit.xml
+      - ./laravel-app/.env.testing:/var/www/html/.env.testing
       # Config files
       - ./laravel-app/package.json:/var/www/html/package.json
       - ./laravel-app/vite.config.js:/var/www/html/vite.config.js

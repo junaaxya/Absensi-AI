@@ -1,6 +1,30 @@
 {
-  "active_plan": "/media/arjuna/DATA20/PROJECT-CODING/absensi/.sisyphus/plans/rbac-implementation.md",
-  "started_at": "2026-03-03T02:33:48.205Z",
-  "session_ids": ["ses_3519cff48ffe5zDOD6V1xDUnQr"],
-  "plan_name": "rbac-implementation"
+  "active_plan": "/home/arjuna/DATA_DRIVE/Project-Coding/Absensi-AI/.sisyphus/plans/enterprise-upgrade.md",
+  "started_at": "2026-04-29T08:30:00.000Z",
+  "session_ids": [
+    "ses_227d1e6f6ffemFGax86vl7BXG9",
+    "ses_226f5d8e5ffeVf8mq54YWMsfSG",
+    "ses_226f5d8dcffegUcSJDGvqvm0LI",
+    "ses_225f5252bffeQYAyb6r8UVGip7",
+    "ses_225f4c11cffeeeivDwwYP7w8qX",
+    "ses_225e966deffeHTmEgUgWrnP12m",
+    "ses_225e8cd89ffeYedF9Jb65uFpOl",
+    "ses_225e83435ffecVWgAKRba2GZeL",
+    "ses_225e78af8ffeO40U24hI21TyNk",
+    "ses_225e6ecadffek1fOg66j84EZA2"
+  ],
+  "plan_name": "enterprise-upgrade",
+  "session_origins": {
+    "ses_227d1e6f6ffemFGax86vl7BXG9": "direct",
+    "ses_226f5d8e5ffeVf8mq54YWMsfSG": "appended",
+    "ses_226f5d8dcffegUcSJDGvqvm0LI": "appended",
+    "ses_225f5252bffeQYAyb6r8UVGip7": "appended",
+    "ses_225f4c11cffeeeivDwwYP7w8qX": "appended",
+    "ses_225e966deffeHTmEgUgWrnP12m": "appended",
+    "ses_225e8cd89ffeYedF9Jb65uFpOl": "appended",
+    "ses_225e83435ffecVWgAKRba2GZeL": "appended",
+    "ses_225e78af8ffeO40U24hI21TyNk": "appended",
+    "ses_225e6ecadffek1fOg66j84EZA2": "appended"
+  },
+  "task_sessions": {}
 }

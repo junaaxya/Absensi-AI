@@ -1,5 +1,11 @@
 <?php
 
+use Spatie\Permission\Models\Role;
+
+beforeEach(function () {
+    Role::findOrCreate('Staf', 'web');
+});
+
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
 
@@ -15,5 +21,7 @@ test('new users can register', function () {
     ]);
 
     $this->assertAuthenticated();
+    // Registration auto-generates username and assigns Staf role
+    // Staf role redirects to user dashboard
     $response->assertRedirect(route('dashboard', absolute: false));
 });

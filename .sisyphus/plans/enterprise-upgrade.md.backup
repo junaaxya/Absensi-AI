@@ -1,0 +1,212 @@
+# Enterprise Upgrade Plan — Sistem Absensi & Management
+
+## Context
+- **Codebase**: `/home/arjuna/DATA_DRIVE/Project-Coding/Absensi-AI/laravel-app/`
+- **Face Service**: `/home/arjuna/DATA_DRIVE/Project-Coding/Absensi-AI/face-service/`
+- **Stack**: Laravel 12 (PHP 8.2+), Flask + YOLOv8 + InsightFace, MySQL 8.0, Docker Compose
+- **Branch**: `dev` (current), create feature branches per phase
+- **Current State**: Basic attendance (face+GPS), leave management, shift/holiday/department CRUD, 7 roles via Spatie, geofencing, backup/export CSV. Missing: Payroll, Violations, Anti-cheat, Liveness, Audit Log, enhanced employee data.
+- **ALL commands**: `docker exec absensi_laravel <command>` (code runs inside Docker)
+- **UI Pattern**: Blade + Tailwind CSS (Pastel theme) + Alpine.js, Plus Jakarta Sans font, rounded-2xl shadow-soft cards, pastel-badge/modal/card components
+
+## Dependency Graph
+
+```
+TD0 (Auth Fix) → prerequisite for everything
+     ↓
+Phase 1A (Audit Log) → all modules need logging
+     ↓
+Phase 1B (Employee Data) → Payroll needs this
+     ↓                        ↓
+Phase 1C (Violations) ──→ Phase 2 (Payroll)
+     ↓                        ↓
+Phase 1D (Anti-Cheat) ──→ Phase 3A (Kunjungan)
+                              ↓
+                         Phase 3B (Cuti/WFA)
+```
+
+---
+
+## Phase 0: Technical Debt — Critical Security Fix
+
+- [ ] **Task 0.1**: Fix API authentication vulnerability. Add `auth:sanctum` middleware to `POST /api/attendance/auto` in `routes/api.php`. Currently this endpoint has NO authentication — anyone can POST fake attendance records. Also add auth to `PUT /api/admin/settings`. Update the user dashboard's `cameraHandler()` in `resources/views/dashboard.blade.php` to include Sanctum token or CSRF token in the API request headers. Test that authenticated requests still work and unauthenticated requests get 401.
+
+- [ ] **Task 0.2**: Fix font inconsistency. `tailwind.config.js` declares `fontFamily.sans: ['Figtree']` but `resources/views/layouts/admin.blade.php` and `resources/views/layouts/absensi.blade.php` load `Plus Jakarta Sans` via Google Fonts CDN. Update `tailwind.config.js` to use `'Plus Jakarta Sans'` as the primary sans font. Remove Figtree references. Ensure all layouts consistently use the same font.
+
+---
+
+## Phase 1A: Audit Log System
+
+> **Goal**: Rebuild audit logging (table was created then dropped by `2026_03_06_225703_drop_audit_logs_table.php`). Implement auto-logging for all model changes.
+
+- [ ] **Task 1A.1**: Create new migration `2026_xx_xx_000001_create_audit_logs_table.php` (do NOT rollback the drop migration). Schema: `id` (bigIncrements), `user_id` (foreignId nullable — for system actions), `auditable_type` (string — model class), `auditable_id` (unsignedBigInteger), `event` (string — created/updated/deleted), `old_values` (json nullable), `new_values` (json nullable), `ip_address` (string nullable), `user_agent` (string nullable), `url` (string nullable), `created_at` (timestamp). Add indexes on: `[auditable_type, auditable_id]`, `user_id`, `event`, `created_at`. Do NOT add `updated_at` (audit logs are immutable).
+
+- [ ] **Task 1A.2**: Create `app/Models/AuditLog.php` model. No `$fillable` guard (use `$guarded = []`). Casts: `old_values` → array, `new_values` → array, `created_at` → datetime. Relations: `belongsTo(User)`. Disable timestamps (`public $timestamps = false;` then manually set `created_at` in boot). Add scope `scopeForModel($query, $type, $id)` and `scopeRecent($query, $days = 30)`.
+
+- [ ] **Task 1A.3**: Create `app/Traits/HasAuditLog.php` trait. Use Eloquent model events (`static::created`, `static::updated`, `static::deleted`) in a `bootHasAuditLog()` method. On `created`: log new values (exclude sensitive fields). On `updated`: log old values (original) and new values (changes only, using `$model->getChanges()`). On `deleted`: log old values. Sensitive fields to exclude: `password`, `remember_token`, `no_rekening`, `npwp`. Get current user from `auth()->id()`, IP from `request()->ip()`, user agent from `request()->userAgent()`, URL from `request()->fullUrl()`. Apply this trait to ALL existing models: User, Attendance, Izin, WorkShift, Department, Holiday, LeaveType, SystemSetting, Announcement.
+
+- [ ] **Task 1A.4**: Update `app/Http/Controllers/Admin/AdminAuditLogController.php` (or create if not exists). It should query AuditLog with filters: date range, user, event type, model type. Paginate results (25 per page). Update `resources/views/admin/audit_logs/index.blade.php` to display audit logs in a table with columns: Waktu, User, Aksi, Model, Detail (expandable JSON diff). Add search/filter controls. Use existing pastel-card and pastel-badge components. Ensure route `admin.audit-logs.index` exists and is protected by `permission:view_audit_logs`.
+
+- [ ] **Task 1A.5**: Create `app/Console/Commands/CleanOldAuditLogs.php` artisan command that deletes audit logs older than `audit_log_retention_days` from SystemSetting (default 90 days). Register in `app/Console/Kernel.php` (or `routes/console.php` for Laravel 12) to run daily. Log how many records were deleted.
+
+---
+
+## Phase 1B: Employee Data Expansion
+
+> **Goal**: Add all fields required for Payroll (PPh 21, BPJS) and HR management to the users table.
+
+- [ ] **Task 1B.1**: Create migration `2026_xx_xx_000002_add_employee_details_to_users_table.php`. Add columns: `nik` (string 16, nullable, unique), `tempat_lahir` (string nullable), `tanggal_lahir` (date nullable), `jenis_kelamin` (enum: L/P, nullable), `alamat` (text nullable), `no_telepon` (string nullable), `no_rekening` (string nullable — will be encrypted at app level), `nama_bank` (string nullable), `npwp` (string nullable — will be encrypted at app level), `status_pernikahan` (enum: TK/K, nullable — TK=Tidak Kawin, K=Kawin), `jumlah_tanggungan` (tinyInteger default 0), `tanggal_masuk` (date nullable), `tanggal_keluar` (date nullable), `status_karyawan` (enum: tetap/kontrak/magang, default 'tetap'), `gaji_pokok` (decimal 15,2 default 0), `no_bpjs_kesehatan` (string nullable), `no_bpjs_ketenagakerjaan` (string nullable), `emergency_contact_name` (string nullable), `emergency_contact_phone` (string nullable).
+
+- [ ] **Task 1B.2**: Update `app/Models/User.php`. Add all new fields to `$fillable`. Add casts: `tanggal_lahir` → date, `tanggal_masuk` → date, `tanggal_keluar` → date, `gaji_pokok` → decimal:2, `jumlah_tanggungan` → integer. Add accessor `getStatusPtkpAttribute()` that derives PTKP status from `status_pernikahan` + `jumlah_tanggungan`: TK/0, TK/1, TK/2, TK/3, K/0, K/1, K/2, K/3. Add accessor `getKategoriTerAttribute()` that maps PTKP to TER category: A (TK/0, TK/1, K/0), B (TK/2, TK/3, K/1, K/2), C (K/3). Add mutators for `no_rekening` and `npwp` that encrypt on set and decrypt on get using `Crypt::encryptString()` / `Crypt::decryptString()`.
+
+- [ ] **Task 1B.3**: Update `app/Http/Controllers/Admin/AdminEmployeeController.php`. Add all new fields to the create/edit forms and validation rules. Validation: `nik` → nullable|string|size:16|unique:users, `tanggal_lahir` → nullable|date|before:today, `gaji_pokok` → nullable|numeric|min:0, `status_pernikahan` → nullable|in:TK,K, `jumlah_tanggungan` → integer|min:0|max:3, `no_telepon` → nullable|string|max:15, `status_karyawan` → in:tetap,kontrak,magang. Create a `StoreEmployeeRequest` and `UpdateEmployeeRequest` FormRequest class in `app/Http/Requests/` to extract validation from controller.
+
+- [ ] **Task 1B.4**: Update `resources/views/admin/employees/create.blade.php` and `edit.blade.php`. Organize fields into sections using tabs or fieldsets: (1) Data Pribadi (nama, NIK, tempat/tanggal lahir, jenis kelamin, alamat, telepon), (2) Data Kepegawaian (jabatan, department, shift, status karyawan, tanggal masuk/keluar, gaji pokok), (3) Data Pajak & BPJS (NPWP, status pernikahan, jumlah tanggungan, no BPJS Kes, no BPJS TK — show derived PTKP status and TER category as read-only badges), (4) Data Bank (nama bank, no rekening), (5) Kontak Darurat (nama, telepon). Use existing pastel-card components for each section. Mask sensitive fields (no_rekening, NPWP) in display with `****` pattern.
+
+- [ ] **Task 1B.5**: Update `resources/views/admin/employees/index.blade.php`. Add columns: NIK, Status Karyawan (with pastel-badge), Tanggal Masuk. Add filter by status_karyawan and department. Update `ExportService` to include new fields in employee CSV export (exclude encrypted fields — show masked values).
+
+---
+
+## Phase 1C: Violation Points System (Poin Pelanggaran)
+
+> **Goal**: Auto-generate violation points from late attendance, accumulate monthly, trigger warning letters (SP), integrate with future Payroll deductions.
+
+- [ ] **Task 1C.1**: Create migration `2026_xx_xx_000003_create_violation_tables.php`. Three tables: (1) `violation_types`: id, name (string), code (string unique), points (integer), description (text nullable), is_auto (boolean default false — auto-generated vs manual), is_active (boolean default true), timestamps. (2) `violations`: id, user_id (foreignId), violation_type_id (foreignId), tanggal (date), points (integer — snapshot from type), reference_type (string nullable — polymorphic: Attendance, Izin), reference_id (unsignedBigInteger nullable), notes (text nullable), created_by (foreignId nullable — null for auto), timestamps. Indexes: [user_id, tanggal], [reference_type, reference_id]. (3) `warning_letters`: id, user_id (foreignId), type (enum: SP1/SP2/SP3), period_month (string — format YYYY-MM), total_points (integer), issued_at (date), notes (text nullable), created_by (foreignId nullable), timestamps. Unique: [user_id, type, period_month].
+
+- [ ] **Task 1C.2**: Create models: `app/Models/ViolationType.php` (hasMany Violation), `app/Models/Violation.php` (belongsTo User, belongsTo ViolationType, morphTo reference), `app/Models/WarningLetter.php` (belongsTo User). Add `HasAuditLog` trait to all three. Add to User model: `hasMany(Violation)`, `hasMany(WarningLetter)`. Add to Attendance model: `morphMany(Violation, 'reference')`.
+
+- [ ] **Task 1C.3**: Create `database/seeders/ViolationTypeSeeder.php`. Seed default violation types: (1) `TELAT_1` — "Terlambat 1-15 menit", 1 point, is_auto=true, (2) `TELAT_2` — "Terlambat 16-30 menit", 2 points, is_auto=true, (3) `TELAT_3` — "Terlambat 31-60 menit", 3 points, is_auto=true, (4) `TELAT_4` — "Terlambat >60 menit", 5 points, is_auto=true, (5) `ALPHA` — "Tidak hadir tanpa keterangan", 10 points, is_auto=true, (6) `MANUAL` — "Pelanggaran manual", 0 points (admin sets), is_auto=false. Register in DatabaseSeeder.
+
+- [ ] **Task 1C.4**: Create `app/Services/ViolationService.php`. Methods: (1) `generateFromAttendance(Attendance $attendance)`: Calculate late minutes from `jam_masuk` vs shift `start_time` + `late_tolerance_minutes`. Map to violation type (TELAT_1/2/3/4). Create Violation record with reference to Attendance. Skip if violation already exists for this attendance. (2) `generateAlpha(User $user, Carbon $date)`: Create ALPHA violation for user who didn't attend and has no izin. (3) `getMonthlyPoints(User $user, string $yearMonth)`: Sum points for user in given month. (4) `checkWarningThreshold(User $user, string $yearMonth)`: If monthly points ≥10 and no SP1 exists → create SP1. If ≥20 and no SP2 → create SP2. If ≥30 and no SP3 → create SP3. Return created warning letter or null. (5) `getPayrollDeduction(User $user, string $yearMonth)`: Calculate deduction amount based on system setting formula (configurable: per-point flat amount, or percentage of tunjangan kehadiran).
+
+- [ ] **Task 1C.5**: Integrate auto-violation into attendance flow. In `app/Http/Controllers/Api/AttendanceController.php`, after successfully recording a late check-in (where status is 'terlambat'), call `ViolationService::generateFromAttendance($attendance)`. This should happen AFTER the attendance record is saved, not before. Also create `app/Console/Commands/GenerateAlphaViolations.php` artisan command: runs daily at end of work day, finds users who have no attendance AND no approved izin for today, generates ALPHA violations. Register in scheduler to run daily at the configured `auto_checkout_time`.
+
+- [ ] **Task 1C.6**: Add system settings for violation configuration. Create migration to add to `system_settings`: `violation_deduction_type` (enum: per_point/percentage, default 'per_point'), `violation_deduction_per_point` (decimal, default 25000), `violation_deduction_percentage` (decimal, default 0 — percentage of tunjangan kehadiran), `sp1_threshold` (integer, default 10), `sp2_threshold` (integer, default 20), `sp3_threshold` (integer, default 30). Update SystemSetting model with new fields and casts. Add "Poin Pelanggaran" tab in admin settings view.
+
+- [ ] **Task 1C.7**: Create admin views and controller. `app/Http/Controllers/Admin/AdminViolationController.php` with methods: index (list violations with filters: user, date range, type, paginated), show (detail with reference link), create (manual violation form), monthlyReport (summary per user per month with SP status). Views: `resources/views/admin/violations/index.blade.php` (table with pastel-badges for point severity: 1-2=sage, 3-5=peach, 10=rose), `create.blade.php` (form for manual violation), `monthly-report.blade.php` (summary table with SP indicators). Add routes in `routes/web.php` under admin group with new permission `manage_violations`. Update `RoleAndPermissionSeeder` to add `manage_violations` permission to Direktur, VP, Manager. Add sidebar menu item "Poin Pelanggaran" with Material Icon `gavel` under appropriate section.
+
+- [ ] **Task 1C.8**: Add violation summary to employee dashboard. In `resources/views/dashboard.blade.php`, add a small card showing current month's violation points and any active warning letters. Query via `ViolationService::getMonthlyPoints()`. Show as pastel-badge: 0 points = sage "Bersih", 1-9 = peach "Perhatian", 10+ = rose "Peringatan". If SP exists, show SP level badge.
+
+---
+
+## Phase 1D: Anti-Fake GPS & Liveness Detection
+
+> **Goal**: Multi-layer anti-cheat system to prevent GPS spoofing and photo-based face recognition bypass.
+
+- [ ] **Task 1D.1**: Create migration `2026_xx_xx_000004_create_employee_devices_table.php`. Schema: `id`, `user_id` (foreignId), `device_fingerprint` (string unique), `device_name` (string nullable — derived from User-Agent), `platform` (string nullable), `browser` (string nullable), `screen_resolution` (string nullable), `is_trusted` (boolean default true), `last_used_at` (timestamp nullable), `created_at`, `updated_at`. Add index on `user_id`. Also add migration to add columns to `attendances` table: `device_fingerprint` (string nullable), `gps_readings` (json nullable — array of 3 lat/long readings), `ip_address` (string nullable), `timezone_client` (string nullable), `anomaly_score` (integer default 0), `anomaly_flags` (json nullable — array of flag strings).
+
+- [ ] **Task 1D.2**: Create `app/Models/EmployeeDevice.php` model. Relations: belongsTo(User). Add HasAuditLog trait. Add to User model: `hasMany(EmployeeDevice)`. Add system settings migration for: `max_devices_per_user` (integer, default 2), `anomaly_score_warning_threshold` (integer, default 30), `anomaly_score_reject_threshold` (integer, default 60), `enable_anti_cheat` (boolean, default true).
+
+- [ ] **Task 1D.3**: Update frontend GPS collection. In `resources/views/dashboard.blade.php`, modify the `cameraHandler()` Alpine.js component. Instead of single `getCurrentPosition()`, collect 3 GPS readings with 2-second intervals. Store all 3 in an array. Also collect: `navigator.userAgent`, `screen.width + 'x' + screen.height`, `Intl.DateTimeFormat().resolvedOptions().timeZone`, and a device fingerprint hash (SHA-256 of userAgent + screen + timezone + language). Check if `navigator.geolocation` has mock location indicators (some browsers expose this). Send all data as additional fields in the FormData POST to `/api/attendance/auto`: `gps_readings` (JSON string of 3 readings), `device_fingerprint`, `timezone_client`, `mock_location_detected` (boolean).
+
+- [ ] **Task 1D.4**: Create `app/Services/AntiCheatService.php`. Constructor accepts attendance request data. Method `validate(): AntiCheatResult` runs 6 checks, each returning a score (0-20) and flag string: (1) **GPS Variance Check**: If 3 readings have variance < 0.000001 in both lat/long → suspicious (real GPS always has micro-variance). Score: 15. Flag: `gps_too_stable`. (2) **Speed Anomaly**: Compare current GPS with user's last attendance GPS. Calculate distance/time. If speed > 200 km/h → impossible. Score: 20. Flag: `speed_anomaly`. (3) **Accuracy Paradox**: If GPS accuracy is exactly 1.0 or < 3.0 meters → suspicious (real GPS rarely this precise). Score: 10. Flag: `accuracy_paradox`. (4) **Device Consistency**: Check device_fingerprint against `employee_devices` table. If new device and user already has `max_devices_per_user` trusted devices → flag. Score: 15. Flag: `unknown_device`. (5) **Timezone Mismatch**: Compare client timezone with expected timezone from GPS coordinates (use simple longitude-based calculation: timezone_offset ≈ longitude/15). If mismatch > 2 hours → suspicious. Score: 10. Flag: `timezone_mismatch`. (6) **Mock Location Flag**: If client reports mock_location_detected = true → immediate flag. Score: 20. Flag: `mock_location`. Total anomaly_score = sum of all check scores. Return `AntiCheatResult` DTO with: score, flags array, passed (score < reject_threshold), warning (score >= warning_threshold). Log all checks to audit log.
+
+- [ ] **Task 1D.5**: Integrate AntiCheatService into attendance API. In `app/Http/Controllers/Api/AttendanceController.php`, after GPS validation but before face recognition: (1) If `enable_anti_cheat` system setting is true, instantiate AntiCheatService with request data. (2) Run `validate()`. (3) If not passed (score >= reject_threshold) → return 403 with message "Terdeteksi anomali lokasi. Hubungi admin." and log the attempt. (4) If warning (score >= warning_threshold but < reject_threshold) → allow but save anomaly_score and anomaly_flags to attendance record, send notification to admin. (5) If passed → proceed normally. (6) Always save device_fingerprint, gps_readings, ip_address, timezone_client, anomaly_score, anomaly_flags to the attendance record. (7) Register/update device in employee_devices table.
+
+- [ ] **Task 1D.6**: Implement liveness detection in face-service. In `face-service/face_service.py`, add a new function `check_liveness(image)` that performs: (1) **LBP Texture Analysis**: Convert to grayscale, compute Local Binary Pattern histogram. Real faces have different texture distribution than printed photos/screens. Compare LBP variance — if too low (flat texture) → likely fake. (2) **Reflection Detection**: Check for screen glare patterns — high-intensity spots with specific shape. (3) **Color Distribution**: Real skin has specific color distribution in YCrCb space. Printed photos have different distribution. Return a liveness_score (0.0-1.0) and is_live boolean (threshold 0.5). Integrate into `/recognize_frame` endpoint: before recognition, run liveness check. If `anti_spoofing_enabled` setting is true and is_live is false → return `{"status": "rejected", "message": "Liveness check failed"}`. Add liveness_score to the response.
+
+- [ ] **Task 1D.7**: Create admin anomaly dashboard. Add a section in `resources/views/admin/attendance/index.blade.php` (or new view `anomaly.blade.php`) showing recent attendance records with anomaly_score > 0. Table columns: Karyawan, Waktu, Anomaly Score (color-coded badge: 0=sage, 1-29=sky, 30-59=peach, 60+=rose), Flags (list of flag badges), Device. Add filter by score range. Admin can mark device as untrusted. Add route and controller method. Add "Anomali" sub-menu under Attendance in sidebar.
+
+---
+
+## Phase 2: Payroll Engine (PPh 21 TER + BPJS)
+
+> **Goal**: Full payroll system compliant with Indonesian tax law (PP 58/2023 TER method) and BPJS regulations.
+
+- [ ] **Task 2.1**: Create migration `2026_xx_xx_000005_create_payroll_tables.php`. Tables: (1) `salary_components`: id, name, code (unique), type (enum: earning/deduction/benefit), is_taxable (boolean), is_fixed (boolean — fixed vs variable), default_amount (decimal 15,2 default 0), description, is_active, timestamps. (2) `employee_salaries`: id, user_id (foreignId unique), gaji_pokok (decimal 15,2), components (json — array of {component_id, amount}), effective_date (date), timestamps. (3) `payroll_periods`: id, period_month (string YYYY-MM, unique), start_date (date), end_date (date), status (enum: draft/processing/calculated/approved/paid/locked), total_employees (integer default 0), total_gross (decimal 15,2 default 0), total_deductions (decimal 15,2 default 0), total_net (decimal 15,2 default 0), calculated_at (timestamp nullable), approved_by (foreignId nullable), approved_at (timestamp nullable), paid_at (timestamp nullable), notes (text nullable), timestamps. (4) `payroll_details`: id, payroll_period_id (foreignId), user_id (foreignId), working_days (integer), present_days (integer), late_count (integer), late_minutes_total (integer), overtime_hours (decimal 8,2), gaji_pokok (decimal 15,2), total_earnings (decimal 15,2), total_deductions (decimal 15,2), total_bpjs_company (decimal 15,2), total_bpjs_employee (decimal 15,2), pph21_amount (decimal 15,2), net_salary (decimal 15,2), status (enum: calculated/approved/paid), timestamps. Unique: [payroll_period_id, user_id]. (5) `payroll_detail_items`: id, payroll_detail_id (foreignId), component_name (string), component_type (enum: earning/deduction/bpjs_company/bpjs_employee/tax), amount (decimal 15,2), notes (string nullable), timestamps. (6) `tax_ter_rates`: id, category (enum: A/B/C), min_income (decimal 15,2), max_income (decimal 15,2), rate (decimal 8,4 — percentage as decimal e.g. 0.0025 for 0.25%), timestamps. (7) `tax_ptkp_rates`: id, status (string — TK/0, TK/1, TK/2, TK/3, K/0, K/1, K/2, K/3), amount (decimal 15,2), year (integer), timestamps. Unique: [status, year].
+
+- [ ] **Task 2.2**: Create models for all payroll tables. `SalaryComponent`, `EmployeeSalary`, `PayrollPeriod`, `PayrollDetail`, `PayrollDetailItem`, `TaxTerRate`, `TaxPtkpRate`. Add proper relationships, casts, and HasAuditLog trait. PayrollPeriod hasMany PayrollDetail. PayrollDetail belongsTo PayrollPeriod and User, hasMany PayrollDetailItem. User hasOne EmployeeSalary, hasMany PayrollDetail.
+
+- [ ] **Task 2.3**: Create `database/seeders/PayrollSeeder.php`. Seed: (1) Default salary components: Gaji Pokok (earning, taxable, fixed), Tunjangan Jabatan (earning, taxable, fixed), Tunjangan Transport (earning, taxable, not fixed), Tunjangan Makan (earning, taxable, not fixed), Uang Lembur (earning, taxable, not fixed), Tunjangan Kehadiran (earning, taxable, not fixed), Potongan Keterlambatan (deduction), Potongan Pelanggaran (deduction), Potongan Cuti Tidak Berbayar (deduction). (2) TER rates for 2024 — all 3 categories (A/B/C) with complete rate tables from PP 58/2023 (~40 rows per category). (3) PTKP rates for 2024: TK/0=54.000.000, TK/1=58.500.000, TK/2=63.000.000, TK/3=67.500.000, K/0=58.500.000, K/1=63.000.000, K/2=67.500.000, K/3=72.000.000. Register in DatabaseSeeder.
+
+- [ ] **Task 2.4**: Create `app/Services/PayrollService.php` — the core calculation engine. Methods: (1) `createPeriod(string $yearMonth): PayrollPeriod` — create draft period, calculate working days from holidays + weekend_days setting. (2) `calculateForEmployee(PayrollPeriod $period, User $user): PayrollDetail` — the main calculation: Step A: Count present_days, late_count, late_minutes, overtime_hours from Attendance records in period. Step B: Calculate gross = gaji_pokok + sum of earning components from EmployeeSalary. Add overtime: upah_sejam = gaji_pokok / 173, jam_1 = 1.5 × upah_sejam, jam_2+ = 2.0 × upah_sejam (per UU Cipta Kerja). Step C: Calculate deductions — late deduction (from ViolationService::getPayrollDeduction), unpaid leave prorate (gaji_pokok / working_days × unpaid_leave_days). Step D: Calculate BPJS (see Task 2.5). Step E: Calculate PPh 21 (see Task 2.6). Step F: net_salary = gross - deductions - bpjs_employee - pph21. Step G: Save PayrollDetail + PayrollDetailItems for each component. (3) `calculateAll(PayrollPeriod $period)` — loop all active employees, call calculateForEmployee for each. Update period totals and status to 'calculated'. (4) `approvePeriod(PayrollPeriod $period, User $approver)` — change status to 'approved'. (5) `markAsPaid(PayrollPeriod $period)` — change status to 'paid', then 'locked'.
+
+- [ ] **Task 2.5**: Create `app/Services/BpjsCalculator.php`. Method `calculate(decimal $gajiPokok, array $options): BpjsResult`. Options include: jkk_risk_group (1-5, default 1). Calculations: (1) BPJS Kesehatan: base = min(gajiPokok, ceiling from setting). Company = base × 4%. Employee = base × 1%. (2) JHT: Company = gajiPokok × 3.7%. Employee = gajiPokok × 2%. (3) JKK: Company = gajiPokok × rate_by_group (0.24%, 0.54%, 0.89%, 1.27%, 1.74%). (4) JKM: Company = gajiPokok × 0.3%. (5) JP: base = min(gajiPokok, jp_ceiling — default Rp 10.042.300). Company = base × 2%. Employee = base × 1%. Return BpjsResult DTO with all amounts separated by company/employee. Add system settings: `bpjs_kes_ceiling` (decimal, default 12000000), `bpjs_jp_ceiling` (decimal, default 10042300), `jkk_risk_group` (integer, default 1).
+
+- [ ] **Task 2.6**: Create `app/Services/Pph21Calculator.php`. Two methods: (1) `calculateMonthlyTER(decimal $brutoMonthly, string $terCategory, string $periodMonth): decimal` — For Jan-Nov: lookup TER rate from `tax_ter_rates` table by category and income range. PPh 21 = bruto × rate. (2) `calculateDecemberCorrection(User $user, int $year): decimal` — Annual correction: Sum all bruto Jan-Dec. Subtract biaya_jabatan (5% of total bruto, max Rp 6.000.000). Subtract total BPJS employee (JHT + JP) for the year. Subtract PTKP (lookup from tax_ptkp_rates by user's status_ptkp). PKP = result (if negative, PKP = 0). Apply progressive rates: 0-60jt=5%, 60-250jt=15%, 250-500jt=25%, 500jt-5M=30%, >5M=35%. PPh21_annual = PKP × progressive rates. PPh21_december = PPh21_annual - sum(PPh21 Jan-Nov). Handle edge case: if user has no NPWP, PPh 21 is 20% higher (UU HPP).
+
+- [ ] **Task 2.7**: Create `app/Http/Controllers/Admin/AdminPayrollController.php`. Methods: index (list periods with status badges), create (form to create new period — select month/year), show (period detail — list all employees with calculated amounts), calculate (trigger calculation — show progress), approve (change status), markPaid, slip (generate individual slip). Add routes under admin group with new permission `manage_payroll`. Update RoleAndPermissionSeeder: add `manage_payroll` to Direktur and VP, add `view_payroll` to Manager. Add sidebar menu item "Payroll" with Material Icon `payments`.
+
+- [ ] **Task 2.8**: Create payroll admin views. (1) `resources/views/admin/payroll/index.blade.php` — list of payroll periods with status badges (draft=sky, processing=lavender, calculated=peach, approved=sage, paid=sage-dark, locked=stone). Action buttons per status. (2) `show.blade.php` — period detail with summary cards (Total Karyawan, Total Bruto, Total Potongan, Total Netto) and employee table (Nama, Gaji Pokok, Earnings, Deductions, BPJS, PPh 21, Netto). Expandable row for detail items. (3) `slip.blade.php` — individual salary slip view with company header, employee info, earnings table, deductions table, BPJS breakdown, PPh 21, net salary. Print-friendly CSS. Use JetBrains Mono font for numbers (add to Tailwind config).
+
+- [ ] **Task 2.9**: Create `app/Services/SlipGajiPdfService.php` using `barryvdh/laravel-dompdf`. Install package via composer. Method `generate(PayrollDetail $detail): string` — renders `resources/views/pdf/slip-gaji.blade.php` to PDF. The PDF view should include: company logo + name + address, employee name + NIK + department + jabatan, period, earnings table, deductions table, BPJS breakdown (company + employee portions), PPh 21, net salary, generated timestamp. Return file path. Method `generateBulk(PayrollPeriod $period): string` — generate all slips as merged PDF or ZIP. Add route for download.
+
+- [ ] **Task 2.10**: Create `app/Http/Middleware/PayrollFreezeMiddleware.php`. When a PayrollPeriod is in status 'processing' or 'calculated', block any modifications to: attendances, violations, and izins for that period's date range. Apply to relevant routes. Return 423 Locked with message "Data sedang diproses untuk payroll periode {month}. Hubungi admin." Register middleware alias in bootstrap/app.php.
+
+- [ ] **Task 2.11**: Write unit tests for payroll calculations. Create `tests/Unit/PayrollServiceTest.php`, `tests/Unit/BpjsCalculatorTest.php`, `tests/Unit/Pph21CalculatorTest.php`. Test cases: (1) Employee TK/0, gaji 5jt → PPh 21 = 0 (below threshold). (2) Employee K/1, gaji 10jt → verify TER rate lookup and calculation. (3) Employee K/3, gaji 50jt → verify TER category C. (4) December correction with progressive rates. (5) BPJS ceiling enforcement. (6) Overtime calculation (1 hour, 3 hours). (7) Late deduction integration. (8) Employee without NPWP (20% surcharge). Run tests via `docker exec absensi_laravel php artisan test --filter=Payroll`.
+
+---
+
+## Phase 3A: Visit Attendance (Absensi Kunjungan)
+
+> **Goal**: Multi-location visit tracking with GPS trail for field employees.
+
+- [ ] **Task 3A.1**: Create migration `2026_xx_xx_000006_create_visit_attendance_tables.php`. Tables: (1) `visit_attendances`: id, user_id (foreignId), tanggal (date), client_name (string), location_name (string), purpose (text), check_in_time (datetime), check_out_time (datetime nullable), check_in_lat (decimal 10,7), check_in_long (decimal 10,7), check_out_lat (decimal 10,7 nullable), check_out_long (decimal 10,7 nullable), check_in_photo (string nullable), check_out_photo (string nullable), similarity_score_in (float nullable), similarity_score_out (float nullable), notes (text nullable), status (enum: active/completed/cancelled), device_fingerprint (string nullable), anomaly_score (integer default 0), timestamps. (2) `visit_locations`: id, visit_attendance_id (foreignId), latitude (decimal 10,7), longitude (decimal 10,7), accuracy (float), recorded_at (timestamp), timestamps. Index on visit_attendance_id.
+
+- [ ] **Task 3A.2**: Create models `VisitAttendance` and `VisitLocation`. Relations, casts, HasAuditLog. Add to User: `hasMany(VisitAttendance)`. Create `app/Http/Controllers/Api/VisitAttendanceController.php` with methods: checkIn (validate face + GPS, create record), checkOut (validate face + GPS, complete record), trackLocation (receive periodic GPS updates, save to visit_locations). Add API routes with auth:sanctum middleware.
+
+- [ ] **Task 3A.3**: Create user-facing visit UI. Add "Absen Kunjungan" button to user dashboard. Create modal/page for visit check-in: form fields (client name, location name, purpose) + camera + GPS. Show active visits with check-out button. Show visit history with expandable details.
+
+- [ ] **Task 3A.4**: Create admin visit management. `AdminVisitAttendanceController` with index (list all visits, filterable by user/date/status), show (detail with GPS trail map using Leaflet.js — plot visit_locations as polyline on map, show check-in/out markers). Add route, permission `view_visit_attendance`, sidebar menu item "Kunjungan" with Material Icon `location_on`.
+
+---
+
+## Phase 3B: Enhanced Leave & WFA Workflow
+
+> **Goal**: Multi-level approval chain, leave balance tracking, WFA (Work From Anywhere) support.
+
+- [ ] **Task 3B.1**: Create migration `2026_xx_xx_000007_enhance_leave_system.php`. (1) Add columns to `izins` table: `leave_type_id` (foreignId nullable), `approval_status` (enum: pending/approved_l1/approved_l2/approved_final/rejected, default 'pending'), `current_approver_id` (foreignId nullable), `approved_by` (json nullable — array of {user_id, role, action, timestamp}), `wfa_location` (string nullable), `wfa_daily_checkins` (json nullable). (2) New table `leave_balances`: id, user_id (foreignId), leave_type_id (foreignId), year (integer), quota (integer), used (integer default 0), remaining (integer — computed or stored), carry_over (integer default 0), timestamps. Unique: [user_id, leave_type_id, year].
+
+- [ ] **Task 3B.2**: Create `LeaveBalance` model. Create `app/Services/LeaveService.php` with methods: `getBalance(User, LeaveType, year)`, `deductBalance(User, LeaveType, days)`, `initializeYearlyBalances(year)` — create balances for all active employees based on leave_type quotas, `carryOver(year)` — carry unused days to next year (configurable max). Integrate with Izin approval: when izin is fully approved, deduct balance. When rejected/cancelled, restore balance.
+
+- [ ] **Task 3B.3**: Update `IzinController` and `AdminIzinController` (or create if needed). Implement multi-level approval: Staf submits → Team Leader approves (L1) → Manager approves (L2) → Final. The approval chain is determined by the submitter's role and department hierarchy. Each approver only sees izin pending their level. Add WFA type to izin jenis options. For WFA: require daily check-in (simple GPS ping stored in wfa_daily_checkins JSON).
+
+- [ ] **Task 3B.4**: Update izin views. Show leave balance in the izin request form (user dashboard). Show approval chain progress (step indicator). Admin izin view: show current approval level, action buttons for approve/reject at current level. Add leave balance management page for admin (view/adjust balances per employee).
+
+---
+
+## Phase 3C: Dashboard Analytics Enhancement
+
+> **Goal**: Rich analytics with charts and real-time data.
+
+- [ ] **Task 3C.1**: Enhance `AdminDashboardController`. Add data aggregation: attendance trend (last 30 days — daily count of hadir/terlambat/alpha), department comparison (attendance rate per department), top late employees (this month), violation summary (this month), pending approvals count. Return as JSON-ready arrays for chart consumption.
+
+- [ ] **Task 3C.2**: Update `resources/views/admin/dashboard.blade.php`. Add ApexCharts CDN. Replace CSS pie chart with ApexCharts donut. Add line chart for 30-day attendance trend. Add bar chart for department comparison. Add "Anomali Terbaru" alert panel (last 5 anomaly-flagged attendances). Add "Pending Actions" widget (pending izin, pending payroll). Keep existing stat cards but enhance with trend indicators (↑↓ vs last month).
+
+---
+
+## Phase 3D: Enhanced Export & Auto-Checkout
+
+- [ ] **Task 3D.1**: Install `barryvdh/laravel-dompdf` (if not already installed in Phase 2). Update `ExportService` to support PDF export for attendance reports. Create `resources/views/pdf/attendance-report.blade.php` — monthly attendance report with company header, date range, employee table, summary statistics. Add PDF download button alongside existing CSV export in admin attendance view.
+
+- [ ] **Task 3D.2**: Create `app/Console/Commands/AutoCheckout.php`. Runs at `auto_checkout_time` from system settings. Finds all attendances for today where `jam_masuk` is set but `jam_keluar` is null. Sets `jam_keluar` to `auto_checkout_time`, sets status to include 'auto-checkout' flag. Register in scheduler. Log results to audit log.
+
+---
+
+## Phase 4: Enterprise Features (Future — Not in immediate scope)
+
+> These phases are documented for roadmap purposes. Execute after Phases 1-3 are stable.
+
+- [ ] **Task 4.1**: Project & Task Management — Kanban board, task assignment, time tracking
+- [ ] **Task 4.2**: Recruitment Pipeline — candidate management, interview scheduling, onboarding
+- [ ] **Task 4.3**: Asset Management — inventory, assignment, depreciation tracking
+- [ ] **Task 4.4**: Service Tickets — internal helpdesk with SLA tracking
+- [ ] **Task 4.5**: Internal Form Builder — dynamic forms with approval workflows
+- [ ] **Task 4.6**: LMS/Training — course management, enrollment, certification
+- [ ] **Task 4.7**: Multi-Company/Branch — tenant isolation, branch-specific settings
+
+---
+
+## Execution Notes
+- All artisan/composer commands: `docker exec absensi_laravel <command>`
+- Laravel code path: `/home/arjuna/DATA_DRIVE/Project-Coding/Absensi-AI/laravel-app/`
+- Face service path: `/home/arjuna/DATA_DRIVE/Project-Coding/Absensi-AI/face-service/`
+- Create feature branch `feature/enterprise-upgrade` from `dev` before starting
+- Run `php artisan migrate` after each migration task
+- Run `php artisan db:seed --class=<SeederName>` after each seeder task
+- Phase 0 → Phase 1A → Phase 1B → Phase 1C (can parallel with 1D) → Phase 2 → Phase 3 (A/B/C/D can parallel)
+- Phase 2 has hard dependency on 1B (employee data) and 1C (violations)
+- Phase 3A depends on 1D (anti-cheat GPS)
+- Phase 3B depends on Phase 2 (payroll integration for unpaid leave)
+- ALWAYS run existing tests after each phase to prevent regressions
+- Update AGENTS.md after each major phase completion
