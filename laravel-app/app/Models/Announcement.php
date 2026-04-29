@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasAuditLog;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 
 class Announcement extends Model
 {
-    use HasFactory;
+    use HasFactory, HasAuditLog;
 
     protected $fillable = [
         'title',

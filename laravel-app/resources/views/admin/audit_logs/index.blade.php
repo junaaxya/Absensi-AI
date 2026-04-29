@@ -16,12 +16,18 @@
                 <select name="action" onchange="this.form.submit()"
                     class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sage focus:border-sage transition-all text-slate-900 dark:text-white text-sm">
                     <option value="">Semua Aksi</option>
-                    <option value="create" {{ request('action') == 'create' ? 'selected' : '' }}>Create</option>
-                    <option value="update" {{ request('action') == 'update' ? 'selected' : '' }}>Update</option>
-                    <option value="delete" {{ request('action') == 'delete' ? 'selected' : '' }}>Delete</option>
-                    <option value="login" {{ request('action') == 'login' ? 'selected' : '' }}>Login</option>
-                    <option value="logout" {{ request('action') == 'logout' ? 'selected' : '' }}>Logout</option>
+                    <option value="created" {{ request('action') == 'created' ? 'selected' : '' }}>Created</option>
+                    <option value="updated" {{ request('action') == 'updated' ? 'selected' : '' }}>Updated</option>
+                    <option value="deleted" {{ request('action') == 'deleted' ? 'selected' : '' }}>Deleted</option>
                 </select>
+            </div>
+            <div class="w-full md:w-40">
+                <input type="date" name="date_from" value="{{ request('date_from') }}" placeholder="Dari tanggal"
+                    class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sage focus:border-sage transition-all text-slate-900 dark:text-white text-sm" />
+            </div>
+            <div class="w-full md:w-40">
+                <input type="date" name="date_to" value="{{ request('date_to') }}" placeholder="Sampai tanggal"
+                    class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sage focus:border-sage transition-all text-slate-900 dark:text-white text-sm" />
             </div>
             <button type="submit"
                 class="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg active:scale-95">
@@ -72,25 +78,23 @@
                             </td>
                             <td class="p-4 text-center">
                                 @php
-                                    $badgeColor = match($log->action) {
-                                        'create' => 'bg-green-100 text-green-700 border-green-200',
-                                        'update' => 'bg-blue-100 text-blue-700 border-blue-200',
-                                        'delete' => 'bg-red-100 text-red-700 border-red-200',
-                                        'login' => 'bg-purple-100 text-purple-700 border-purple-200',
-                                        'logout' => 'bg-slate-100 text-slate-700 border-slate-200',
+                                    $badgeColor = match($log->event) {
+                                        'created' => 'bg-green-100 text-green-700 border-green-200',
+                                        'updated' => 'bg-blue-100 text-blue-700 border-blue-200',
+                                        'deleted' => 'bg-red-100 text-red-700 border-red-200',
                                         default => 'bg-slate-100 text-slate-700 border-slate-200',
                                     };
                                 @endphp
                                 <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-bold border {{ $badgeColor }} uppercase tracking-wide">
-                                    {{ $log->action }}
+                                    {{ $log->event }}
                                 </span>
                             </td>
                             <td class="p-4">
                                 <div class="font-mono text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded w-fit">
-                                    {{ class_basename($log->model_type) }}
+                                    {{ class_basename($log->auditable_type) }}
                                 </div>
                                 <div class="text-xs text-slate-400 mt-1">
-                                    ID: {{ $log->model_id }}
+                                    ID: {{ $log->auditable_id }}
                                 </div>
                             </td>
                             <td class="p-4" x-data="{ expanded: false }">
@@ -120,6 +124,11 @@
                                 <span class="font-mono text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
                                     {{ $log->ip_address }}
                                 </span>
+                                @if($log->user_agent)
+                                    <div class="text-[10px] text-slate-400 mt-1 max-w-[200px] truncate ml-auto" title="{{ $log->user_agent }}">
+                                        {{ $log->user_agent }}
+                                    </div>
+                                @endif
                             </td>
                         </tr>
                     @empty

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasAuditLog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SystemSetting extends Model
 {
-    use HasFactory;
+    use HasFactory, HasAuditLog;
 
     protected $table = 'system_settings';
 
@@ -28,8 +29,13 @@ class SystemSetting extends Model
         'require_checkout', 'allow_multiple_checkin', 'weekend_days',
         'face_similarity_threshold', 'face_max_registration_photos',
         'face_anti_spoofing_enabled', 'face_min_photo_quality', 'face_require_liveness',
+        'max_devices_per_user', 'anomaly_score_warning_threshold', 'anomaly_score_reject_threshold', 'enable_anti_cheat',
         'notify_late_checkin', 'notify_absence', 'notification_emails',
         'backup_retention_days', 'audit_log_retention_days',
+        'violation_deduction_type', 'violation_deduction_per_point',
+        'violation_deduction_percentage',
+        'sp1_threshold', 'sp2_threshold', 'sp3_threshold',
+        'bpjs_kes_ceiling', 'bpjs_jp_ceiling', 'jkk_risk_group', 'no_npwp_surcharge_enabled',
     ];
 
     protected $casts = [
@@ -48,9 +54,22 @@ class SystemSetting extends Model
         'face_anti_spoofing_enabled' => 'boolean',
         'face_min_photo_quality' => 'integer',
         'face_require_liveness' => 'boolean',
+        'max_devices_per_user' => 'integer',
+        'anomaly_score_warning_threshold' => 'integer',
+        'anomaly_score_reject_threshold' => 'integer',
+        'enable_anti_cheat' => 'boolean',
         'notify_late_checkin' => 'boolean',
         'notify_absence' => 'boolean',
         'backup_retention_days' => 'integer',
         'audit_log_retention_days' => 'integer',
+        'violation_deduction_per_point' => 'float',
+        'violation_deduction_percentage' => 'float',
+        'sp1_threshold' => 'integer',
+        'sp2_threshold' => 'integer',
+        'sp3_threshold' => 'integer',
+        'bpjs_kes_ceiling' => 'float',
+        'bpjs_jp_ceiling' => 'float',
+        'jkk_risk_group' => 'integer',
+        'no_npwp_surcharge_enabled' => 'boolean',
     ];
 }
