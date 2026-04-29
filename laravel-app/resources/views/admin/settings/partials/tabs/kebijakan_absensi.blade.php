@@ -116,6 +116,60 @@
                         </div>
                         <p class="text-xs text-slate-400 mt-3">Hari yang dipilih tidak akan dihitung sebagai hari kerja.</p>
                     </div>
+
+                    <!-- Manual Auto-Checkout Trigger -->
+                    <div class="bg-white dark:bg-card-dark rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800"
+                        x-data="{ loading: false, result: null }">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-bold text-slate-900 dark:text-white">Auto-Checkout Manual</h4>
+                            <div class="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                                <span class="material-icons-round text-amber-600 dark:text-amber-400 text-sm">schedule_send</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                            Jalankan auto-checkout secara manual untuk karyawan yang belum checkout hari ini.
+                            Waktu checkout akan menggunakan pengaturan Auto Checkout ({{ $settings->auto_checkout_time ?? '18:00' }}).
+                        </p>
+
+                        <form method="POST" action="{{ route('admin.auto-checkout.trigger') }}"
+                            @submit.prevent="
+                                loading = true;
+                                result = null;
+                                fetch($el.action, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    }
+                                })
+                                .then(r => r.json())
+                                .then(data => { result = data; loading = false; })
+                                .catch(() => { result = { success: false, message: 'Terjadi kesalahan.' }; loading = false; })
+                            ">
+                            <button type="submit" :disabled="loading"
+                                class="w-full py-2.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 rounded-xl font-bold hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                                onclick="return confirm('Jalankan auto-checkout sekarang?')">
+                                <span class="material-icons-round text-sm" x-show="!loading">play_arrow</span>
+                                <svg x-show="loading" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                                <span x-text="loading ? 'Memproses...' : 'Jalankan Auto-Checkout'"></span>
+                            </button>
+                        </form>
+
+                        <div x-show="result" x-transition class="mt-3">
+                            <div x-show="result?.success"
+                                class="p-3 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-xl text-xs font-medium">
+                                <span x-text="result?.message"></span>
+                            </div>
+                            <div x-show="result && !result?.success"
+                                class="p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-xl text-xs font-medium">
+                                <span x-text="result?.message"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

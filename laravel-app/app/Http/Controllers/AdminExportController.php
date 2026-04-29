@@ -41,4 +41,25 @@ class AdminExportController extends Controller
             $request->status
         );
     }
+
+    public function exportAttendancePdf(Request $request, ExportService $exportService)
+    {
+        $this->authorizeTabAccess($request, 'export');
+
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'department_id' => 'nullable|integer|exists:departments,id',
+            'user_id' => 'nullable|integer|exists:users,id',
+        ]);
+
+        $path = $exportService->exportAttendancePdf([
+            'date_from' => $request->start_date,
+            'date_to' => $request->end_date,
+            'department_id' => $request->department_id ? (int) $request->department_id : null,
+            'user_id' => $request->user_id ? (int) $request->user_id : null,
+        ]);
+
+        return response()->download($path)->deleteFileAfterSend();
+    }
 }
