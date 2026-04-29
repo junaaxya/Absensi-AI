@@ -59,3 +59,21 @@ yarn-error.log*
 # OS
 Thumbs.db
 .DS_Store
+
+# Face service
+face-service/venv/
+face-service/dataset/
+face-service/embeddings/
+face-service/yolov8n.pt
+face-service/*.pt
+
+# Playwright
+.playwright-mcp/
+
+# Test screenshots
+test-*.png
+
+# Sisyphus internal
+.sisyphus/notepads/
+.sisyphus/drafts/
+
