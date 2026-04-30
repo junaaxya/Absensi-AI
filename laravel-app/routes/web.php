@@ -49,12 +49,20 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Pending approval page (accessible by authenticated but unapproved users)
+Route::middleware(['auth'])->get('/pending-approval', function () {
+    if (auth()->user()->is_approved) {
+        return redirect()->route('dashboard');
+    }
+    return view('auth.pending-approval');
+})->name('pending-approval');
+
 /*
 |--------------------------------------------------------------------------
-| ROUTE WAJIB LOGIN
+| ROUTE WAJIB LOGIN + APPROVED
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'approved'])->group(function () {
 
     // DASHBOARD KARYAWAN
     Route::get('/dashboard', [AttendanceController::class, 'dashboard'])
@@ -169,6 +177,8 @@ Route::middleware(['auth'])->group(function () {
         // EMPLOYEE MANAGEMENT - requires manage_employees permission
         Route::middleware(['permission:manage_employees'])->group(function () {
             Route::resource('employees', EmployeeController::class);
+            Route::post('/employees/{employee}/approve', [EmployeeController::class, 'approve'])->name('employees.approve');
+            Route::post('/employees/{employee}/reject', [EmployeeController::class, 'reject'])->name('employees.reject');
         });
 
         // FACE DATA MANAGEMENT - requires manage_face_data permission

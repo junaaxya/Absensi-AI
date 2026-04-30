@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\AdminOnly;
 use App\Http\Middleware\CompanyScope;
 use App\Http\Middleware\PayrollFreezeMiddleware;
+use App\Http\Middleware\EnsureUserIsApproved;
 
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'payroll_freeze' => PayrollFreezeMiddleware::class,
             'company_scope' => CompanyScope::class,
+            'approved' => EnsureUserIsApproved::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

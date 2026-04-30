@@ -67,6 +67,7 @@ class RegisteredUserController extends Controller
                 'username' => $username,
                 'password' => Hash::make($request->password),
                 'foto' => $fotoPath,
+                'is_approved' => false,
             ]);
 
             $user->assignRole('Staf');

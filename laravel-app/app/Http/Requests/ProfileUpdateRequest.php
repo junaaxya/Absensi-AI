@@ -16,10 +16,14 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-        'name' => ['sometimes', 'required', 'string', 'max:255'],
-        'email' => ['sometimes', 'required', 'email'],
-        'jabatan' => ['nullable', 'string', 'max:255'],
-        'foto' => ['nullable', 'image', 'max:2048'],
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'email' => ['sometimes', 'required', 'email'],
+            'foto' => ['nullable', 'image', 'max:2048'],
+            // Personal data editable by employee
+            'no_telepon' => ['nullable', 'string', 'max:20'],
+            'alamat' => ['nullable', 'string', 'max:500'],
+            'emergency_contact_name' => ['nullable', 'string', 'max:255'],
+            'emergency_contact_phone' => ['nullable', 'string', 'max:20'],
         ];
     }
 }

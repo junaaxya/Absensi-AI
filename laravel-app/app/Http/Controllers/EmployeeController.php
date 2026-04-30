@@ -59,6 +59,14 @@ class EmployeeController extends Controller
             }
         }
 
+        if ($request->filled('approval_status')) {
+            if ($request->approval_status === 'pending') {
+                $query->where('is_approved', false);
+            } elseif ($request->approval_status === 'approved') {
+                $query->where('is_approved', true);
+            }
+        }
+
         $employees = $query->latest()
             ->paginate(10)
             ->withQueryString();
@@ -114,6 +122,9 @@ class EmployeeController extends Controller
             'no_bpjs_ketenagakerjaan' => $request->no_bpjs_ketenagakerjaan,
             'emergency_contact_name' => $request->emergency_contact_name,
             'emergency_contact_phone' => $request->emergency_contact_phone,
+            'is_approved' => true,
+            'approved_at' => now(),
+            'approved_by' => auth()->id(),
         ]);
 
         $user->assignRole($request->role);
@@ -225,6 +236,28 @@ class EmployeeController extends Controller
         }
 
         return redirect()->route('employees.index')->with('success', 'Data karyawan berhasil diperbarui.');
+    }
+
+    public function approve(User $employee)
+    {
+        $employee->update([
+            'is_approved' => true,
+            'approved_at' => now(),
+            'approved_by' => auth()->id(),
+        ]);
+
+        return redirect()->route('employees.index')->with('success', "Akun {$employee->name} berhasil disetujui.");
+    }
+
+    public function reject(User $employee)
+    {
+        if ($employee->is_approved) {
+            return redirect()->route('employees.index')->with('error', 'Karyawan sudah disetujui, tidak bisa ditolak.');
+        }
+
+        $employee->delete();
+
+        return redirect()->route('employees.index')->with('success', "Pendaftaran {$employee->name} ditolak dan akun dihapus.");
     }
 
     public function destroy(User $employee)

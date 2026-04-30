@@ -51,6 +51,9 @@ class User extends Authenticatable
         'no_bpjs_ketenagakerjaan',
         'emergency_contact_name',
         'emergency_contact_phone',
+        'is_approved',
+        'approved_at',
+        'approved_by',
     ];
 
     /**
@@ -81,6 +84,8 @@ class User extends Authenticatable
             'tanggal_keluar' => 'date',
             'gaji_pokok' => 'decimal:2',
             'jumlah_tanggungan' => 'integer',
+            'is_approved' => 'boolean',
+            'approved_at' => 'datetime',
         ];
     }
 

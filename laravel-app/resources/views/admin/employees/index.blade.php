@@ -111,6 +111,14 @@
                         <span class="mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold"
                             x-bind:class="faceStatus[{{ $employee->id }}] ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-200'"
                             x-text="faceStatus[{{ $employee->id }}] ? 'Face: Terdaftar' : 'Face: Belum'"></span>
+                        @if(!$employee->is_approved)
+                        <div class="mt-2">
+                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 px-2.5 py-1 text-[11px] font-bold">
+                                <span class="material-icons-round text-[12px]">hourglass_top</span>
+                                Menunggu Persetujuan
+                            </span>
+                        </div>
+                        @endif
                     </div>
 
                     <div class="mb-6 space-y-3">
@@ -129,6 +137,28 @@
                     </div>
 
                     <div class="space-y-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+                        @if(!$employee->is_approved)
+                        <div class="flex gap-2 mb-2">
+                            <form action="{{ route('employees.approve', $employee->id) }}" method="POST" class="flex-1">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full flex items-center justify-center gap-1 rounded-xl bg-emerald-50 py-2 text-xs font-bold text-emerald-700 transition-colors hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300 dark:hover:bg-emerald-900/40">
+                                    <span class="material-icons-round text-[14px]">check_circle</span>
+                                    Setujui
+                                </button>
+                            </form>
+                            <form action="{{ route('employees.reject', $employee->id) }}" method="POST" class="flex-1"
+                                onsubmit="return confirm('Tolak pendaftaran {{ $employee->name }}? Akun akan dihapus.')">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full flex items-center justify-center gap-1 rounded-xl bg-rose-50 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-300 dark:hover:bg-rose-900/40">
+                                    <span class="material-icons-round text-[14px]">cancel</span>
+                                    Tolak
+                                </button>
+                            </form>
+                        </div>
+                        @endif
+
                         <button type="button"
                             data-id="{{ $employee->id }}"
                             data-name="{{ $employee->name }}"
