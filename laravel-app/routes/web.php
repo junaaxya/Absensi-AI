@@ -39,6 +39,10 @@ use App\Http\Controllers\AdminRecruitmentController;
 use App\Http\Controllers\AdminSalaryComponentController;
 use App\Http\Controllers\AdminRateManagementController;
 use App\Http\Controllers\AdminPayrollTemplateController;
+use App\Http\Controllers\ViolationHistoryController;
+use App\Http\Controllers\MyAssetController;
+use App\Http\Controllers\PayslipController;
+use App\Http\Controllers\MyTaskController;
 
 
 Route::get('/', function () {
@@ -105,6 +109,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/forms/submissions/{submission}', [FormController::class, 'showSubmission'])->name('forms.submission.show');
     Route::post('/forms/submissions/{submission}/comment', [FormController::class, 'addComment'])->name('forms.submission.comment');
 
+    // RIWAYAT PELANGGARAN (user-facing)
+    Route::get('/my-violations', [ViolationHistoryController::class, 'index'])->name('violations.index');
+
+    // ASET SAYA (user-facing)
+    Route::get('/my-assets', [MyAssetController::class, 'index'])->name('my-assets.index');
+
     // TRAINING (user-facing)
     Route::get('/training', [TrainingController::class, 'index'])->name('training.index');
     Route::get('/training/my-courses', [TrainingController::class, 'myCourses'])->name('training.my-courses');
@@ -113,6 +123,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/training/{course}/enroll', [TrainingController::class, 'enroll'])->name('training.enroll');
     Route::get('/training/{course}/learn', [TrainingController::class, 'learn'])->name('training.learn');
     Route::post('/training/material/{material}/complete', [TrainingController::class, 'markMaterialComplete'])->name('training.material.complete');
+
+    // SLIP GAJI (user-facing)
+    Route::get('/my-payslips', [PayslipController::class, 'index'])->name('payslips.index');
+    Route::get('/my-payslips/{detail}', [PayslipController::class, 'show'])->name('payslips.show');
+    Route::get('/my-payslips/{detail}/download', [PayslipController::class, 'download'])->name('payslips.download');
+
+    // TASK SAYA (user-facing)
+    Route::get('/my-tasks', [MyTaskController::class, 'index'])->name('my-tasks.index');
+    Route::get('/my-tasks/{task}', [MyTaskController::class, 'show'])->name('my-tasks.show');
+    Route::put('/my-tasks/{task}/status', [MyTaskController::class, 'updateStatus'])->name('my-tasks.update-status');
+    Route::post('/my-tasks/{task}/comment', [MyTaskController::class, 'addComment'])->name('my-tasks.comment');
+    Route::post('/my-tasks/{task}/start-timer', [MyTaskController::class, 'startTimer'])->name('my-tasks.start-timer');
+    Route::post('/my-tasks/{task}/stop-timer', [MyTaskController::class, 'stopTimer'])->name('my-tasks.stop-timer');
 
     // ADMIN ONLY
     Route::middleware(AdminOnly::class)->group(function () {

@@ -267,6 +267,32 @@
         </section>
         @endif
 
+        <!-- SALDO CUTI -->
+        @if(isset($leaveBalances) && $leaveBalances->count() > 0)
+        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark p-6 shadow-sm">
+            <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
+                <span class="material-icons-round text-lavender-600" style="color: #D4C5E2;">event_available</span>
+                Saldo Cuti Tahun {{ now()->year }}
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                @foreach($leaveBalances as $balance)
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">
+                        {{ $balance->leaveType->name ?? 'Cuti' }}
+                    </p>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-2xl font-bold text-slate-900 dark:text-white">{{ $balance->remaining }}</span>
+                        <span class="text-xs text-slate-400">/ {{ $balance->quota }} hari</span>
+                    </div>
+                    @if($balance->used > 0)
+                    <p class="text-[11px] text-slate-400 mt-1">{{ $balance->used }} hari terpakai</p>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+        </section>
+        @endif
+
         <!-- ACTIVE VISIT SECTION -->
         @if(isset($activeVisit) && $activeVisit)
         <section x-data="visitTracker({{ $activeVisit->id }})" class="rounded-3xl border border-sky-200 dark:border-sky-800 bg-white dark:bg-card-dark p-6 shadow-sm">

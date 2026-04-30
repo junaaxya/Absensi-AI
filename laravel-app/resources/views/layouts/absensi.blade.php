@@ -160,6 +160,24 @@
                 <span>Izin & Cuti</span>
             </a>
 
+            <a href="{{ route('payslips.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('payslips.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>Slip Gaji</span>
+            </a>
+
+            <a href="{{ route('my-tasks.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('my-tasks.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                <span>Task Saya</span>
+            </a>
+
             <a href="{{ route('tickets.index') }}"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('tickets.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -196,7 +214,25 @@
                 <span>Profil Saya</span>
             </a>
 
-            @if(Auth::user()->role === 'admin')
+            <a href="{{ route('violations.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('violations.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                <span>Pelanggaran</span>
+            </a>
+
+            <a href="{{ route('my-assets.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('my-assets.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                <span>Aset Saya</span>
+            </a>
+
+            @hasanyrole('Direktur|Vice President|Manager|Supervisor|Team Leader')
                 <div class="pt-6 pb-2">
                     <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Administrator</p>
                 </div>
@@ -227,7 +263,7 @@
                     </svg>
                     <span>Laporan Absensi</span>
                 </a>
-            @endif
+            @endhasanyrole
         </nav>
 
         <!-- Sidebar Footer -->
@@ -239,7 +275,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ Auth::user()->name }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate capitalize">{{ Auth::user()->role }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate capitalize">{{ Auth::user()->getRoleNames()->first() ?? '-' }}</p>
                 </div>
             </div>
             <form method="POST" action="{{ route('logout') }}">
@@ -319,7 +355,7 @@
             <span class="text-[10px] font-medium">Tiket</span>
         </a>
 
-        @if(Auth::user()->role === 'admin')
+        @hasanyrole('Direktur|Vice President|Manager|Supervisor|Team Leader')
             <a href="{{ route('employees.index') }}"
                 class="flex flex-col items-center justify-center w-full h-full gap-1 pt-2 transition-all {{ request()->routeIs('employees.*') ? 'text-emerald-600 dark:text-primary' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300' }}">
                 <div
@@ -331,7 +367,7 @@
                 </div>
                 <span class="text-[10px] font-medium">Admin</span>
             </a>
-        @endif
+        @endhasanyrole
 
         <a href="{{ route('profile.edit') }}"
             class="flex flex-col items-center justify-center w-full h-full gap-1 pt-2 transition-all {{ request()->routeIs('profile.edit') ? 'text-emerald-600 dark:text-primary' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300' }}">

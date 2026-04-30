@@ -126,6 +126,11 @@ class AttendanceController extends Controller
 
         $leaveTypes = LeaveType::active()->get();
 
+        $leaveBalances = \App\Models\LeaveBalance::where('user_id', $user->id)
+            ->where('year', now()->year)
+            ->with('leaveType')
+            ->get();
+
         return view('dashboard', [
             'user' => $user,
             'attendanceToday' => $attendanceToday,
@@ -149,6 +154,7 @@ class AttendanceController extends Controller
             'activeVisit' => $activeVisit,
             'visitHistory' => $visitHistory,
             'leaveTypes' => $leaveTypes,
+            'leaveBalances' => $leaveBalances,
         ]);
 
     }
