@@ -139,15 +139,52 @@
                                                 <div class="flex items-center justify-center gap-4">
                                                     <span class="text-sm font-medium text-slate-500 w-10">{{ $bal->quota }}</span>
                                                     <span class="text-sm font-medium {{ $bal->used > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-slate-400' }} w-10">{{ $bal->used }}</span>
-                                                    <form method="POST" action="{{ route('admin.leave-balances.update', $bal->id) }}" class="inline-flex items-center gap-1.5 w-20">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <input type="number" name="remaining" value="{{ $bal->remaining }}" min="0"
-                                                            class="w-14 text-center text-sm font-bold rounded-lg border-2 border-emerald-300 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 py-1.5 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all">
-                                                        <button type="submit" class="w-7 h-7 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center transition-all shadow-sm shrink-0" title="Simpan perubahan">
-                                                            <span class="material-icons-round text-[16px]">check</span>
+                                                    
+                                                    <div x-data="{ 
+                                                            editing: false, 
+                                                            value: {{ $bal->remaining }} 
+                                                        }" 
+                                                        @click.away="editing = false"
+                                                        class="relative flex items-center justify-center w-24">
+                                                        
+                                                        {{-- Display Mode --}}
+                                                        <button 
+                                                            x-show="!editing" 
+                                                            @click="editing = true; $nextTick(() => $refs.input.focus())"
+                                                            class="group flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors w-full cursor-pointer"
+                                                            title="Klik untuk ubah">
+                                                            <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400" x-text="value"></span>
+                                                            <span class="material-icons-round text-[14px] text-slate-300 group-hover:text-emerald-500 transition-colors opacity-0 group-hover:opacity-100">edit</span>
                                                         </button>
-                                                    </form>
+
+                                                        {{-- Edit Mode --}}
+                                                        <form 
+                                                            x-show="editing" 
+                                                            style="display: none;"
+                                                            method="POST" 
+                                                            action="{{ route('admin.leave-balances.update', $bal->id) }}" 
+                                                            class="absolute z-20 flex items-center bg-white dark:bg-gray-800 p-1.5 rounded-2xl shadow-soft border border-slate-200 dark:border-slate-700 -ml-8">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <input 
+                                                                x-ref="input"
+                                                                type="number" 
+                                                                name="remaining" 
+                                                                x-model="value" 
+                                                                min="0"
+                                                                class="w-16 text-center text-sm font-bold rounded-xl border-0 bg-slate-50 dark:bg-slate-900/50 text-emerald-700 dark:text-emerald-300 py-1.5 focus:ring-0"
+                                                                @keydown.escape.prevent="editing = false; value = {{ $bal->remaining }}"
+                                                            >
+                                                            <div class="flex items-center ml-1">
+                                                                <button type="submit" class="w-8 h-8 rounded-xl bg-sage hover:bg-sage/90 text-emerald-800 flex items-center justify-center transition-all">
+                                                                    <span class="material-icons-round text-[16px]">check</span>
+                                                                </button>
+                                                                <button type="button" @click="editing = false; value = {{ $bal->remaining }}" class="w-8 h-8 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center justify-center transition-all ml-0.5">
+                                                                    <span class="material-icons-round text-[16px]">close</span>
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             @else
                                                 <span class="text-xs text-slate-300 italic">—</span>

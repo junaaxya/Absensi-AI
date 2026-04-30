@@ -55,13 +55,11 @@ class AdminLeaveBalanceController extends Controller
             'remaining' => 'required|integer|min:0',
         ]);
 
-        $diff = $request->remaining - $leaveBalance->remaining;
         $leaveBalance->update([
-            'remaining' => $request->remaining,
-            'used' => max(0, $leaveBalance->used - $diff),
+            'remaining' => (int) $request->remaining,
         ]);
 
-        return back()->with('success', 'Saldo cuti berhasil diperbarui.');
+        return back()->with('success', "Saldo cuti berhasil diperbarui menjadi {$request->remaining} hari.");
     }
 
     public function initialize(Request $request)
