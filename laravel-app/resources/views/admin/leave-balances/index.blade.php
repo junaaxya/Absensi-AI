@@ -50,7 +50,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-5">
             <div>
                 <h2 class="text-lg font-bold text-slate-900 dark:text-white">Saldo Cuti — {{ $year }}</h2>
-                <p class="text-xs text-slate-500 mt-0.5">Edit kolom "Sisa" untuk menyesuaikan saldo manual</p>
+                <p class="text-xs text-slate-500 mt-0.5">Klik angka sisa untuk mengubah, lalu tekan tombol simpan</p>
             </div>
 
             <div class="flex items-center gap-2 flex-wrap">
@@ -97,14 +97,21 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-                                <th class="px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider sticky left-0 bg-slate-50 dark:bg-slate-800/50 z-10">Karyawan</th>
+                                <th class="px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider sticky left-0 bg-slate-50 dark:bg-slate-800/50 z-10 min-w-[180px]">Karyawan</th>
                                 @foreach($leaveTypes->where('is_active', true) as $lt)
-                                    <th class="px-3 py-3.5 text-center min-w-[140px]">
-                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300 block">{{ $lt->name }}</span>
-                                        <div class="flex justify-center gap-3 mt-1.5">
-                                            <span class="text-[9px] font-medium text-slate-400 w-8">Kuota</span>
-                                            <span class="text-[9px] font-medium text-slate-400 w-8">Pakai</span>
-                                            <span class="text-[9px] font-medium text-sage w-16">Sisa ✎</span>
+                                    <th class="px-4 py-3.5 text-center min-w-[200px]">
+                                        <div class="flex items-center justify-center gap-1.5 mb-1">
+                                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $lt->name }}</span>
+                                            @if($lt->is_paid)
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-sage/20 text-emerald-700 dark:text-emerald-400" title="Gaji tetap dibayar saat cuti ini diambil">💰</span>
+                                            @else
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-peach/20 text-orange-700 dark:text-orange-400" title="Gaji dipotong proporsional saat cuti ini diambil">✂️</span>
+                                            @endif
+                                        </div>
+                                        <div class="flex justify-center gap-4 mt-1">
+                                            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider w-10">Kuota</span>
+                                            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider w-10">Pakai</span>
+                                            <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider w-20">Sisa</span>
                                         </div>
                                     </th>
                                 @endforeach
@@ -114,9 +121,9 @@
                             @forelse($employees as $employee)
                                 @php $empBalances = $balances[$employee->id] ?? collect(); @endphp
                                 <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
-                                    <td class="px-5 py-3 sticky left-0 bg-white dark:bg-gray-800 z-10">
+                                    <td class="px-5 py-3.5 sticky left-0 bg-white dark:bg-gray-800 z-10">
                                         <div class="flex items-center gap-2.5">
-                                            <div class="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                                            <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden shrink-0">
                                                 <img src="{{ $employee->profile_photo_url }}" class="w-full h-full object-cover">
                                             </div>
                                             <div>
@@ -127,23 +134,23 @@
                                     </td>
                                     @foreach($leaveTypes->where('is_active', true) as $lt)
                                         @php $bal = $empBalances->firstWhere('leave_type_id', $lt->id); @endphp
-                                        <td class="px-3 py-3 text-center">
+                                        <td class="px-4 py-3.5 text-center">
                                             @if($bal)
-                                                <div class="flex items-center justify-center gap-3">
-                                                    <span class="text-xs text-slate-500 w-8">{{ $bal->quota }}</span>
-                                                    <span class="text-xs text-slate-400 w-8">{{ $bal->used }}</span>
-                                                    <form method="POST" action="{{ route('admin.leave-balances.update', $bal->id) }}" class="inline-flex items-center gap-1">
+                                                <div class="flex items-center justify-center gap-4">
+                                                    <span class="text-sm font-medium text-slate-500 w-10">{{ $bal->quota }}</span>
+                                                    <span class="text-sm font-medium {{ $bal->used > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-slate-400' }} w-10">{{ $bal->used }}</span>
+                                                    <form method="POST" action="{{ route('admin.leave-balances.update', $bal->id) }}" class="inline-flex items-center gap-1.5 w-20">
                                                         @csrf
                                                         @method('PATCH')
                                                         <input type="number" name="remaining" value="{{ $bal->remaining }}" min="0"
-                                                            class="w-12 text-center text-xs font-bold rounded-lg border border-sage/40 bg-sage/5 dark:bg-sage/10 dark:text-white py-1 focus:ring-2 focus:ring-sage focus:border-sage transition-all">
-                                                        <button type="submit" class="w-5 h-5 rounded bg-sage/30 text-emerald-700 dark:text-emerald-400 hover:bg-sage/50 flex items-center justify-center transition-all" title="Simpan">
-                                                            <span class="material-icons-round text-[12px]">check</span>
+                                                            class="w-14 text-center text-sm font-bold rounded-lg border-2 border-emerald-300 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 py-1.5 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all">
+                                                        <button type="submit" class="w-7 h-7 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center transition-all shadow-sm shrink-0" title="Simpan perubahan">
+                                                            <span class="material-icons-round text-[16px]">check</span>
                                                         </button>
                                                     </form>
                                                 </div>
                                             @else
-                                                <span class="text-[10px] text-slate-300">belum diinisialisasi</span>
+                                                <span class="text-xs text-slate-300 italic">—</span>
                                             @endif
                                         </td>
                                     @endforeach
@@ -158,6 +165,13 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                {{-- Legend --}}
+                <div class="px-5 py-3 border-t border-slate-100 dark:border-slate-700 flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
+                    <span class="font-semibold text-slate-600 dark:text-slate-400">Keterangan:</span>
+                    <span class="flex items-center gap-1"><span class="text-[10px]">💰</span> Berbayar = gaji tetap dibayar penuh saat cuti</span>
+                    <span class="flex items-center gap-1"><span class="text-[10px]">✂️</span> Tidak Berbayar = gaji dipotong proporsional</span>
                 </div>
 
                 @if($employees->hasPages())
@@ -197,6 +211,36 @@
             </button>
         </div>
 
+        {{-- Info Banner: Penjelasan Berbayar vs Tidak Berbayar --}}
+        <div class="mb-5 bg-sky/10 border border-sky/30 rounded-2xl p-4">
+            <div class="flex items-start gap-3">
+                <span class="material-icons-round text-blue-600 text-[20px] mt-0.5 shrink-0">info</span>
+                <div>
+                    <p class="text-sm font-bold text-blue-800 dark:text-blue-300 mb-1.5">Apa arti "Berbayar" dan "Tidak Berbayar"?</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="bg-white dark:bg-slate-800 rounded-xl p-3 border border-sage/30">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-base">💰</span>
+                                <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400">Berbayar (Paid Leave)</span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                                Karyawan tetap menerima <strong>gaji penuh</strong> selama mengambil cuti ini. Contoh: Cuti Tahunan, Cuti Sakit, Cuti Melahirkan.
+                            </p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 rounded-xl p-3 border border-peach/30">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-base">✂️</span>
+                                <span class="text-xs font-bold text-orange-700 dark:text-orange-400">Tidak Berbayar (Unpaid Leave)</span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                                Gaji karyawan akan <strong>dipotong proporsional</strong> sesuai jumlah hari cuti yang diambil. Contoh: Izin Pribadi.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Leave Types Grid --}}
         @if($leaveTypes->count() > 0)
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -219,12 +263,13 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-4 mt-3">
+                        <div class="flex items-center gap-3 mt-3">
                             <div class="flex items-center gap-1.5">
                                 <span class="material-icons-round text-[14px] text-slate-400">event</span>
-                                <span class="text-sm font-bold text-slate-700 dark:text-slate-300">{{ $lt->days_quota }} hari</span>
+                                <span class="text-sm font-bold text-slate-700 dark:text-slate-300">{{ $lt->days_quota }} hari/tahun</span>
                             </div>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold {{ $lt->is_paid ? 'bg-sage/20 text-emerald-700 dark:text-emerald-400' : 'bg-peach/20 text-orange-700 dark:text-orange-400' }}">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold {{ $lt->is_paid ? 'bg-sage/20 text-emerald-700 dark:text-emerald-400' : 'bg-peach/20 text-orange-700 dark:text-orange-400' }}">
+                                <span class="text-xs">{{ $lt->is_paid ? '💰' : '✂️' }}</span>
                                 {{ $lt->is_paid ? 'Berbayar' : 'Tidak Berbayar' }}
                             </span>
                             @if(!$lt->is_active)
@@ -233,6 +278,9 @@
                                 </span>
                             @endif
                         </div>
+                        <p class="text-[11px] text-slate-400 mt-2">
+                            {{ $lt->is_paid ? 'Gaji tetap dibayar penuh saat cuti ini diambil' : 'Gaji dipotong proporsional sesuai hari cuti' }}
+                        </p>
                     </div>
                 @endforeach
             </div>
@@ -279,16 +327,19 @@
                             <input type="number" name="days_quota" required min="0" placeholder="12"
                                 class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-sage focus:border-sage dark:text-white">
                         </div>
-                        <div class="flex items-center gap-4">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="hidden" name="is_paid" value="0">
-                                <input type="checkbox" name="is_paid" value="1" checked class="rounded border-slate-300 text-sage focus:ring-sage">
-                                <span class="text-sm text-slate-700 dark:text-slate-300">Berbayar</span>
-                            </label>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="hidden" name="is_paid" value="0">
+                                    <input type="checkbox" name="is_paid" value="1" checked class="rounded border-slate-300 text-sage focus:ring-sage">
+                                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">💰 Berbayar (Paid Leave)</span>
+                                </label>
+                                <p class="text-[11px] text-slate-400 ml-6 mt-0.5">Centang jika gaji tetap dibayar penuh saat karyawan mengambil cuti ini. Hapus centang jika gaji dipotong.</p>
+                            </div>
                             <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="hidden" name="is_active" value="0">
                                 <input type="checkbox" name="is_active" value="1" checked class="rounded border-slate-300 text-sage focus:ring-sage">
-                                <span class="text-sm text-slate-700 dark:text-slate-300">Aktif</span>
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Aktif</span>
                             </label>
                         </div>
                         <button type="submit" class="w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-md">
@@ -332,16 +383,19 @@
                             <input type="number" name="days_quota" x-model="editData.days_quota" required min="0"
                                 class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-sage focus:border-sage dark:text-white">
                         </div>
-                        <div class="flex items-center gap-4">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="hidden" name="is_paid" value="0">
-                                <input type="checkbox" name="is_paid" value="1" :checked="editData.is_paid" class="rounded border-slate-300 text-sage focus:ring-sage">
-                                <span class="text-sm text-slate-700 dark:text-slate-300">Berbayar</span>
-                            </label>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="hidden" name="is_paid" value="0">
+                                    <input type="checkbox" name="is_paid" value="1" :checked="editData.is_paid" class="rounded border-slate-300 text-sage focus:ring-sage">
+                                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">💰 Berbayar (Paid Leave)</span>
+                                </label>
+                                <p class="text-[11px] text-slate-400 ml-6 mt-0.5">Centang jika gaji tetap dibayar penuh saat karyawan mengambil cuti ini. Hapus centang jika gaji dipotong.</p>
+                            </div>
                             <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="hidden" name="is_active" value="0">
                                 <input type="checkbox" name="is_active" value="1" :checked="editData.is_active" class="rounded border-slate-300 text-sage focus:ring-sage">
-                                <span class="text-sm text-slate-700 dark:text-slate-300">Aktif</span>
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Aktif</span>
                             </label>
                         </div>
                         <button type="submit" class="w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-md">
