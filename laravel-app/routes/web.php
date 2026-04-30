@@ -382,6 +382,12 @@ Route::middleware(['auth', 'approved'])->group(function () {
                 ->name('admin.leave-balances.update');
             Route::post('/admin/leave-balances/initialize', [AdminLeaveBalanceController::class, 'initialize'])
                 ->name('admin.leave-balances.initialize');
+            Route::post('/admin/leave-balances/leave-types', [AdminLeaveBalanceController::class, 'storeLeaveType'])
+                ->name('admin.leave-balances.leave-types.store');
+            Route::patch('/admin/leave-balances/leave-types/{leaveType}', [AdminLeaveBalanceController::class, 'updateLeaveType'])
+                ->name('admin.leave-balances.leave-types.update');
+            Route::delete('/admin/leave-balances/leave-types/{leaveType}', [AdminLeaveBalanceController::class, 'destroyLeaveType'])
+                ->name('admin.leave-balances.leave-types.destroy');
         });
 
         // RECRUITMENT - requires manage_recruitment
