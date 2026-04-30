@@ -19,11 +19,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Tambahkan ini agar semua URL yang digenerate Laravel otomatis pakai HTTPS dan prefix yang benar
         if (config('app.env') === 'production') {
             \URL::forceScheme('https');
-            // Jika butuh paksa root folder ke /absensi
-            // \URL::forceRootUrl(config('app.url')); 
         }
+
+        \Illuminate\Support\Facades\View::composer(
+            'layouts.admin',
+            \App\View\Composers\AdminSidebarComposer::class
+        );
     }
 }

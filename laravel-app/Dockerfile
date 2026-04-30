@@ -29,7 +29,7 @@ WORKDIR /var/www/html
 COPY composer.json composer.lock ./
 
 # Install PHP dependencies (tanpa scripts dulu)
-RUN composer install --no-scripts --no-autoloader --prefer-dist --no-dev
+RUN composer install --no-scripts --no-autoloader --prefer-dist
 
 # Copy package.json for npm (gunakan npm install karena tidak ada package-lock.json)
 COPY package.json ./
@@ -49,6 +49,12 @@ RUN npm run build
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Configure PHP upload limits
+RUN echo "upload_max_filesize = 20M" > /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size = 25M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_execution_time = 120" >> /usr/local/etc/php/conf.d/uploads.ini
 
 # Configure Apache
 RUN a2enmod rewrite

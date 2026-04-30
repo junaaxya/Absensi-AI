@@ -206,7 +206,7 @@ class AdminSystemSettingController extends Controller
             'company_address' => 'nullable|string',
             'company_phone' => 'nullable|string|max:30',
             'company_email' => 'nullable|email|max:255',
-            'company_logo' => 'nullable|image|mimes:jpg,jpeg,png,svg|max:2048',
+            'company_logo' => 'nullable|image|mimes:jpg,jpeg,png,svg|max:10240',
             'company_website' => 'nullable|url|max:255',
             'company_npwp' => 'nullable|string|max:30',
         ]);

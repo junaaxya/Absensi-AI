@@ -74,7 +74,7 @@
                                     <input type="file" name="company_logo" accept="image/jpg,image/jpeg,image/png,image/svg+xml"
                                         class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition-all" />
                                 </div>
-                                <p class="text-xs text-slate-400 mt-1">Format: JPG, PNG, SVG. Maks 2MB.</p>
+                                <p class="text-xs text-slate-400 mt-1">Format: JPG, PNG, SVG. Maks 10MB. Disarankan ukuran &lt; 2MB untuk performa optimal.</p>
                             </div>
 
                             <div class="flex gap-3 pt-4">

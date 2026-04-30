@@ -124,6 +124,9 @@
                         <span class="flex items-center gap-2">
                             <span class="material-icons-round text-[18px]">schedule</span>
                             <span class="text-[10px] font-bold uppercase tracking-widest">Kehadiran</span>
+                            @if(($sidebarBadges['pending_izin'] ?? 0) > 0 && !app('request')->is('admin/absence*'))
+                            <span class="min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold" x-show="!isOpen('kehadiran')">{{ $sidebarBadges['pending_izin'] }}</span>
+                            @endif
                         </span>
                         <span class="material-icons-round text-[16px] transition-transform duration-200" :class="isOpen('kehadiran') ? 'rotate-180' : ''">expand_more</span>
                     </button>
@@ -139,7 +142,10 @@
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('admin.absence.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
                             href="{{ route('admin.absence.index') }}">
                             <span class="material-icons-round text-[18px] {{ request()->routeIs('admin.absence.*') ? 'filled-icon' : '' }}">event_busy</span>
-                            Ketidakhadiran
+                            <span class="flex-1">Ketidakhadiran</span>
+                            @if(($sidebarBadges['pending_izin'] ?? 0) > 0)
+                            <span class="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-bold">{{ $sidebarBadges['pending_izin'] }}</span>
+                            @endif
                         </a>
                         @endcan
                         @can('view_visit_attendance')
@@ -184,6 +190,9 @@
                         <span class="flex items-center gap-2">
                             <span class="material-icons-round text-[18px]">badge</span>
                             <span class="text-[10px] font-bold uppercase tracking-widest">Kepegawaian</span>
+                            @if(($sidebarBadges['pending_approval'] ?? 0) > 0 && !app('request')->is('employees*'))
+                            <span class="min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-amber-500 text-white text-[9px] font-bold" x-show="!isOpen('kepegawaian')">{{ $sidebarBadges['pending_approval'] }}</span>
+                            @endif
                         </span>
                         <span class="material-icons-round text-[16px] transition-transform duration-200" :class="isOpen('kepegawaian') ? 'rotate-180' : ''">expand_more</span>
                     </button>
@@ -192,7 +201,10 @@
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('employees.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
                             href="{{ route('employees.index') }}">
                             <span class="material-icons-round text-[18px] {{ request()->routeIs('employees.*') ? 'filled-icon' : '' }}">groups</span>
-                            Data Karyawan
+                            <span class="flex-1">Data Karyawan</span>
+                            @if(($sidebarBadges['pending_approval'] ?? 0) > 0)
+                            <span class="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-amber-500 text-white text-[10px] font-bold">{{ $sidebarBadges['pending_approval'] }}</span>
+                            @endif
                         </a>
                         @endcan
                         @can('manage_recruitment')
@@ -265,11 +277,15 @@
                 {{-- ═══════════════════════════════════════ --}}
                 @canany(['manage_projects', 'manage_tickets', 'manage_forms', 'manage_training', 'manage_announcements'])
                 <div>
+                    @php $opsBadgeTotal = ($sidebarBadges['open_tickets'] ?? 0) + ($sidebarBadges['pending_forms'] ?? 0); @endphp
                     <button @click="toggle('operasional')"
                         class="w-full flex items-center justify-between px-4 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                         <span class="flex items-center gap-2">
                             <span class="material-icons-round text-[18px]">work</span>
                             <span class="text-[10px] font-bold uppercase tracking-widest">Operasional</span>
+                            @if($opsBadgeTotal > 0)
+                            <span class="min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold" x-show="!isOpen('operasional')">{{ $opsBadgeTotal }}</span>
+                            @endif
                         </span>
                         <span class="material-icons-round text-[16px] transition-transform duration-200" :class="isOpen('operasional') ? 'rotate-180' : ''">expand_more</span>
                     </button>
@@ -285,14 +301,20 @@
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('admin.tickets.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
                             href="{{ route('admin.tickets.index') }}">
                             <span class="material-icons-round text-[18px] {{ request()->routeIs('admin.tickets.*') ? 'filled-icon' : '' }}">confirmation_number</span>
-                            Tiket Layanan
+                            <span class="flex-1">Tiket Layanan</span>
+                            @if(($sidebarBadges['open_tickets'] ?? 0) > 0)
+                            <span class="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-bold">{{ $sidebarBadges['open_tickets'] }}</span>
+                            @endif
                         </a>
                         @endcan
                         @can('manage_forms')
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('admin.forms.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
                             href="{{ route('admin.forms.index') }}">
                             <span class="material-icons-round text-[18px] {{ request()->routeIs('admin.forms.*') ? 'filled-icon' : '' }}">dynamic_form</span>
-                            Form Internal
+                            <span class="flex-1">Form Internal</span>
+                            @if(($sidebarBadges['pending_forms'] ?? 0) > 0)
+                            <span class="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-bold">{{ $sidebarBadges['pending_forms'] }}</span>
+                            @endif
                         </a>
                         @endcan
                         @can('manage_training')
