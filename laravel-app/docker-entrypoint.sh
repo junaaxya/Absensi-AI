@@ -15,6 +15,10 @@ fix_permissions() {
 
 fix_permissions
 
+echo "🔗 Ensuring storage symlink..."
+php artisan storage:link --force 2>/dev/null || true
+echo "✅ Storage symlink ready"
+
 echo "📦 Checking Vite build..."
 if [ ! -f /var/www/html/public/build/manifest.json ]; then
     echo "⚡ Building Vite assets..."
