@@ -39,6 +39,19 @@
             </div>
         </div>
 
+        {{-- Info Banner --}}
+        <div class="bg-sky/10 border border-sky/30 rounded-2xl p-4 flex items-start gap-3">
+            <span class="material-icons-round text-blue-600 text-[20px] mt-0.5 shrink-0">info</span>
+            <div>
+                <p class="text-sm font-bold text-blue-800 dark:text-blue-300 mb-1">Cara Menggunakan</p>
+                <ul class="text-xs text-slate-600 dark:text-slate-400 space-y-1 leading-relaxed">
+                    <li>1. Klik <strong>"Inisialisasi {{ $year }}"</strong> untuk membuat saldo cuti semua karyawan aktif (hanya perlu sekali per tahun)</li>
+                    <li>2. Kolom <strong>"Sisa"</strong> bisa diedit langsung — ubah angka lalu klik tombol <span class="inline-flex items-center"><span class="material-icons-round text-[12px] text-emerald-600">save</span></span> untuk menyimpan</li>
+                    <li>3. Saldo otomatis berkurang saat pengajuan cuti karyawan disetujui</li>
+                </ul>
+            </div>
+        </div>
+
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -78,25 +91,25 @@
                                     @php
                                         $bal = $empBalances->firstWhere('leave_type_id', $lt->id);
                                     @endphp
-                                    <td class="px-2 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                                    <td class="px-2 py-4 text-center text-sm font-medium text-gray-700 dark:text-gray-300">
                                         {{ $bal ? $bal->quota : '-' }}
                                     </td>
-                                    <td class="px-2 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                                    <td class="px-2 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                         {{ $bal ? $bal->used : '-' }}
                                     </td>
                                     <td class="px-2 py-4 text-center">
                                         @if($bal)
-                                            <form method="POST" action="{{ route('admin.leave-balances.update', $bal->id) }}" class="inline-flex items-center gap-1">
+                                            <form method="POST" action="{{ route('admin.leave-balances.update', $bal->id) }}" class="inline-flex items-center gap-1.5">
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="number" name="remaining" value="{{ $bal->remaining }}" min="0"
-                                                    class="w-14 text-center text-sm font-bold rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white py-1 focus:ring-2 focus:ring-primary/50">
-                                                <button type="submit" class="w-6 h-6 rounded bg-primary/20 text-primary hover:bg-primary/40 flex items-center justify-center transition" title="Simpan">
-                                                    <span class="material-icons-round text-sm">save</span>
+                                                    class="w-16 text-center text-sm font-bold rounded-lg border-2 border-sage/50 dark:border-sage/30 bg-sage/5 dark:bg-sage/10 dark:text-white py-1.5 focus:ring-2 focus:ring-sage focus:border-sage transition-all">
+                                                <button type="submit" class="w-7 h-7 rounded-lg bg-sage/30 text-emerald-700 dark:text-emerald-400 hover:bg-sage/50 flex items-center justify-center transition-all shadow-sm" title="Simpan perubahan sisa cuti">
+                                                    <span class="material-icons-round text-[16px]">save</span>
                                                 </button>
                                             </form>
                                         @else
-                                            <span class="text-gray-300">-</span>
+                                            <span class="text-gray-300 text-xs">-</span>
                                         @endif
                                     </td>
                                 @endforeach

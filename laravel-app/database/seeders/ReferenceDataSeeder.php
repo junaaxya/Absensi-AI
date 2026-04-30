@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\AssetCategory;
 use App\Models\Department;
+use App\Models\LeaveType;
 use App\Models\TicketCategory;
 use Illuminate\Database\Seeder;
 
@@ -18,6 +19,7 @@ class ReferenceDataSeeder extends Seeder
         $this->seedDepartments();
         $this->seedAssetCategories();
         $this->seedTicketCategories();
+        $this->seedLeaveTypes();
     }
 
     private function seedDepartments(): void
@@ -215,6 +217,24 @@ class ReferenceDataSeeder extends Seeder
             TicketCategory::updateOrCreate(
                 ['code' => $cat['code']],
                 array_merge($cat, ['is_active' => true])
+            );
+        }
+    }
+
+    private function seedLeaveTypes(): void
+    {
+        $types = [
+            ['name' => 'Cuti Tahunan',    'code' => 'CT', 'days_quota' => 12, 'is_paid' => true],
+            ['name' => 'Cuti Sakit',       'code' => 'CS', 'days_quota' => 14, 'is_paid' => true],
+            ['name' => 'Cuti Melahirkan',  'code' => 'CM', 'days_quota' => 90, 'is_paid' => true],
+            ['name' => 'Izin Pribadi',     'code' => 'CI', 'days_quota' => 6,  'is_paid' => false],
+            ['name' => 'Cuti Besar',       'code' => 'CB', 'days_quota' => 30, 'is_paid' => true],
+        ];
+
+        foreach ($types as $type) {
+            LeaveType::updateOrCreate(
+                ['code' => $type['code']],
+                array_merge($type, ['is_active' => true])
             );
         }
     }
