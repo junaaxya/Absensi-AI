@@ -283,15 +283,15 @@
                     </a>
                     @endcan
                     @can('approve_team_izin')
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('admin.absence.*') || request()->routeIs('admin.izin.*') ? 'bg-peach/20 dark:bg-peach/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
-                        href="{{ route('admin.absence.index') }}">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('team.izin-approval') ? 'bg-peach/20 dark:bg-peach/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('team.izin-approval') }}">
                         <span class="material-icons-round text-[18px]">fact_check</span>
                         Approval Izin
                     </a>
                     @endcan
                     @can('view_team_attendance')
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('admin.attendance') || request()->routeIs('admin.attendance.*') ? 'bg-lavender/20 dark:bg-lavender/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
-                        href="{{ route('admin.attendance') }}">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('team.attendance') ? 'bg-lavender/20 dark:bg-lavender/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('team.attendance') }}">
                         <span class="material-icons-round text-[18px]">assessment</span>
                         Laporan Absensi
                     </a>
@@ -458,7 +458,7 @@
                         'keuangan': ['/my-payslips', '/my-assets'],
                         'pekerjaan': ['/my-tasks', '/tickets', '/forms', '/training'],
                         'akun': ['/profile'],
-                        'administrator': ['/admin', '/employees'],
+                        'administrator': ['/admin', '/employees', '/team'],
                     };
                     for (const [group, paths] of Object.entries(map)) {
                         if (paths.some(p => path.startsWith(p))) {

@@ -43,6 +43,7 @@ use App\Http\Controllers\ViolationHistoryController;
 use App\Http\Controllers\MyAssetController;
 use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\MyTaskController;
+use App\Http\Controllers\TeamController;
 
 
 Route::get('/', function () {
@@ -144,6 +145,16 @@ Route::middleware(['auth', 'approved'])->group(function () {
     Route::post('/my-tasks/{task}/comment', [MyTaskController::class, 'addComment'])->name('my-tasks.comment');
     Route::post('/my-tasks/{task}/start-timer', [MyTaskController::class, 'startTimer'])->name('my-tasks.start-timer');
     Route::post('/my-tasks/{task}/stop-timer', [MyTaskController::class, 'stopTimer'])->name('my-tasks.stop-timer');
+
+    // TEAM MANAGEMENT (non-admin, permission-gated)
+    Route::middleware(['permission:approve_team_izin'])->group(function () {
+        Route::get('/team/izin-approval', [TeamController::class, 'izinApproval'])->name('team.izin-approval');
+        Route::patch('/team/izin/{izin}/approve', [TeamController::class, 'approveIzin'])->name('team.izin.approve');
+        Route::patch('/team/izin/{izin}/reject', [TeamController::class, 'rejectIzin'])->name('team.izin.reject');
+    });
+    Route::middleware(['permission:view_team_attendance'])->group(function () {
+        Route::get('/team/attendance', [TeamController::class, 'attendance'])->name('team.attendance');
+    });
 
     // ADMIN ONLY
     Route::middleware(AdminOnly::class)->group(function () {
