@@ -38,6 +38,7 @@ use App\Http\Controllers\AdminCompanyController;
 use App\Http\Controllers\AdminRecruitmentController;
 use App\Http\Controllers\AdminSalaryComponentController;
 use App\Http\Controllers\AdminRateManagementController;
+use App\Http\Controllers\AdminPayrollTemplateController;
 
 
 Route::get('/', function () {
@@ -305,6 +306,11 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/admin/salary-components/validate-formula', [AdminSalaryComponentController::class, 'validateFormula'])->name('admin.salary-components.validate-formula');
             Route::post('/admin/salary-components/preview-formula', [AdminSalaryComponentController::class, 'previewFormula'])->name('admin.salary-components.preview-formula');
             Route::get('/admin/salary-components/variables', [AdminSalaryComponentController::class, 'variables'])->name('admin.salary-components.variables');
+
+            Route::get('/admin/payroll-templates', [AdminPayrollTemplateController::class, 'index'])->name('admin.payroll-templates.index');
+            Route::get('/admin/payroll-templates/{template}/preview', [AdminPayrollTemplateController::class, 'preview'])->name('admin.payroll-templates.preview');
+            Route::post('/admin/payroll-templates/{template}/apply', [AdminPayrollTemplateController::class, 'apply'])->name('admin.payroll-templates.apply');
+            Route::post('/admin/payroll-templates/applications/{application}/rollback', [AdminPayrollTemplateController::class, 'rollback'])->name('admin.payroll-templates.rollback');
 
             Route::get('/admin/rate-management', [AdminRateManagementController::class, 'index'])->name('admin.rate-management.index');
             Route::get('/admin/rate-management/bpjs', [AdminRateManagementController::class, 'bpjsRates'])->name('admin.rate-management.bpjs');

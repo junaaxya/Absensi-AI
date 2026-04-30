@@ -233,6 +233,11 @@
                             <span class="material-icons-round text-[18px] {{ request()->routeIs('admin.payroll.*') ? 'filled-icon' : '' }}">payments</span>
                             Payroll
                         </a>
+                        <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('admin.payroll-templates.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                            href="{{ route('admin.payroll-templates.index') }}">
+                            <span class="material-icons-round text-[18px] {{ request()->routeIs('admin.payroll-templates.*') ? 'filled-icon' : '' }}">library_books</span>
+                            Template Gaji
+                        </a>
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('admin.salary-components.*') ? 'bg-primary text-slate-900 font-bold shadow-sm shadow-primary/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
                             href="{{ route('admin.salary-components.index') }}">
                             <span class="material-icons-round text-[18px] {{ request()->routeIs('admin.salary-components.*') ? 'filled-icon' : '' }}">tune</span>
@@ -440,7 +445,7 @@
                     const map = {
                         'kehadiran': ['/admin/attendance', '/admin/absence', '/admin/visits', '/admin/leave-balances', '/admin/violations', '/admin/anomaly'],
                         'kepegawaian': ['/employees', '/admin/recruitment', '/admin/companies'],
-                        'keuangan': ['/admin/payroll', '/admin/salary-components', '/admin/rate-management', '/admin/assets'],
+                        'keuangan': ['/admin/payroll', '/admin/payroll-templates', '/admin/salary-components', '/admin/rate-management', '/admin/assets'],
                         'operasional': ['/admin/projects', '/admin/tickets', '/admin/forms', '/admin/training', '/admin/announcements'],
                         'pengaturan': ['/admin/settings', '/admin/audit-logs', '/admin/export']
                     };

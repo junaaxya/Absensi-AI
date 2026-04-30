@@ -12,11 +12,18 @@
             <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Komponen Gaji</h1>
             <p class="text-sm text-slate-500 mt-1">Kelola komponen penggajian karyawan</p>
         </div>
-        <a href="{{ route('admin.salary-components.create') }}"
-            class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-slate-900/20 active:scale-95 shrink-0">
-            <span class="material-icons-round text-lg">add</span>
-            Tambah Komponen
-        </a>
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="{{ route('admin.payroll-templates.index') }}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 rounded-xl font-semibold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+                <span class="material-icons-round text-lg">library_books</span>
+                Gunakan Template
+            </a>
+            <a href="{{ route('admin.salary-components.create') }}"
+                class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-slate-900/20 active:scale-95 shrink-0">
+                <span class="material-icons-round text-lg">add</span>
+                Tambah Komponen
+            </a>
+        </div>
     </div>
 
     @php

@@ -20,6 +20,8 @@ class SalaryComponent extends Model
         'is_fixed',
         'default_amount',
         'description',
+        'help_text',
+        'group_label',
         'is_active',
         'company_id',
         'value_type',
@@ -34,6 +36,8 @@ class SalaryComponent extends Model
         'effective_until',
         'version',
         'parent_id',
+        'source_template_id',
+        'source_template_item_id',
     ];
 
     protected $casts = [
