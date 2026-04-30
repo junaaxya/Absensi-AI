@@ -17,6 +17,42 @@
     </a>
 </div>
 
+{{-- B3: Page Guide --}}
+<div class="mb-6 bg-sky/10 dark:bg-sky/5 border border-sky/30 rounded-xl p-5">
+    <div class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-lg bg-sky/30 flex items-center justify-center flex-shrink-0">
+            <span class="material-icons-round text-blue-600 dark:text-blue-400 text-[18px]">school</span>
+        </div>
+        <div>
+            <h4 class="text-sm font-bold text-slate-800 dark:text-white mb-1.5">Tentang BPJS</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">BPJS adalah iuran jaminan sosial yang wajib dibayarkan perusahaan dan karyawan. Setiap program memiliki tarif iuran yang berbeda.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                    <span class="text-[11px] text-slate-600 dark:text-slate-400"><strong>JHT</strong> — Tabungan pensiun (dicairkan saat berhenti kerja)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                    <span class="text-[11px] text-slate-600 dark:text-slate-400"><strong>JKK</strong> — Perlindungan kecelakaan kerja</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                    <span class="text-[11px] text-slate-600 dark:text-slate-400"><strong>JKM</strong> — Santunan kematian</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                    <span class="text-[11px] text-slate-600 dark:text-slate-400"><strong>JP</strong> — Pensiun bulanan (usia 56+)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                    <span class="text-[11px] text-slate-600 dark:text-slate-400"><strong>Kesehatan</strong> — Jaminan layanan kesehatan</span>
+                </div>
+            </div>
+            <p class="text-[11px] text-slate-500 italic">Setiap awal tahun, periksa batas atas gaji JP dan Kesehatan karena sering diperbarui pemerintah.</p>
+        </div>
+    </div>
+</div>
+
 @php
     $today = now()->toDateString();
     $programLabels = [
@@ -37,9 +73,18 @@
         <table class="w-full text-sm">
             <thead>
                 <tr class="text-left text-xs text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
-                    <th class="px-6 py-3">Iuran Perusahaan</th>
-                    <th class="px-6 py-3">Iuran Karyawan</th>
-                    <th class="px-6 py-3">Maks. Dasar Gaji</th>
+                    <th class="px-6 py-3">
+                        <span>Iuran Perusahaan</span>
+                        <p class="text-[10px] font-normal normal-case tracking-normal text-slate-400 mt-0.5">Dibayar perusahaan, tidak dipotong dari gaji</p>
+                    </th>
+                    <th class="px-6 py-3">
+                        <span>Iuran Karyawan</span>
+                        <p class="text-[10px] font-normal normal-case tracking-normal text-slate-400 mt-0.5">Dipotong langsung dari gaji karyawan</p>
+                    </th>
+                    <th class="px-6 py-3">
+                        <span>Maks. Dasar Gaji</span>
+                        <p class="text-[10px] font-normal normal-case tracking-normal text-slate-400 mt-0.5">Batas atas gaji untuk hitung iuran</p>
+                    </th>
                     <th class="px-6 py-3">Min. Dasar Gaji</th>
                     <th class="px-6 py-3">Berlaku Dari</th>
                     <th class="px-6 py-3">Berlaku Sampai</th>

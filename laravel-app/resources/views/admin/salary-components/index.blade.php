@@ -83,6 +83,10 @@
                                 <span class="material-icons-round text-[20px]">drag_indicator</span>
                             </div>
 
+                            <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0" title="Urutan eksekusi: {{ $component->execution_order }}">
+                                <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">{{ $component->execution_order }}</span>
+                            </div>
+
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h4 class="font-bold text-slate-900 dark:text-white text-sm">{{ $component->name }}</h4>
@@ -141,15 +145,37 @@
     @endforeach
 
     @if(!isset($components['earning']) && !isset($components['deduction']) && !isset($components['benefit']))
-        <div class="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-12 text-center">
-            <span class="material-icons-round text-slate-300 dark:text-slate-600 text-[56px] mb-3">tune</span>
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Belum ada komponen gaji</h3>
-            <p class="text-sm text-slate-500 mb-4">Mulai dengan menambahkan komponen gaji pertama</p>
-            <a href="{{ route('admin.salary-components.create') }}"
-                class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm hover:opacity-90 transition-all">
-                <span class="material-icons-round text-lg">add</span>
-                Tambah Komponen
-            </a>
+        <div class="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 sm:p-12">
+            <div class="max-w-lg mx-auto text-center">
+                <span class="material-icons-round text-slate-300 dark:text-slate-600 text-[56px] mb-4">tune</span>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Belum ada komponen gaji</h3>
+                <p class="text-sm text-slate-500 mb-4">
+                    <strong>Komponen gaji</strong> adalah elemen-elemen yang membentuk slip gaji karyawan — seperti gaji pokok, tunjangan, dan potongan. Setiap komponen bisa bernilai tetap atau dihitung otomatis dengan rumus.
+                </p>
+
+                <div class="bg-peach/10 dark:bg-peach/5 border border-peach/30 rounded-xl p-4 mb-6 text-left">
+                    <div class="flex items-start gap-2">
+                        <span class="text-base leading-none mt-0.5">💡</span>
+                        <div>
+                            <p class="text-xs font-bold text-orange-700 dark:text-orange-400 mb-1">Cara Cepat</p>
+                            <p class="text-xs text-slate-600 dark:text-slate-400">Gunakan template yang sudah berisi komponen standar (gaji pokok, tunjangan, BPJS, pajak) agar tidak perlu membuat satu per satu.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <a href="{{ route('admin.payroll-templates.index') }}"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-slate-900/20">
+                        <span class="material-icons-round text-lg">library_books</span>
+                        Gunakan Template (Direkomendasikan)
+                    </a>
+                    <a href="{{ route('admin.salary-components.create') }}"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 rounded-xl font-semibold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+                        <span class="material-icons-round text-lg">add</span>
+                        Buat Manual
+                    </a>
+                </div>
+            </div>
         </div>
     @endif
 
@@ -167,9 +193,15 @@
                     <p class="text-sm text-slate-500">Tindakan ini tidak dapat dibatalkan</p>
                 </div>
             </div>
-            <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">
+            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">
                 Apakah Anda yakin ingin menghapus komponen <strong x-text="deleteName" class="text-slate-900 dark:text-white"></strong>?
             </p>
+            <div class="bg-peach/10 dark:bg-peach/5 border border-peach/30 rounded-xl p-3 mb-6">
+                <div class="flex items-start gap-2">
+                    <span class="material-icons-round text-orange-500 text-[16px] mt-0.5">warning</span>
+                    <p class="text-xs text-orange-700 dark:text-orange-400">Jika komponen ini digunakan dalam rumus komponen lain, perhitungan gaji bisa error. Pastikan tidak ada komponen lain yang bergantung pada komponen ini.</p>
+                </div>
+            </div>
             <div class="flex justify-end gap-3">
                 <button @click="showDeleteModal = false"
                     class="px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">

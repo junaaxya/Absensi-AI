@@ -37,9 +37,18 @@
                 <select name="program" required
                         class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm">
                     <option value="">Pilih Program</option>
+                    @php
+                        $programDescriptions = [
+                            'jht' => 'JHT — Jaminan Hari Tua (tabungan pensiun)',
+                            'jkk' => 'JKK — Jaminan Kecelakaan Kerja',
+                            'jkm' => 'JKM — Jaminan Kematian',
+                            'jp' => 'JP — Jaminan Pensiun (pensiun bulanan)',
+                            'bpjs_kesehatan' => 'BPJS Kesehatan — Jaminan layanan kesehatan',
+                        ];
+                    @endphp
                     @foreach($programs as $p)
                         <option value="{{ $p }}" {{ old('program') === $p ? 'selected' : '' }}>
-                            {{ strtoupper(str_replace('_', ' ', $p)) }}
+                            {{ $programDescriptions[$p] ?? strtoupper(str_replace('_', ' ', $p)) }}
                         </option>
                     @endforeach
                 </select>
@@ -55,7 +64,7 @@
                                class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm pr-8">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">desimal</span>
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">Contoh: 0.037 = 3.7%</p>
+                    <p class="text-xs text-slate-400 mt-1">Masukkan dalam desimal. Contoh: 3.7% &rarr; ketik 0.037</p>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Iuran Karyawan</label>
@@ -66,7 +75,7 @@
                                class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm pr-8">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">desimal</span>
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">Contoh: 0.02 = 2%</p>
+                    <p class="text-xs text-slate-400 mt-1">Masukkan dalam desimal. Contoh: 2% &rarr; ketik 0.02</p>
                 </div>
             </div>
 
@@ -80,6 +89,7 @@
                                placeholder="10042300"
                                class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm pl-10">
                     </div>
+                    <p class="text-xs text-slate-400 mt-1">Kosongkan jika tidak ada batas. Untuk JP (2024): Rp 10.042.300</p>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Min. Dasar Gaji</label>
@@ -97,6 +107,7 @@
                 <input type="date" name="effective_from" required
                        value="{{ old('effective_from') }}"
                        class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm">
+                <p class="text-xs text-slate-400 mt-1">Tarif sebelumnya akan otomatis berakhir sehari sebelum tanggal ini.</p>
             </div>
 
             <div>
@@ -104,6 +115,14 @@
                 <textarea name="notes" rows="3"
                           placeholder="Catatan perubahan tarif..."
                           class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm">{{ old('notes') }}</textarea>
+            </div>
+
+            {{-- B4/B9: Warning before submit --}}
+            <div class="bg-peach/10 dark:bg-peach/5 border border-peach/30 rounded-xl p-3">
+                <div class="flex items-start gap-2">
+                    <span class="material-icons-round text-orange-500 text-[16px] mt-0.5">warning</span>
+                    <p class="text-xs text-orange-700 dark:text-orange-400">Perubahan tarif akan mempengaruhi <strong>semua perhitungan gaji</strong> karyawan yang menggunakan program ini mulai tanggal berlaku.</p>
+                </div>
             </div>
 
             <div class="flex items-center gap-3 pt-2">

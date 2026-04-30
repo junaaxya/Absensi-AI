@@ -12,6 +12,20 @@
     </a>
 </div>
 
+{{-- B8: Form Help --}}
+<div class="max-w-2xl mb-6">
+    <div class="bg-sky/10 dark:bg-sky/5 border border-sky/30 rounded-xl p-4">
+        <div class="flex items-start gap-2.5">
+            <span class="material-icons-round text-blue-600 dark:text-blue-400 text-[18px] mt-0.5">info</span>
+            <div>
+                <p class="text-xs font-bold text-blue-700 dark:text-blue-400 mb-1">Kapan perlu membuat tarif PTKP baru?</p>
+                <p class="text-xs text-slate-600 dark:text-slate-400 mb-1">Anda hanya perlu membuat tarif PTKP baru jika pemerintah menerbitkan PMK (Peraturan Menteri Keuangan) baru yang mengubah besaran PTKP.</p>
+                <p class="text-xs text-slate-500 italic">Masukkan jumlah PTKP setahun. Nilai ini akan dibagi 12 oleh sistem saat menghitung pajak bulanan.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="max-w-2xl">
     <div class="bg-white dark:bg-card-dark rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">

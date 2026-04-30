@@ -17,6 +17,34 @@
     </a>
 </div>
 
+{{-- B5: Category Explanation --}}
+<div class="mb-6 bg-lavender/10 dark:bg-lavender/5 border border-lavender/30 rounded-xl p-5">
+    <div class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-lg bg-lavender/30 flex items-center justify-center flex-shrink-0">
+            <span class="material-icons-round text-purple-600 dark:text-purple-400 text-[18px]">school</span>
+        </div>
+        <div>
+            <h4 class="text-sm font-bold text-slate-800 dark:text-white mb-1.5">Tentang TER PPh 21</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">TER (Tarif Efektif Rata-rata) adalah tarif pemotongan pajak penghasilan bulanan karyawan berdasarkan PP 58/2023. Sistem otomatis memilih kategori berdasarkan status PTKP karyawan.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="bg-white dark:bg-slate-800/50 rounded-lg p-3 border border-lavender/20">
+                    <p class="text-xs font-bold text-purple-700 dark:text-purple-400 mb-1">Kategori A</p>
+                    <p class="text-[11px] text-slate-500">TK/0, TK/1, K/0</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800/50 rounded-lg p-3 border border-lavender/20">
+                    <p class="text-xs font-bold text-purple-700 dark:text-purple-400 mb-1">Kategori B</p>
+                    <p class="text-[11px] text-slate-500">TK/2, TK/3, K/1, K/2</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800/50 rounded-lg p-3 border border-lavender/20">
+                    <p class="text-xs font-bold text-purple-700 dark:text-purple-400 mb-1">Kategori C</p>
+                    <p class="text-[11px] text-slate-500">K/3</p>
+                </div>
+            </div>
+            <p class="text-[11px] text-slate-500 italic mt-3">Cara kerja: Sistem otomatis memilih kategori berdasarkan status PTKP karyawan, lalu mencocokkan penghasilan bruto dengan tabel tarif.</p>
+        </div>
+    </div>
+</div>
+
 @php
     $today = now()->toDateString();
 @endphp

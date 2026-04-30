@@ -17,6 +17,38 @@
     </a>
 </div>
 
+{{-- B7: Status Explanation --}}
+<div class="mb-6 bg-peach/10 dark:bg-peach/5 border border-peach/30 rounded-xl p-5">
+    <div class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-lg bg-peach/30 flex items-center justify-center flex-shrink-0">
+            <span class="material-icons-round text-orange-600 dark:text-orange-400 text-[18px]">school</span>
+        </div>
+        <div>
+            <h4 class="text-sm font-bold text-slate-800 dark:text-white mb-1.5">Tentang PTKP</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">PTKP (Penghasilan Tidak Kena Pajak) adalah batas penghasilan yang tidak dikenakan pajak. Besarannya tergantung status pernikahan dan jumlah tanggungan karyawan.</p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                <div class="bg-white dark:bg-slate-800/50 rounded-lg p-2 border border-peach/20 text-center">
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">TK/0</p>
+                    <p class="text-[10px] text-slate-500">Belum kawin, tanpa tanggungan</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800/50 rounded-lg p-2 border border-peach/20 text-center">
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">TK/1–3</p>
+                    <p class="text-[10px] text-slate-500">Belum kawin, 1–3 tanggungan</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800/50 rounded-lg p-2 border border-peach/20 text-center">
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">K/0</p>
+                    <p class="text-[10px] text-slate-500">Kawin, tanpa tanggungan</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800/50 rounded-lg p-2 border border-peach/20 text-center">
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">K/1–3</p>
+                    <p class="text-[10px] text-slate-500">Kawin, 1–3 tanggungan</p>
+                </div>
+            </div>
+            <p class="text-[11px] text-slate-500 italic">PTKP terakhir diubah melalui PMK 101/2016. Selama belum ada peraturan baru, Anda tidak perlu mengubah data ini.</p>
+        </div>
+    </div>
+</div>
+
 @php
     $today = now()->toDateString();
 @endphp

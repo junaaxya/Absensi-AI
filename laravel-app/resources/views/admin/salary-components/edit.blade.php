@@ -64,24 +64,28 @@
                 <div class="space-y-5">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nama Komponen <span class="text-rose-500">*</span></label>
-                        <input type="text" name="name" x-model="form.name" @input="autoGenerateCode"
+                        <input type="text" name="name" x-model="form.name" @input="autoGenerateCode; errors.name = ''"
                             class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sage focus:border-sage text-sm dark:text-white transition-all"
+                            :class="errors.name ? 'border-rose-400 dark:border-rose-500' : ''"
                             placeholder="contoh: Gaji Pokok, Tunjangan Transport" required>
+                        <p x-show="errors.name" x-text="errors.name" class="text-xs text-rose-500 mt-1"></p>
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Kode Komponen <span class="text-rose-500">*</span></label>
-                        <input type="text" name="code" x-model="form.code"
+                        <input type="text" name="code" x-model="form.code" @input="errors.code = ''"
                             class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sage focus:border-sage text-sm dark:text-white font-mono uppercase transition-all"
+                            :class="errors.code ? 'border-rose-400 dark:border-rose-500' : ''"
                             placeholder="BASIC_SALARY" required>
-                        <p class="text-xs text-slate-400 mt-1">Kode unik, otomatis dari nama (huruf besar + underscore)</p>
+                        <p x-show="errors.code" x-text="errors.code" class="text-xs text-rose-500 mt-1"></p>
+                        <p x-show="!errors.code" class="text-xs text-slate-400 mt-1">Kode unik, otomatis dari nama (huruf besar + underscore)</p>
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Tipe Komponen <span class="text-rose-500">*</span></label>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <label class="relative cursor-pointer">
-                                <input type="radio" name="type" value="earning" x-model="form.type" class="peer sr-only">
+                                <input type="radio" name="type" value="earning" x-model="form.type" @change="errors.type = ''" class="peer sr-only">
                                 <div class="p-4 rounded-xl border-2 transition-all peer-checked:border-sage peer-checked:bg-sage/10 border-slate-200 dark:border-slate-700 hover:border-sage/50">
                                     <div class="flex items-center gap-3">
                                         <div class="w-9 h-9 rounded-lg bg-sage/30 flex items-center justify-center">
@@ -95,7 +99,7 @@
                                 </div>
                             </label>
                             <label class="relative cursor-pointer">
-                                <input type="radio" name="type" value="deduction" x-model="form.type" class="peer sr-only">
+                                <input type="radio" name="type" value="deduction" x-model="form.type" @change="errors.type = ''" class="peer sr-only">
                                 <div class="p-4 rounded-xl border-2 transition-all peer-checked:border-rose-300 peer-checked:bg-rose-50 dark:peer-checked:bg-rose-900/10 border-slate-200 dark:border-slate-700 hover:border-rose-200">
                                     <div class="flex items-center gap-3">
                                         <div class="w-9 h-9 rounded-lg bg-rose-100 dark:bg-rose-900/20 flex items-center justify-center">
@@ -109,7 +113,7 @@
                                 </div>
                             </label>
                             <label class="relative cursor-pointer">
-                                <input type="radio" name="type" value="benefit" x-model="form.type" class="peer sr-only">
+                                <input type="radio" name="type" value="benefit" x-model="form.type" @change="errors.type = ''" class="peer sr-only">
                                 <div class="p-4 rounded-xl border-2 transition-all peer-checked:border-sky peer-checked:bg-sky/10 border-slate-200 dark:border-slate-700 hover:border-sky/50">
                                     <div class="flex items-center gap-3">
                                         <div class="w-9 h-9 rounded-lg bg-sky/30 flex items-center justify-center">
@@ -123,6 +127,7 @@
                                 </div>
                             </label>
                         </div>
+                        <p x-show="errors.type" x-text="errors.type" class="text-xs text-rose-500 mt-2"></p>
                     </div>
 
                     <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
@@ -134,6 +139,13 @@
                             <input type="checkbox" name="is_taxable" value="1" x-model="form.is_taxable" class="sr-only peer">
                             <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:ring-2 peer-focus:ring-sage/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
                         </label>
+                    </div>
+                    {{-- A7: Taxable Toggle Help --}}
+                    <div x-show="form.type === 'earning'" x-transition class="bg-sky/10 dark:bg-sky/5 border border-sky/30 rounded-xl p-3 -mt-2">
+                        <div class="flex items-start gap-2">
+                            <span class="text-sm leading-none mt-0.5">💡</span>
+                            <p class="text-xs text-slate-600 dark:text-slate-400"><strong class="text-slate-700 dark:text-slate-300">Tips:</strong> Umumnya semua pendapatan kena pajak, kecuali uang makan/transport berdasarkan kehadiran aktual.</p>
+                        </div>
                     </div>
 
                     <div>
@@ -247,6 +259,35 @@
                             </div>
                         </div>
 
+                        {{-- A4: Formula Quick-Insert Templates --}}
+                        <div class="mt-4 bg-sage/10 dark:bg-sage/5 rounded-xl border border-sage/30 p-4">
+                            <p class="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                                <span>📋</span> Contoh Rumus Umum
+                            </p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <button type="button" @click="form.formula = 'basic_salary * present_days / working_days'; debouncedValidateFormula()"
+                                    class="flex flex-col gap-1 px-3 py-2.5 rounded-lg text-left hover:bg-white dark:hover:bg-slate-700 transition-all border border-transparent hover:border-sage/30">
+                                    <code class="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">basic_salary * present_days / working_days</code>
+                                    <span class="text-[11px] text-slate-500">Gaji prorata berdasarkan kehadiran</span>
+                                </button>
+                                <button type="button" @click="form.formula = 'basic_salary * 0.05'; debouncedValidateFormula()"
+                                    class="flex flex-col gap-1 px-3 py-2.5 rounded-lg text-left hover:bg-white dark:hover:bg-slate-700 transition-all border border-transparent hover:border-sage/30">
+                                    <code class="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">basic_salary * 0.05</code>
+                                    <span class="text-[11px] text-slate-500">Tunjangan 5% dari gaji pokok</span>
+                                </button>
+                                <button type="button" @click="form.formula = 'overtime_hours * (basic_salary / 173)'; debouncedValidateFormula()"
+                                    class="flex flex-col gap-1 px-3 py-2.5 rounded-lg text-left hover:bg-white dark:hover:bg-slate-700 transition-all border border-transparent hover:border-sage/30">
+                                    <code class="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">overtime_hours * (basic_salary / 173)</code>
+                                    <span class="text-[11px] text-slate-500">Upah lembur (1/173 gaji per jam)</span>
+                                </button>
+                                <button type="button" @click="form.formula = 'absent_days * (basic_salary / working_days)'; debouncedValidateFormula()"
+                                    class="flex flex-col gap-1 px-3 py-2.5 rounded-lg text-left hover:bg-white dark:hover:bg-slate-700 transition-all border border-transparent hover:border-sage/30">
+                                    <code class="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">absent_days * (basic_salary / working_days)</code>
+                                    <span class="text-[11px] text-slate-500">Potongan absen per hari</span>
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="mt-4 bg-lavender/10 dark:bg-lavender/5 rounded-xl border border-lavender/30 p-4" x-show="form.formula.length > 0 && formulaValidation.valid">
                             <p class="text-xs font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider mb-2">Preview Hasil</p>
                             <p class="text-xs text-slate-500 mb-1">Jika gaji Rp 8.000.000, hadir 22 hari:</p>
@@ -305,6 +346,41 @@
                             class="w-full sm:w-48 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sage focus:border-sage text-sm dark:text-white transition-all"
                             placeholder="100" min="0">
                         <p class="text-xs text-slate-400 mt-1">Angka lebih kecil = dihitung lebih dulu</p>
+
+                        {{-- A2: Execution Order Help --}}
+                        <div class="mt-3 bg-lavender/10 dark:bg-lavender/5 rounded-xl border border-lavender/30 p-3">
+                            <p class="text-xs font-bold text-purple-700 dark:text-purple-400 mb-2">Panduan urutan eksekusi:</p>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-7 h-7 rounded-lg bg-lavender/20 flex items-center justify-center text-[10px] font-bold text-purple-700 dark:text-purple-400">10</span>
+                                    <div>
+                                        <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300">Gaji Pokok</p>
+                                        <p class="text-[10px] text-slate-400">Dihitung pertama</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-7 h-7 rounded-lg bg-lavender/20 flex items-center justify-center text-[10px] font-bold text-purple-700 dark:text-purple-400">50</span>
+                                    <div>
+                                        <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300">Tunjangan</p>
+                                        <p class="text-[10px] text-slate-400">Bergantung gaji pokok</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-7 h-7 rounded-lg bg-lavender/20 flex items-center justify-center text-[10px] font-bold text-purple-700 dark:text-purple-400">100</span>
+                                    <div>
+                                        <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300">Potongan</p>
+                                        <p class="text-[10px] text-slate-400">Potongan umum</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-7 h-7 rounded-lg bg-lavender/20 flex items-center justify-center text-[10px] font-bold text-purple-700 dark:text-purple-400">200</span>
+                                    <div>
+                                        <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300">Pajak</p>
+                                        <p class="text-[10px] text-slate-400">Dihitung terakhir</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
@@ -381,6 +457,12 @@ function wizardForm() {
             execution_order: '{{ old("execution_order", "100") }}',
             is_active: {{ old('is_active', $salaryComponent->is_active) ? 'true' : 'false' }},
         },
+        errors: {
+            name: '',
+            code: '',
+            type: '',
+            formula: '',
+        },
         formulaValidation: {
             loading: false,
             valid: null,
@@ -403,9 +485,23 @@ function wizardForm() {
 
         nextStep() {
             if (this.step === 1) {
+                this.errors.name = !this.form.name ? 'Nama komponen wajib diisi' : '';
+                this.errors.code = !this.form.code ? 'Kode komponen wajib diisi' : '';
+                this.errors.type = !this.form.type ? 'Pilih salah satu tipe komponen' : '';
                 if (!this.form.name || !this.form.code || !this.form.type) {
                     return;
                 }
+            }
+            if (this.step === 2) {
+                if (this.form.value_type === 'formula' && !this.form.formula.trim()) {
+                    this.errors.formula = 'Rumus wajib diisi jika tipe nilai adalah Formula';
+                    return;
+                }
+                if (this.form.value_type === 'formula' && this.formulaValidation.valid === false) {
+                    this.errors.formula = 'Perbaiki rumus sebelum melanjutkan';
+                    return;
+                }
+                this.errors.formula = '';
             }
             if (this.step < 3) this.step++;
         },

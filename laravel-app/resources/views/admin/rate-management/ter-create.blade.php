@@ -34,6 +34,7 @@
                     <input type="text" x-model="regulationCode" required
                            placeholder="PP_58_2023"
                            class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm">
+                    <p class="text-xs text-slate-400 mt-1">Contoh: PP_58_2023</p>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Berlaku Dari</label>
@@ -75,9 +76,18 @@
                             <thead>
                                 <tr class="text-left text-xs text-slate-500 uppercase tracking-wider bg-slate-50 dark:bg-slate-800/50">
                                     <th class="px-4 py-2.5 w-8">#</th>
-                                    <th class="px-4 py-2.5">Penghasilan Min (Rp)</th>
-                                    <th class="px-4 py-2.5">Penghasilan Maks (Rp)</th>
-                                    <th class="px-4 py-2.5">Tarif (desimal)</th>
+                                    <th class="px-4 py-2.5">
+                                        <span>Penghasilan Min (Rp)</span>
+                                        <p class="text-[10px] font-normal normal-case tracking-normal text-slate-400 mt-0.5">Batas bawah gaji bruto bulanan</p>
+                                    </th>
+                                    <th class="px-4 py-2.5">
+                                        <span>Penghasilan Maks (Rp)</span>
+                                        <p class="text-[10px] font-normal normal-case tracking-normal text-slate-400 mt-0.5">Kosongkan untuk tak terbatas</p>
+                                    </th>
+                                    <th class="px-4 py-2.5">
+                                        <span>Tarif (desimal)</span>
+                                        <p class="text-[10px] font-normal normal-case tracking-normal text-slate-400 mt-0.5">Contoh: 5% &rarr; 0.05</p>
+                                    </th>
                                     <th class="px-4 py-2.5 w-12"></th>
                                 </tr>
                             </thead>
