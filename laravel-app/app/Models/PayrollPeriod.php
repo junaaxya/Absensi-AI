@@ -38,6 +38,23 @@ class PayrollPeriod extends Model
         'paid_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::updating(function (PayrollPeriod $period) {
+            $originalStatus = $period->getOriginal('status');
+            $newStatus = $period->status;
+
+            if (in_array($originalStatus, ['paid', 'locked'])) {
+                $allowedTransition = $originalStatus === 'paid' && $newStatus === 'locked';
+                if (!$allowedTransition) {
+                    throw new \RuntimeException(
+                        "Periode payroll dengan status '{$originalStatus}' tidak dapat diubah."
+                    );
+                }
+            }
+        });
+    }
+
     public function payrollDetails()
     {
         return $this->hasMany(PayrollDetail::class);
@@ -46,5 +63,15 @@ class PayrollPeriod extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function snapshots()
+    {
+        return $this->hasMany(PayrollSnapshot::class);
+    }
+
+    public function isImmutable(): bool
+    {
+        return in_array($this->status, ['paid', 'locked']);
     }
 }

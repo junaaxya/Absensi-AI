@@ -36,6 +36,8 @@ use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\AdminTrainingController;
 use App\Http\Controllers\AdminCompanyController;
 use App\Http\Controllers\AdminRecruitmentController;
+use App\Http\Controllers\AdminSalaryComponentController;
+use App\Http\Controllers\AdminRateManagementController;
 
 
 Route::get('/', function () {
@@ -292,6 +294,28 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/admin/payroll/{period}/mark-paid', [AdminPayrollController::class, 'markPaid'])->name('admin.payroll.mark-paid');
             Route::get('/admin/payroll/{period}/slip/{user}', [AdminPayrollController::class, 'slip'])->name('admin.payroll.slip');
             Route::get('/admin/payroll/{period}/slip/{user}/download', [AdminPayrollController::class, 'downloadSlip'])->name('admin.payroll.slip.download');
+
+            Route::get('/admin/salary-components', [AdminSalaryComponentController::class, 'index'])->name('admin.salary-components.index');
+            Route::get('/admin/salary-components/create', [AdminSalaryComponentController::class, 'create'])->name('admin.salary-components.create');
+            Route::post('/admin/salary-components', [AdminSalaryComponentController::class, 'store'])->name('admin.salary-components.store');
+            Route::get('/admin/salary-components/{salaryComponent}/edit', [AdminSalaryComponentController::class, 'edit'])->name('admin.salary-components.edit');
+            Route::put('/admin/salary-components/{salaryComponent}', [AdminSalaryComponentController::class, 'update'])->name('admin.salary-components.update');
+            Route::delete('/admin/salary-components/{salaryComponent}', [AdminSalaryComponentController::class, 'destroy'])->name('admin.salary-components.destroy');
+            Route::post('/admin/salary-components/reorder', [AdminSalaryComponentController::class, 'reorder'])->name('admin.salary-components.reorder');
+            Route::post('/admin/salary-components/validate-formula', [AdminSalaryComponentController::class, 'validateFormula'])->name('admin.salary-components.validate-formula');
+            Route::post('/admin/salary-components/preview-formula', [AdminSalaryComponentController::class, 'previewFormula'])->name('admin.salary-components.preview-formula');
+            Route::get('/admin/salary-components/variables', [AdminSalaryComponentController::class, 'variables'])->name('admin.salary-components.variables');
+
+            Route::get('/admin/rate-management', [AdminRateManagementController::class, 'index'])->name('admin.rate-management.index');
+            Route::get('/admin/rate-management/bpjs', [AdminRateManagementController::class, 'bpjsRates'])->name('admin.rate-management.bpjs');
+            Route::get('/admin/rate-management/bpjs/create', [AdminRateManagementController::class, 'createBpjsRate'])->name('admin.rate-management.bpjs.create');
+            Route::post('/admin/rate-management/bpjs', [AdminRateManagementController::class, 'storeBpjsRate'])->name('admin.rate-management.bpjs.store');
+            Route::get('/admin/rate-management/ter', [AdminRateManagementController::class, 'terRates'])->name('admin.rate-management.ter');
+            Route::get('/admin/rate-management/ter/create', [AdminRateManagementController::class, 'createTerRegulation'])->name('admin.rate-management.ter.create');
+            Route::post('/admin/rate-management/ter', [AdminRateManagementController::class, 'storeTerRegulation'])->name('admin.rate-management.ter.store');
+            Route::get('/admin/rate-management/ptkp', [AdminRateManagementController::class, 'ptkpRates'])->name('admin.rate-management.ptkp');
+            Route::get('/admin/rate-management/ptkp/create', [AdminRateManagementController::class, 'createPtkpRates'])->name('admin.rate-management.ptkp.create');
+            Route::post('/admin/rate-management/ptkp', [AdminRateManagementController::class, 'storePtkpRates'])->name('admin.rate-management.ptkp.store');
         });
 
         // VISIT ATTENDANCE - requires view_visit_attendance

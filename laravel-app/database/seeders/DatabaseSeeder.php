@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             HolidaySeeder::class,
             ViolationTypeSeeder::class,
             PayrollSeeder::class,
+            DynamicPayrollSeeder::class,
         ]);
 
         // Assign Direktur role to admin user (after roles are seeded)

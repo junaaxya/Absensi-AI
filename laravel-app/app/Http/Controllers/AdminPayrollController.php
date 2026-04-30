@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PayrollDetail;
 use App\Models\PayrollPeriod;
 use App\Models\User;
+use App\Services\Payroll\PayrollCalculationService;
 use App\Services\PayrollService;
 use App\Services\SlipGajiPdfService;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ class AdminPayrollController extends Controller
 {
     public function __construct(
         private PayrollService $payrollService,
+        private PayrollCalculationService $payrollCalculationService,
     ) {}
 
     public function index()
@@ -36,7 +38,6 @@ class AdminPayrollController extends Controller
 
         $periodMonth = $request->year . '-' . $request->month;
 
-        // Check uniqueness manually
         if (PayrollPeriod::where('period_month', $periodMonth)->exists()) {
             return back()->withErrors(['month' => 'Periode ' . $periodMonth . ' sudah ada.'])->withInput();
         }
@@ -61,7 +62,7 @@ class AdminPayrollController extends Controller
             return back()->with('error', 'Periode tidak dapat dihitung ulang pada status ini.');
         }
 
-        $this->payrollService->calculateAll($period);
+        $this->payrollCalculationService->calculateAll($period);
 
         return back()->with('success', 'Perhitungan payroll selesai.');
     }
@@ -72,7 +73,7 @@ class AdminPayrollController extends Controller
             return back()->with('error', 'Hanya periode dengan status "calculated" yang dapat disetujui.');
         }
 
-        $this->payrollService->approvePeriod($period, auth()->user());
+        $this->payrollCalculationService->approvePeriod($period, auth()->user());
 
         return back()->with('success', 'Periode payroll telah disetujui.');
     }
@@ -83,7 +84,7 @@ class AdminPayrollController extends Controller
             return back()->with('error', 'Hanya periode dengan status "approved" yang dapat ditandai lunas.');
         }
 
-        $this->payrollService->markAsPaid($period);
+        $this->payrollCalculationService->markAsPaid($period);
 
         return back()->with('success', 'Periode payroll telah ditandai sebagai lunas.');
     }
