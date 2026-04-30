@@ -275,26 +275,34 @@
                     <span class="material-icons-round text-[16px] transition-transform duration-200" :class="isOpen('administrator') ? 'rotate-180' : ''">expand_more</span>
                 </button>
                 <div x-show="isOpen('administrator')" x-collapse x-cloak class="mt-1 ml-2 space-y-0.5 border-l-2 border-slate-100 dark:border-slate-800 pl-2">
+                    @can('manage_employees')
                     <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('employees.*') ? 'bg-sky/20 dark:bg-sky/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
                         href="{{ route('employees.index') }}">
                         <span class="material-icons-round text-[18px]">groups</span>
                         Data Karyawan
                     </a>
+                    @endcan
+                    @can('approve_team_izin')
                     <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('admin.absence.*') || request()->routeIs('admin.izin.*') ? 'bg-peach/20 dark:bg-peach/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
                         href="{{ route('admin.absence.index') }}">
                         <span class="material-icons-round text-[18px]">fact_check</span>
                         Approval Izin
                     </a>
+                    @endcan
+                    @can('view_team_attendance')
                     <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('admin.attendance') || request()->routeIs('admin.attendance.*') ? 'bg-lavender/20 dark:bg-lavender/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
                         href="{{ route('admin.attendance') }}">
                         <span class="material-icons-round text-[18px]">assessment</span>
                         Laporan Absensi
                     </a>
+                    @endcan
+                    @can('manage_system_settings')
                     <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 font-medium"
                         href="{{ route('admin.dashboard') }}">
                         <span class="material-icons-round text-[18px]">open_in_new</span>
                         Buka Panel Admin
                     </a>
+                    @endcan
                 </div>
             </div>
             @endhasanyrole
