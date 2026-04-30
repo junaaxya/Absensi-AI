@@ -23,6 +23,8 @@
             /* Firefox */
         }
     </style>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js" defer></script>
     <script>
         if (localStorage.getItem('darkMode') === 'true' ||
             (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -139,130 +141,162 @@
         </div>
 
         <!-- Navigation Links -->
-        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
-            <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Menu Utama</p>
+        <nav class="flex-1 px-4 py-4 overflow-y-auto no-scrollbar" x-data="employeeSidebar()" x-init="init()">
 
-            <a href="{{ route('dashboard') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('dashboard') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                <span>Dashboard</span>
+            {{-- ═══════════════════════════════════════ --}}
+            {{-- DASHBOARD — standalone, always visible  --}}
+            {{-- ═══════════════════════════════════════ --}}
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('dashboard') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                href="{{ route('dashboard') }}">
+                <span class="material-icons-round text-[20px]">home</span>
+                <span class="text-sm">Dashboard</span>
             </a>
 
-            <a href="{{ route('izin.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('izin.index') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Izin & Cuti</span>
-            </a>
-
-            <a href="{{ route('payslips.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('payslips.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <span>Slip Gaji</span>
-            </a>
-
-            <a href="{{ route('my-tasks.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('my-tasks.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
-                <span>Task Saya</span>
-            </a>
-
-            <a href="{{ route('tickets.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('tickets.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-                </svg>
-                <span>Tiket Saya</span>
-            </a>
-
-            <a href="{{ route('forms.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('forms.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Form</span>
-            </a>
-
-            <a href="{{ route('training.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('training.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <span>Training</span>
-            </a>
-
-            <a href="{{ route('profile.edit') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('profile.edit') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span>Profil Saya</span>
-            </a>
-
-            <a href="{{ route('violations.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('violations.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                </svg>
-                <span>Pelanggaran</span>
-            </a>
-
-            <a href="{{ route('my-assets.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('my-assets.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                <span>Aset Saya</span>
-            </a>
-
-            @hasanyrole('Direktur|Vice President|Manager|Supervisor|Team Leader')
-                <div class="pt-6 pb-2">
-                    <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Administrator</p>
+            {{-- ═══════════════════════════════════════ --}}
+            {{-- GROUP: KEHADIRAN                       --}}
+            {{-- ═══════════════════════════════════════ --}}
+            <div class="mt-4">
+                <button @click="toggle('kehadiran')"
+                    class="w-full flex items-center justify-between px-4 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                    <span class="flex items-center gap-2">
+                        <span class="material-icons-round text-[18px]">schedule</span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest">Kehadiran</span>
+                    </span>
+                    <span class="material-icons-round text-[16px] transition-transform duration-200" :class="isOpen('kehadiran') ? 'rotate-180' : ''">expand_more</span>
+                </button>
+                <div x-show="isOpen('kehadiran')" x-collapse x-cloak class="mt-1 ml-2 space-y-0.5 border-l-2 border-slate-100 dark:border-slate-800 pl-2">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('izin.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('izin.index') }}">
+                        <span class="material-icons-round text-[18px]">event_note</span>
+                        Izin & Cuti
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('violations.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('violations.index') }}">
+                        <span class="material-icons-round text-[18px]">gavel</span>
+                        Pelanggaran
+                    </a>
                 </div>
+            </div>
 
-                <a href="{{ route('employees.index') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('employees.*') ? 'bg-sky/20 dark:bg-sky/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span>Data Karyawan</span>
-                </a>
+            {{-- ═══════════════════════════════════════ --}}
+            {{-- GROUP: KEUANGAN                        --}}
+            {{-- ═══════════════════════════════════════ --}}
+            <div>
+                <button @click="toggle('keuangan')"
+                    class="w-full flex items-center justify-between px-4 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                    <span class="flex items-center gap-2">
+                        <span class="material-icons-round text-[18px]">payments</span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest">Keuangan</span>
+                    </span>
+                    <span class="material-icons-round text-[16px] transition-transform duration-200" :class="isOpen('keuangan') ? 'rotate-180' : ''">expand_more</span>
+                </button>
+                <div x-show="isOpen('keuangan')" x-collapse x-cloak class="mt-1 ml-2 space-y-0.5 border-l-2 border-slate-100 dark:border-slate-800 pl-2">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('payslips.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('payslips.index') }}">
+                        <span class="material-icons-round text-[18px]">receipt_long</span>
+                        Slip Gaji
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('my-assets.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('my-assets.index') }}">
+                        <span class="material-icons-round text-[18px]">inventory_2</span>
+                        Aset Saya
+                    </a>
+                </div>
+            </div>
 
-                <a href="{{ route('admin.absence.index') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.absence.*') || request()->routeIs('admin.izin.*') ? 'bg-peach/20 dark:bg-peach/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                    <span>Approval Izin</span>
-                </a>
+            {{-- ═══════════════════════════════════════ --}}
+            {{-- GROUP: PEKERJAAN                       --}}
+            {{-- ═══════════════════════════════════════ --}}
+            <div>
+                <button @click="toggle('pekerjaan')"
+                    class="w-full flex items-center justify-between px-4 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                    <span class="flex items-center gap-2">
+                        <span class="material-icons-round text-[18px]">work</span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest">Pekerjaan</span>
+                    </span>
+                    <span class="material-icons-round text-[16px] transition-transform duration-200" :class="isOpen('pekerjaan') ? 'rotate-180' : ''">expand_more</span>
+                </button>
+                <div x-show="isOpen('pekerjaan')" x-collapse x-cloak class="mt-1 ml-2 space-y-0.5 border-l-2 border-slate-100 dark:border-slate-800 pl-2">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('my-tasks.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('my-tasks.index') }}">
+                        <span class="material-icons-round text-[18px]">checklist</span>
+                        Task Saya
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('tickets.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('tickets.index') }}">
+                        <span class="material-icons-round text-[18px]">confirmation_number</span>
+                        Tiket Saya
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('forms.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('forms.index') }}">
+                        <span class="material-icons-round text-[18px]">dynamic_form</span>
+                        Form Internal
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('training.*') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('training.index') }}">
+                        <span class="material-icons-round text-[18px]">school</span>
+                        Training
+                    </a>
+                </div>
+            </div>
 
-                <a href="{{ route('admin.attendance') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group {{ request()->routeIs('admin.attendance') || request()->routeIs('admin.attendance.*') ? 'bg-lavender/20 dark:bg-lavender/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>Laporan Absensi</span>
-                </a>
+            {{-- ═══════════════════════════════════════ --}}
+            {{-- GROUP: AKUN                            --}}
+            {{-- ═══════════════════════════════════════ --}}
+            <div>
+                <button @click="toggle('akun')"
+                    class="w-full flex items-center justify-between px-4 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                    <span class="flex items-center gap-2">
+                        <span class="material-icons-round text-[18px]">person</span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest">Akun</span>
+                    </span>
+                    <span class="material-icons-round text-[16px] transition-transform duration-200" :class="isOpen('akun') ? 'rotate-180' : ''">expand_more</span>
+                </button>
+                <div x-show="isOpen('akun')" x-collapse x-cloak class="mt-1 ml-2 space-y-0.5 border-l-2 border-slate-100 dark:border-slate-800 pl-2">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('profile.edit') ? 'bg-primary/20 dark:bg-primary/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('profile.edit') }}">
+                        <span class="material-icons-round text-[18px]">manage_accounts</span>
+                        Profil Saya
+                    </a>
+                </div>
+            </div>
+
+            {{-- ═══════════════════════════════════════ --}}
+            {{-- GROUP: ADMINISTRATOR (role-gated)      --}}
+            {{-- ═══════════════════════════════════════ --}}
+            @hasanyrole('Direktur|Vice President|Manager|Supervisor|Team Leader')
+            <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <button @click="toggle('administrator')"
+                    class="w-full flex items-center justify-between px-4 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                    <span class="flex items-center gap-2">
+                        <span class="material-icons-round text-[18px]">admin_panel_settings</span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest">Administrator</span>
+                    </span>
+                    <span class="material-icons-round text-[16px] transition-transform duration-200" :class="isOpen('administrator') ? 'rotate-180' : ''">expand_more</span>
+                </button>
+                <div x-show="isOpen('administrator')" x-collapse x-cloak class="mt-1 ml-2 space-y-0.5 border-l-2 border-slate-100 dark:border-slate-800 pl-2">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('employees.*') ? 'bg-sky/20 dark:bg-sky/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('employees.index') }}">
+                        <span class="material-icons-round text-[18px]">groups</span>
+                        Data Karyawan
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('admin.absence.*') || request()->routeIs('admin.izin.*') ? 'bg-peach/20 dark:bg-peach/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('admin.absence.index') }}">
+                        <span class="material-icons-round text-[18px]">fact_check</span>
+                        Approval Izin
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm {{ request()->routeIs('admin.attendance') || request()->routeIs('admin.attendance.*') ? 'bg-lavender/20 dark:bg-lavender/10 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}"
+                        href="{{ route('admin.attendance') }}">
+                        <span class="material-icons-round text-[18px]">assessment</span>
+                        Laporan Absensi
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 font-medium"
+                        href="{{ route('admin.dashboard') }}">
+                        <span class="material-icons-round text-[18px]">open_in_new</span>
+                        Buka Panel Admin
+                    </a>
+                </div>
+            </div>
             @endhasanyrole
         </nav>
 
@@ -382,6 +416,54 @@
         </a>
     </nav>
 
+    <script>
+        function employeeSidebar() {
+            return {
+                openGroups: [],
+                toggle(group) {
+                    if (this.openGroups.includes(group)) {
+                        this.openGroups = this.openGroups.filter(g => g !== group);
+                    } else {
+                        this.openGroups.push(group);
+                    }
+                    this.save();
+                },
+                isOpen(group) {
+                    return this.openGroups.includes(group);
+                },
+                save() {
+                    localStorage.setItem('emp_sidebar_open', JSON.stringify(this.openGroups));
+                },
+                init() {
+                    // Restore from localStorage
+                    const saved = localStorage.getItem('emp_sidebar_open');
+                    if (saved) {
+                        try { this.openGroups = JSON.parse(saved); } catch(e) { this.openGroups = []; }
+                    }
+                    // Auto-expand group containing current page
+                    this.autoExpandActive();
+                },
+                autoExpandActive() {
+                    const path = window.location.pathname;
+                    const map = {
+                        'kehadiran': ['/izin', '/my-violations'],
+                        'keuangan': ['/my-payslips', '/my-assets'],
+                        'pekerjaan': ['/my-tasks', '/tickets', '/forms', '/training'],
+                        'akun': ['/profile'],
+                        'administrator': ['/admin', '/employees'],
+                    };
+                    for (const [group, paths] of Object.entries(map)) {
+                        if (paths.some(p => path.startsWith(p))) {
+                            if (!this.openGroups.includes(group)) {
+                                this.openGroups.push(group);
+                            }
+                        }
+                    }
+                    this.save();
+                }
+            };
+        }
+    </script>
     @stack('scripts')
 </body>
 
