@@ -15,11 +15,14 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\SystemSetting;
+use App\View\Composers\AdminSidebarComposer;
 
 class EmployeeController extends Controller
 {
     public function index(Request $request)
     {
+        AdminSidebarComposer::markSeen('employees');
+
         $query = User::query();
 
         if ($request->filled('role') && $request->role !== 'Semua') {

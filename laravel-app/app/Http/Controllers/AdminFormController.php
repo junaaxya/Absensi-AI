@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\FormTemplate;
 use App\Models\FormSubmission;
+use App\View\Composers\AdminSidebarComposer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -12,6 +13,8 @@ class AdminFormController extends Controller
 {
     public function index()
     {
+        AdminSidebarComposer::markSeen('forms');
+
         $templates = FormTemplate::withCount('submissions')
             ->with('creator')
             ->latest()

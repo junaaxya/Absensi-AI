@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Izin;
 use App\Services\LeaveService;
+use App\View\Composers\AdminSidebarComposer;
 
 class AdminAbsenceController extends Controller
 {
@@ -14,6 +15,8 @@ class AdminAbsenceController extends Controller
 
     public function index(Request $request)
     {
+        AdminSidebarComposer::markSeen('izin');
+
         $query = Izin::with(['user', 'leaveType', 'currentApprover']);
         \App\Services\RoleBasedScope::scopeIzin($query, auth()->user());
 

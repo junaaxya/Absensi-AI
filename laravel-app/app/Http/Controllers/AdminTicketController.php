@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Ticket;
 use App\Models\TicketCategory;
 use App\Models\User;
+use App\View\Composers\AdminSidebarComposer;
 use Illuminate\Http\Request;
 
 class AdminTicketController extends Controller
 {
     public function index(Request $request)
     {
+        AdminSidebarComposer::markSeen('tickets');
+
         $query = Ticket::with(['category', 'creator', 'assignee']);
 
         if ($request->filled('status')) {
