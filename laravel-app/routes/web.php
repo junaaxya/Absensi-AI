@@ -44,10 +44,20 @@ use App\Http\Controllers\MyAssetController;
 use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\MyTaskController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\CareerController;
 
 
 Route::get('/', function () {
     return redirect()->route('login');
+});
+
+// Public career pages (no auth required)
+Route::middleware(['throttle:30,1'])->group(function () {
+    Route::get('/karir', [CareerController::class, 'index'])->name('career.index');
+    Route::get('/karir/{jobPosition}', [CareerController::class, 'show'])->name('career.show');
+    Route::get('/karir/{jobPosition}/lamar', [CareerController::class, 'apply'])->name('career.apply');
+    Route::post('/karir/{jobPosition}/lamar', [CareerController::class, 'store'])->name('career.store')->middleware('throttle:3,60');
+    Route::get('/karir/{jobPosition}/terima-kasih', [CareerController::class, 'thankYou'])->name('career.thank-you');
 });
 
 // Pending approval page (accessible by authenticated but unapproved users)

@@ -6,6 +6,7 @@ use App\Traits\HasAuditLog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class JobPosition extends Model
 {
@@ -13,6 +14,7 @@ class JobPosition extends Model
 
     protected $fillable = [
         'title',
+        'slug',
         'department_id',
         'description',
         'requirements',
@@ -23,6 +25,20 @@ class JobPosition extends Model
         'openings',
         'created_by',
     ];
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $position) {
+            if (empty($position->slug)) {
+                $position->slug = Str::slug($position->title) . '-' . Str::random(5);
+            }
+        });
+    }
 
     protected $casts = [
         'salary_range_min' => 'decimal:2',
