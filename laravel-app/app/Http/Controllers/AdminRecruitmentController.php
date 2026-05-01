@@ -13,8 +13,10 @@ use Illuminate\Http\Request;
 
 class AdminRecruitmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $tab = $request->input('tab', 'dashboard');
+
         $openPositions = JobPosition::where('status', 'open')->count();
         $activeCandidates = Candidate::whereNotIn('status', ['hired', 'rejected'])->count();
         $upcomingInterviews = Interview::where('status', 'scheduled')
@@ -38,13 +40,26 @@ class AdminRecruitmentController extends Controller
             ->take(10)
             ->get();
 
+        $positionsQuery = JobPosition::with(['department', 'creator'])->withCount('candidates');
+        if ($request->filled('status')) {
+            $positionsQuery->where('status', $request->status);
+        }
+        if ($request->filled('department_id')) {
+            $positionsQuery->where('department_id', $request->department_id);
+        }
+        $positions = $positionsQuery->latest()->paginate(12)->withQueryString();
+        $departments = Department::orderBy('name')->get();
+
         return view('admin.recruitment.index', compact(
+            'tab',
             'openPositions',
             'activeCandidates',
             'upcomingInterviews',
             'hiredThisMonth',
             'pipelineSummary',
-            'recentCandidates'
+            'recentCandidates',
+            'positions',
+            'departments'
         ));
     }
 
